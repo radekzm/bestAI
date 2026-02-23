@@ -156,20 +156,39 @@ Naiwne rozwiązanie ("załaduj WSZYSTKO co mamy") gorzej działa niż nic:
 "zmień kolor tła"         → [-0.67, 0.82, -0.31, ...] ─┘ daleki wektor
 ```
 
+### Kluczowe odkrycie: Anthropic CELOWO odrzucił vector DB
+
+> Anthropic przetestował RAG z lokalną bazą wektorową we wczesnych wersjach Claude Code i **świadomie z tego zrezygnował** na rzecz "agentic search" (grep + glob + read plików).
+> — [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+
+**Powody**:
+- Prostota (zero konfiguracji)
+- Brak problemów z aktualizacją indeksu (staleness)
+- Bezpieczeństwo (indeks = dodatkowa powierzchnia ataku)
+- Niezawodność
+
+**ALE**: Community natychmiast wypełniło tę lukę — powstało kilkanaście projektów dodających vector DB do Claude Code. Najbardziej dojrzałe: **claude-mem** (4700+ stars), **claude-context** (Zilliz, 4000+ stars).
+
+**Praktyczny konsensus (luty 2026)**:
+> "Agentic as the backbone, with semantic index only where needed, plus context engineering"
+> — hybrydowe podejście
+
 ### Wybór bazy wektorowej — rekomendacje 2026
 
-| Baza | Typ | Najlepsze zastosowanie | Koszt | Setup |
-|------|-----|------------------------|-------|-------|
-| **Pinecone** | Cloud (managed) | Duże projekty, team, produkcja | $$$→Free tier | MCP ready |
-| **Chroma** | Embedded/local | Pojedynczy deweloper, szybki start | Darmowy | `pip install chromadb` |
-| **pgvector** | Rozszerzenie PostgreSQL | Projekty z istniejącym PostgreSQL | Darmowy | Rozszerzenie PG |
-| **LanceDB** | Embedded/serverless | Lekki, bez serwera, Git-friendly | Darmowy | `pip install lancedb` |
-| **FAISS** | Biblioteka (Meta) | Offline, duży scale, badania | Darmowy | `pip install faiss-cpu` |
+| Baza | Typ | Najlepsze zastosowanie | Koszt | Setup | Realne użycie |
+|------|-----|------------------------|-------|-------|--------------|
+| **sqlite-vec** | Embedded (SQLite ext.) | **TREND 2026** — zero infra | Darmowy | Rozszerzenie SQLite | Kontext Engine, Mnemosyne, Memento |
+| **Chroma** | Embedded/local | Pojedynczy dev, szybki start | Darmowy | `pip install chromadb` | claude-mem (4700+ stars) |
+| **LanceDB** | Embedded/serverless | Lekki, Git-friendly | Darmowy | `pip install lancedb` | claude-context fork, Continue IDE |
+| **pgvector** | Rozszerzenie PostgreSQL | Projekty z istniejącym PG | Darmowy | Rozszerzenie PG | Produkcja, 75% taniej niż Pinecone |
+| **Pinecone** | Cloud (managed) | Enterprise, team, duży scale | $$$→Free tier | MCP ready | Pinecone MCP |
+| **Milvus/Zilliz** | Cloud/self-hosted | Duże codebases, monorepo | Free→$$$ | Serwer | claude-context (Zilliz) |
 
-**Rekomendacja 2026**:
-- **Solo dev**: Chroma lub LanceDB (zero infra, embedded)
-- **Team z PostgreSQL**: pgvector (już masz DB)
-- **Enterprise / duży projekt**: Pinecone (managed, MCP integration)
+**Rekomendacja 2026** (na podstawie realnych implementacji):
+- **Solo dev**: **sqlite-vec** lub Chroma (zero infra, embedded, trend)
+- **Team z PostgreSQL**: pgvector (już masz DB, 75% taniej niż Pinecone)
+- **Duży codebase**: Milvus/Zilliz lub LanceDB (10M+ linii kodu)
+- **Enterprise**: Pinecone (managed, MCP integration)
 
 ### Trend 2026: Wektory jako typ danych, nie oddzielna baza
 
@@ -504,6 +523,67 @@ Jak opisano w rozdziale 3 — semantic search w vector DB. Najskuteczniejsze dla
 | **Maintenance** | Niski | Niski | Średni (aktualizuj embeddingi) |
 | **Rekomendacja** | Start, MVP | **Najlepszy balans** | Duże projekty |
 
+### Podejście D: Agent Hook (nowość 2026, natywne w Claude Code)
+
+Claude Code oficjalnie wspiera **agent hooks** — subagenty uruchamiane bezpośrednio w cyklu życia hooków:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Analyze this task and determine which project context files are relevant. Check the docs/ and memory/ directories. Return relevant file paths. $ARGUMENTS",
+            "model": "haiku",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Agent hook może wykonać do **50 tur narzędzi** (Read, Grep, Glob) i zwrócić decyzję `{"ok": true/false, "reason": "..."}`. Domyślnie używa szybkiego modelu.
+
+**Przewaga nad Podejściem B**: Natywna integracja, brak potrzeby wywoływania `claude -p`, bezpośredni dostęp do narzędzi.
+**Źródło**: [Claude Code Hooks Reference](https://code.claude.com/docs/en/hooks)
+
+### Realne implementacje prompt preprocessingu (open-source, 2025-2026)
+
+| Projekt | Architektura | Kluczowa cecha |
+|---------|-------------|----------------|
+| [severity1/claude-code-prompt-improver](https://github.com/severity1/claude-code-prompt-improver) | Hook UserPromptSubmit → 4-fazowy workflow (Research→Questions→Clarify→Execute) | Jasne prompty przechodzą natychmiast (zero overhead), niejasne → skill z pytaniami |
+| [claude-mem](https://github.com/thedotmack/claude-mem) | 6-warstwa: hooks→worker(HTTP)→AI→storage(SQLite+ChromaDB)→search→MCP | Hybrid search FTS5+Chroma, 5 lifecycle hooks, progressive disclosure 3-level |
+| [c0ntextKeeper](https://github.com/Capnjbrown/c0ntextKeeper) | 7 hooków, 187 semantic patterns, 3 MCP tools | Word expansion, temporal decay scoring (60-dniowy), auto-redakcja PII |
+| [Continuous-Claude-v3](https://github.com/parcadei/Continuous-Claude-v3) | 32 agentów, 30 hooków, 109 capabilities | Ledger-based continuity: "Compound, don't compact" — wyciągaj wnioski, nie kompaktuj |
+| [Conductor (Gemini CLI)](https://github.com/gemini-cli-extensions/conductor) | Context-Driven Development: context → spec → plan → implement | Pliki Markdown w repo jako single source of truth, automatycznie aktualizowane per-faza |
+| [Mem0](https://github.com/mem0ai/mem0) | Extraction→LLM comparison→graph memory | 26% poprawa trafności, 91% niższe p95 latency, 90%+ oszczędność tokenów |
+
+### skill-rules.json — Auto-Activation Skills ([paddo.dev](https://paddo.dev/blog/claude-skills-hooks-solution/))
+
+Wzorzec łączący keyword matching z intent detection:
+
+```json
+{
+  "skills": [
+    {
+      "name": "backend-dev-guidelines",
+      "triggers": {
+        "prompt_keywords": ["backend", "api", "endpoint"],
+        "prompt_intent": "(create|add|build).*?(route|endpoint|controller|service)",
+        "file_patterns": ["src/**/*.ts"]
+      }
+    }
+  ]
+}
+```
+
+Flow: User prompt → UserPromptSubmit hook → analizuj keywords + intent regex → dopasuj skill-rules.json → wstrzyknij podpowiedzi aktywacji → Claude ładuje relevantne skille.
+
 ### Kluczowa reguła: Budget kontekstu dla preprocessora
 
 ```
@@ -814,6 +894,27 @@ if __name__ == "__main__":
 }
 ```
 
+### Istniejące narzędzia do analizy sesji (open-source)
+
+| Narzędzie | Architektura | Kluczowa cecha |
+|-----------|-------------|----------------|
+| [CASS](https://github.com/Dicklesworthstone/coding_agent_session_search) | SQLite + Tantivy full-text index | Unified TUI/CLI, 11+ providerów, **sub-60ms search**, multi-machine via SSH/rsync, real-time watch mode |
+| [Definite.app Session Search](https://www.definite.app/blog/claude-code-search-skill) | Python skill + full-text search | Parsuje JSONL → dataclasses (Message, Conversation), filtrowanie po projekcie |
+| [DuckDB JSONL Analysis](https://liambx.com/blog/claude-code-log-analysis-with-duckdb) | SQL queries bezpośrednio po JSONL | Zero ETL — `SELECT * FROM read_json('~/.claude/projects/**/*.jsonl')` |
+| [total-recall](https://github.com/radu2lupu/total-recall) | qmd hybrid BM25+vector | Cross-session semantic memory, multi-machine z HTTP server |
+
+**CASS** (Coding Agent Session Search) jest najbardziej dojrzały — dual-storage (SQLite = source of truth, Tantivy = search index), edge n-grams dla prefix matching, connectors normalizujące JSONL/SQLite/Markdown do unified schema.
+
+### Budowanie mappingu task → context
+
+Praktyczny wzorzec z [claude-mem](https://github.com/thedotmack/claude-mem):
+
+1. **Zbieraj dane**: Przy `UserPromptSubmit` loguj: prompt, załadowane konteksty, session_id
+2. **Przy `Stop`**: Loguj: czy zadanie się powiodło, które narzędzia użyte
+3. **Analizuj periodycznie**: DuckDB query po JSONL — "dla promptów zawierających X, jakie konteksty były ładowane i czy zadanie się powiodło?"
+4. **Buduj indeks**: Mapping `prompt_category → [context_files_that_led_to_success]`
+5. **Feed back**: Użyj mappingu w UserPromptSubmit hook do automatycznej selekcji kontekstu
+
 ### Cykliczna analiza (cron)
 
 Dla projektów z dużą historią, uruchamiaj analizę cyklicznie:
@@ -1056,50 +1157,123 @@ PYEOF
 
 ### Kontekst
 
-Serwer `task.nuconic.com` — OpenProject z pluginami NUCONIC. ~150 sesji Claude Code, produkcyjne środowisko.
+Serwer `task.nuconic.com` — OpenProject z pluginami NUCONIC. Produkcyjne środowisko, 29 dni analizy (26.01–23.02.2026).
 
-### Analiza sesji (prawdziwe dane z tego serwera)
+### Analiza sesji — twarde dane z serwera
 
 | Metryka | Wartość | Wnioski |
 |---------|---------|---------|
-| Sesji JSONL | ~150 | Intensywne użytkowanie |
-| Największa sesja | 24,254 linii | Zbyt długa — potrzebuje kompakcji/split |
-| Pliki memory/ | 6+ topic files | Dobrze zorganizowane |
-| CLAUDE.md | ~60 linii | W normie (<150) |
-| MEMORY.md | ~50 linii | Dobra, ale brak tagów [USER]/[AUTO] |
+| Sesji JSONL | **234** + 383 sub-agentów | Intensywne użytkowanie (~8 sesji/dzień) |
+| Łączne wywołania narzędzi | **16,761** | Bash 56.5%, Read 12.1%, Write 6.7% |
+| Łączne błędy narzędzi | **1,298 (7.7%)** | Bash exit code 1 = 67.9% błędów |
+| Dane JSONL | **~451 MB** | Gigantyczny dataset do analizy |
+| Sesje z kompakcją | **50 (21%)**, 84 kompakcje łącznie | Co 5. sesja traci kontekst |
+| Sesje przerwane przez usera | **122 (52%)** | Agent wymagał interwencji |
+| Największa sesja | 22.3 MB, 940 narzędzi, **12 kompakcji** | Skrajny przypadek — budget→sales |
 
-### Zidentyfikowane problemy
+### TOP 5 realnych bolączek odkrytych w analizie
 
-1. **Brak semantic search** — gdy użytkownik pisał "napraw sync NC", agent nie wiedział o reguły ACL opisane jako "permissions synchronization"
-2. **Powtarzające się pułapki** — `BUNDLE_DEPLOYMENT=0` wymienione w MEMORY.md, ale agent czasem zapominał
-3. **Długie sesje** — 24k linii = kontekst wielokrotnie kompaktowany, utrata szczegółów
-4. **Brak preprocessingu** — każda sesja zaczynała od "pustego" kontekstu (tylko CLAUDE.md)
+#### 1. Compliance z regułami CLAUDE.md = 6%
 
-### Jak Smart Context rozwiązuje te problemy
+**Szokujące odkrycie**: 31 z 33 sesji z operacjami deploy/restart/migrate **nie wykonało backupu** przed. Reguła "Przed KAŻDĄ pracą — backup bazy" opisana w CLAUDE.md, ale compliance wynosi **6%**. Przez pierwsze 24 dni pracy na produkcji nie było ANI JEDNEGO backupu na dysku.
 
-| Problem | Rozwiązanie | Efekt |
-|---------|-------------|-------|
-| Brak semantic search | Vector DB z indeksem memory/ + docs/ | "napraw sync" → finds "permissions sync" |
-| Pułapki zapominane | Preprocessor wstrzykuje pitfalls relevant do tasku | BUNDLE_DEPLOYMENT=0 pojawia się automatycznie |
-| Długie sesje | Observational Memory kompresuje 24k→4k linii | 80% mniej kontekstu, 0 utraty informacji |
-| Pusty start | SessionStart hook ładuje session-report.md | Agent zna historię od pierwszego promptu |
+→ **Wniosek**: Dokumentacja ≠ enforcement. Reguły krytyczne muszą być wymuszone hookami, nie tylko tekstem.
+
+#### 2. Rails runner multiline: 150 błędów w 40 sesjach
+
+Agent regularnie próbował przekazać wieloliniowy Ruby przez `openproject run rails runner '...'`, co nie działa z Bash quoting. Mimo wpisu w MEMORY.md, ten sam błąd powtarza się sesja po sesji.
+
+→ **Wniosek**: Zbyt "grzeczne" sformułowanie w MEMORY. Powinno być: `## NIGDY inline multi-line. ZAWSZE: echo > /tmp/script.rb && openproject run rails runner /tmp/script.rb`
+
+#### 3. Kompakcja kontekstu = utrata stanu roboczego
+
+Po kompakcji agent:
+- Traci info o przeczytanych plikach → 26 błędów "Write without Read"
+- Ponownie czyta CLAUDE.md/AGENTS.md (3-4x w jednej sesji)
+- Powtarza wcześniejsze komendy (nie pamięta prób)
+- Sesja `6c18bdfe` (12 kompakcji): czytała `sales_controller.rb` **4 razy**
+
+→ **Wniosek**: Dla zadań >500 narzędzi, lepiej podzielić na mniejsze sesje. Observational Memory rozwiązuje to kompresując kontekst 3-6x.
+
+#### 4. Restarty produkcji w godzinach pracy: 45%
+
+63 z 139 restartów `openproject restart` między 8:00–17:00 CET. Reguła "unikaj godzin pracy" ignorowana.
+
+→ **Wniosek**: Hook na `openproject restart` sprawdzający godzinę i wymagający potwierdzenia. Nie polegaj na instrukcji tekstowej.
+
+#### 5. Subagent explosion: 383 pliki, jeden 12.5 MB
+
+Subagenty generują ogromne ilości danych ale często z niewielką korzyścią — główna sesja i tak musi czekać i powtarzać pracę.
+
+→ **Wniosek**: Ograniczaj subagenty do czysto niezależnych zadań. Dla sekwencyjnych — pracuj w głównej sesji.
+
+### Jak Smart Context rozwiązałby te problemy
+
+| Problem | Rozwiązanie | Mechanizm | Szacowany efekt |
+|---------|-------------|-----------|-----------------|
+| Backup compliance 6% | PreToolUse hook + regex na rsync/restart/migrate | Hook blokuje deploy bez wcześniejszego pg_dump | 100% compliance |
+| Rails runner 150 błędów | Prompt Preprocessor z anti-pattern DB | Hook wstrzykuje "NIGDY inline Ruby" gdy wykryje `rails runner` | -90% błędów |
+| Kompakcja = amnezja | Observational Memory (Observer+Reflector) | Kompresja 3-6x tekstu, 5-40x narzędzi, zachowuje decyzje | -80% re-reads |
+| Restart w pracy | PreToolUse hook + sprawdzenie czasu | `date +%H` → block jeśli 8-17 bez --force | -95% naruszeń |
+| Brak semantic search | Vector DB + hybrid search | "napraw sync" → finds "permissions synchronization" | Elimunuje "agent nie wiedział" |
+| Pusty start sesji | SessionStart hook + session-report.md | Ładuje historię, ostatnie issues, decyzje | Od 0 do 100% kontekstu na starcie |
 
 ---
 
 ## 10. Słabe punkty i mitygacje
 
-### Znane problemy i rozwiązania
+### Udokumentowane awarie systemów kontekstowych (dane z GitHub Issues + badania 2025-2026)
+
+#### Problem krytyczny #1: CLAUDE.md ignorowany po kompakcji
+
+**GitHub Issues: [#19471](https://github.com/anthropics/claude-code/issues/19471), [#9796](https://github.com/anthropics/claude-code/issues/9796), [#6354](https://github.com/anthropics/claude-code/issues/6354)**
+
+Claude po auto-kompakcji **kompletnie zapomina instrukcje z CLAUDE.md**. Issue #9796 dokumentuje: instrukcje przestrzegane idealnie przed kompakcją, łamane w **100% przypadków** po kompakcji. Przyczyna: podsumowanie kompakcji nie zachowuje treści project-context.
+
+**Brak PostCompact hooka** ([#14258](https://github.com/anthropics/claude-code/issues/14258), [#17237](https://github.com/anthropics/claude-code/issues/17237)) — kluczowa luka architektoniczna. PreCompact hooki mogą wstrzykiwać treść, ale ta treść sama zostaje sparafrazowana podczas kompakcji.
+
+**Mitygacja Smart Context**: Observational Memory kompresuje kontekst PRZED kompakcją, zachowując decyzje. SessionStart hook odtwarza krytyczne reguły po kompakcji.
+
+#### Problem krytyczny #2: CLAUDE.md ignorowany w 50% sesji (nawet bez kompakcji)
+
+**GitHub Issue [#17530](https://github.com/anthropics/claude-code/issues/17530)** — instrukcje ignorowane w ~50% sesji mimo dyrektyw "MUST", "ALWAYS", "NEVER".
+
+**Przyczyny**:
+- CLAUDE.md >150 linii → "lost in the middle" effect (LLM najlepiej pamięta początek i koniec)
+- Context rot przy ~147,000-152,000 tokenów, choć limit reklamowany jako 200k
+- System prompt sam zużywa ~24k tokenów → użyteczne okno = ~176k
+- Efekt "Context Confusion" — zbyt wiele podobnych instrukcji = model zdezorientowany
+
+**Mitygacja Smart Context**: Zamiast polegać na CLAUDE.md → wymuś hooki. Hook PreToolUse z regexem jest DETERMINISTYCZNY (nie podlega "zapominaniu").
+
+#### Problem krytyczny #3: Reguły bezpieczeństwa ignorowane
+
+**GitHub Issue [#2142](https://github.com/anthropics/claude-code/issues/2142)** (P0 Critical) — agent **systematycznie commitował klucze API** do publicznego repozytorium, mimo że CLAUDE.md zawierał "NEVER COMMIT API KEYS". Opisane przez The Register i SC Media.
+
+**Na naszym serwerze Nuconic**: Backup compliance = 6%. 31 z 33 sesji z deploy/restart/migrate nie wykonało backupu. Reguła krytyczna ignorowana.
+
+**Mitygacja Smart Context**: PreToolUse hook z `exit 2` (blokada) → niemożliwe do zignorowania, w przeciwieństwie do tekstu w CLAUDE.md.
+
+#### Problem krytyczny #4: Auto-memory zapisuje błędne informacje
+
+**GitHub Issue [#23310](https://github.com/anthropics/claude-code/issues/23310)** — zmiany w memory ukryte za UI elementem, użytkownik nie widzi co zostało zapisane. Issues [#23544](https://github.com/anthropics/claude-code/issues/23544), [#23750](https://github.com/anthropics/claude-code/issues/23750) — żądanie wyłączenia auto-memory, bo tworzy redundantny kontekst.
+
+**Mitygacja Smart Context**: Tagi [USER]/[AUTO] z reguły eskalacji. Auto-memory = [AUTO], nigdy nie nadpisuje [USER].
+
+### Problemy techniczne Smart Context i rozwiązania
 
 | Problem | Ryzyko | Mitygacja |
 |---------|--------|-----------|
 | **Latencja preprocessora** | +200ms-2s na każdy prompt | Timeout 3s, fallback na basic grep |
 | **Koszt subagent Haiku** | ~$0.001/query | Budget cap: max $1/dzień |
-| **Embedding quality dla kodu** | Kod nie embeduje się tak dobrze jak tekst | Hybrid search (keyword + semantic) |
+| **Embedding quality dla kodu** | Kod embeduje się gorzej niż tekst naturalny | Hybrid search (keyword + semantic + AST) |
 | **Cold start** | Nowy projekt = pusta baza wektorowa | Automatyczny seeding z CLAUDE.md + first commits |
 | **Utrzymanie embeddingów** | Muszą być aktualizowane przy zmianach | PostToolUse hook: auto-reindex po Edit |
 | **False positive context** | Wstrzyknięty kontekst może być mylący | Max 15% budżet + relevance threshold 70%+ |
 | **Hook injection cumulative** | Każdy prompt = dodatkowe tokeny | Smart: wstrzykuj TYLKO gdy relevance > threshold |
-| **UserPromptSubmit bug #17804** | False positive "prompt injection" detection | Workaround: prefix output z `[CONTEXT]` |
+| **MCP context bloat** | 67k+ tokenów na starcie z wieloma MCP | MCP Tool Search (v2.0.10+), max 3-4 MCP serwerów |
+| **Vector DB staleness** | Kod zmienia się codziennie, indeks nieaktualny | PostToolUse hook auto-reindex, lub agentic search fallback |
+| **Digital punding** | Po wielokrotnej kompakcji agent staje się szkodliwy | Max 3 kompakcje → `/clear` + nowa sesja |
 
 ### Kiedy NIE stosować Smart Context
 
@@ -1107,6 +1281,7 @@ Serwer `task.nuconic.com` — OpenProject z pluginami NUCONIC. ~150 sesji Claude
 - **Nowy, pusty projekt** — nie ma czego szukać
 - **Jedno-sesyjne projekty** — brak historii do uczenia
 - **Limitowany budżet API** — subagent Haiku kosztuje (mało, ale kosztuje)
+- **Sesja >3 kompakcji** — przerwij, `/clear`, zacznij nową z MEMORY
 
 ### Escape hatch
 
@@ -1160,26 +1335,60 @@ rm .claude/DISABLE_SMART_CONTEXT
 
 ### Context routing i preprocessing
 
-10. [Claude Code Hooks Reference](https://code.claude.com/docs/en/hooks) — UserPromptSubmit stdout injection
+10. [Claude Code Hooks Reference](https://code.claude.com/docs/en/hooks) — UserPromptSubmit stdout injection + agent hooks
 11. [Claude Code Hooks Mastery — disler](https://github.com/disler/claude-code-hooks-mastery) — zaawansowane użycie hooków
 12. [claude-mem — hooks architecture](https://docs.claude-mem.ai/hooks-architecture) — UserPromptSubmit preprocessing
 13. [Context7 MCP Server](https://github.com/upstash/context7) — semantic search dokumentacji on-demand
 14. [Feature Request: Bridge Context Between Sub-Agents — #5812](https://github.com/anthropics/claude-code/issues/5812) — kontekst między subagentami
+15. [severity1/claude-code-prompt-improver](https://github.com/severity1/claude-code-prompt-improver) — 4-fazowy prompt refinement
+16. [Skills Auto-Activation via Hooks — paddo.dev](https://paddo.dev/blog/claude-skills-hooks-solution/) — skill-rules.json pattern
+17. [Claude Code Hook to Ask Gemini — GreenFlux](https://blog.greenflux.us/claude-code-hook-to-ask-gemini-for-help/) — cross-model hook
 
 ### RAG i Context Engine
 
-15. [Is RAG Dead? The Rise of Context Engineering — TDS](https://towardsdatascience.com/beyond-rag/) — ewolucja RAG → Context Engine
-16. [From RAG to Context — RAGFlow 2025 Review](https://ragflow.io/blog/rag-review-2025-from-rag-to-context) — przegląd ewolucji
-17. [Agent Memory: Why Your AI Has Amnesia — Oracle](https://blogs.oracle.com/developers/agent-memory-why-your-ai-has-amnesia-and-how-to-fix-it) — wzorce pamięci agentów
-18. [AI Agent Memory: Build Stateful Systems — Redis](https://redis.io/blog/ai-agent-memory-stateful-systems/) — architektura pamięci
+18. [Is RAG Dead? The Rise of Context Engineering — TDS](https://towardsdatascience.com/beyond-rag/) — ewolucja RAG → Context Engine
+19. [From RAG to Context — RAGFlow 2025 Review](https://ragflow.io/blog/rag-review-2025-from-rag-to-context) — przegląd ewolucji
+20. [Agent Memory: Why Your AI Has Amnesia — Oracle](https://blogs.oracle.com/developers/agent-memory-why-your-ai-has-amnesia-and-how-to-fix-it) — wzorce pamięci agentów
+21. [AI Agent Memory: Build Stateful Systems — Redis](https://redis.io/blog/ai-agent-memory-stateful-systems/) — architektura pamięci
 
 ### Subagenci i orchestracja
 
-19. [Create custom subagents — Claude Code Docs](https://code.claude.com/docs/en/sub-agents) — oficjalna dokumentacja
-20. [Best Practices: From Prompts to Pipelines — PubNub](https://www.pubnub.com/blog/best-practices-claude-code-subagents-part-two-from-prompts-to-pipelines/) — subagent pipeline patterns
-21. [Understanding Claude Code's Full Stack — alexop.dev](https://alexop.dev/posts/understanding-claude-code-full-stack/) — MCP, Skills, Subagents, Hooks
+22. [Create custom subagents — Claude Code Docs](https://code.claude.com/docs/en/sub-agents) — oficjalna dokumentacja
+23. [Best Practices: From Prompts to Pipelines — PubNub](https://www.pubnub.com/blog/best-practices-claude-code-subagents-part-two-from-prompts-to-pipelines/) — subagent pipeline patterns
+24. [Understanding Claude Code's Full Stack — alexop.dev](https://alexop.dev/posts/understanding-claude-code-full-stack/) — MCP, Skills, Subagents, Hooks
+25. [Agentic Coding with Haiku 4.5 — skywork.ai](https://skywork.ai/blog/agentic-coding-claude-haiku-4-5-beginners-guide-sub-agent-orchestration/) — Haiku subagents do selekcji kontekstu
+
+### Session Intelligence
+
+26. [CASS — coding_agent_session_search](https://github.com/Dicklesworthstone/coding_agent_session_search) — SQLite+Tantivy, 11+ providerów, sub-60ms
+27. [Building Session Search Skill — Definite.app](https://www.definite.app/blog/claude-code-search-skill) — Python skill, JSONL parsing
+28. [Claude Code Log Analysis with DuckDB — Liam ERD](https://liambx.com/blog/claude-code-log-analysis-with-duckdb) — SQL bezpośrednio po JSONL
+29. [total-recall — cross-session semantic memory](https://github.com/radu2lupu/total-recall) — qmd hybrid BM25+vector
+
+### Realne systemy kontekstowe
+
+30. [claude-mem](https://github.com/thedotmack/claude-mem) — 6-warstwa, FTS5+ChromaDB hybrid search, 4700+ stars
+31. [c0ntextKeeper](https://github.com/Capnjbrown/c0ntextKeeper) — 7 hooków, 187 semantic patterns, temporal decay
+32. [Continuous-Claude-v3](https://github.com/parcadei/Continuous-Claude-v3) — 32 agentów, ledger-based continuity
+33. [Conductor — Gemini CLI](https://github.com/gemini-cli-extensions/conductor) — Context-Driven Development
+34. [Volt/LCM — Lossless Context Management](https://github.com/voltropy/volt) — DAG sumaryzacji, deterministyczna pętla
+35. [Mem0 — Universal Memory Layer](https://github.com/mem0ai/mem0) — 26% poprawa trafności, pamięć jako graf
+
+### Udokumentowane awarie i ograniczenia
+
+36. [GH #19471 — CLAUDE.md ignored after compaction](https://github.com/anthropics/claude-code/issues/19471)
+37. [GH #17530 — CLAUDE.md Not Reading in 50% sessions](https://github.com/anthropics/claude-code/issues/17530)
+38. [GH #2142 — Security guidelines ignored (P0)](https://github.com/anthropics/claude-code/issues/2142)
+39. [GH #14258 — PostCompact Hook request](https://github.com/anthropics/claude-code/issues/14258)
+40. [GH #6549 — Behavioral drift through compaction](https://github.com/anthropics/claude-code/issues/6549)
+41. [GH #23310 — Auto-memory saves wrong info](https://github.com/anthropics/claude-code/issues/23310)
+42. [Boris Cherny on X — agentic search vs RAG](https://x.com/bcherny/status/2017824286489383315) — "we dropped vector db"
+43. [SmartScope — Why Claude Code Dropped Vector DB RAG](https://smartscope.blog/en/ai-development/practices/rag-debate-agentic-search-code-exploration/)
+44. [Anthropic — Effective Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+45. [Context Rot — producttalk.org](https://www.producttalk.org/context-rot/) — degradacja jakości przy ~147k tokenów
 
 ---
 
-*Dokument wygenerowany: 2026-02-23*
+*Dokument wygenerowany: 2026-02-23, zaktualizowany: 2026-02-23*
 *Rozbudowuje: bestcontext.md → preBestCliAI.md → bestPersistentAI.md → **ten plik** (smart context)*
+*Źródeł: 45 zweryfikowanych (z 4 równoległych agentów badawczych + analiza 234 sesji produkcyjnych)*

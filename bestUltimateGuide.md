@@ -480,6 +480,23 @@ globs: ["**/*.ts", "**/*.tsx"]
 | **RAG → Context Engine ewolucja** | Tradycyjny RAG przegrywana z OM | Obserwational Memory + Vector DB razem |
 | **Cold start** | Nowy projekt = pusta baza wiedzy | Auto-seed z CLAUDE.md + first commits |
 
+### Udokumentowane awarie (GitHub Issues + badania na realnym serwerze)
+
+| Problem | Powaga | Dane | Mitygacja |
+|---------|--------|------|-----------|
+| **CLAUDE.md ignorowany po kompakcji** | KRYTYCZNY | [GH #19471](https://github.com/anthropics/claude-code/issues/19471) — 100% instrukcji łamane po kompakcji | Observational Memory, SessionStart hook do odtworzenia reguł |
+| **CLAUDE.md ignorowany w 50% sesji** | WYSOKI | [GH #17530](https://github.com/anthropics/claude-code/issues/17530) — nawet "MUST"/"NEVER" ignorowane | Hooki deterministyczne (PreToolUse z exit 2) zamiast tekstu |
+| **Reguły bezpieczeństwa ignorowane** | P0 | [GH #2142](https://github.com/anthropics/claude-code/issues/2142) — commitowanie API keys mimo "NEVER COMMIT" | PreToolUse hook blokujący commitowanie secrets |
+| **Backup compliance 6%** | KRYTYCZNY | 31/33 sesji deploy bez backupu (dane z Nuconic) | Hook na rsync/restart z wymuszeniem pg_dump |
+| **Restart w godzinach pracy 45%** | WYSOKI | 63/139 restartów 8:00-17:00 CET (dane z Nuconic) | Hook sprawdzający `date +%H` |
+| **Rails runner multiline: 150 błędów** | WYSOKI | 40 sesji ten sam błąd mimo wpisu w MEMORY | Agresywne sformułowanie: "NIGDY" + szablon |
+| **Context rot przy ~147k tokenów** | STRUKTURALNY | Jakość spada choć limit = 200k. System prompt = 24k | `/clear` przy 3+ kompakcjach |
+| **Brak PostCompact hooka** | STRUKTURALNY | [GH #14258](https://github.com/anthropics/claude-code/issues/14258) — brak mechanizmu odtworzenia | PreCompact hook + sesja < 500 narzędzi |
+| **MCP context bloat** | WYSOKI | 67k+ tokenów przy starcie z 4+ MCP serwerami | Max 3-4 MCP, Tool Search (v2.0.10+) |
+| **Digital punding po kompakcjach** | WYSOKI | [GH #6549](https://github.com/anthropics/claude-code/issues/6549) — agent aktywnie szkodliwy | Max 3 kompakcje → `/clear` |
+
+**Kluczowy wniosek**: Dokumentacja (CLAUDE.md, MEMORY.md) to **instrukcje dla modelu LLM**, który może je zignorować. Hooki (PreToolUse, UserPromptSubmit) to **kod**, który zawsze się wykonuje. **Reguły krytyczne = hooki, nie tekst.**
+
 ---
 
 ## 8. Implementacja krok po kroku
@@ -697,48 +714,59 @@ TIER 3: Full System (1-2h)
 
 ### Projekt: task.nuconic.com (OpenProject + pluginy NUCONIC)
 
-| Metryka | Wartość |
-|---------|---------|
-| Sesji Claude Code | ~150 |
-| Największa sesja | 24,254 linii JSONL |
-| Pliki memory/ | 6+ topic files |
-| CLAUDE.md | ~60 linii |
-| Typ projektu | Rails 8 + Angular 20, pluginy |
+**Twarde dane z analizy 234 sesji produkcyjnych** (26.01–23.02.2026, 29 dni):
 
-### Zidentyfikowane problemy (REALNE)
+| Metryka | Wartość | Wnioski |
+|---------|---------|---------|
+| Sesji Claude Code | **234** + 383 sub-agentów | ~8 sesji/dzień |
+| Łączne wywołania narzędzi | **16,761** | Bash 56.5%, Read 12.1%, Write 6.7% |
+| Error rate | **7.7%** (1,298 błędów) | Bash exit code 1 = 68% |
+| Dane JSONL | **~451 MB** | Ogromny dataset do analizy |
+| Sesje z kompakcją | **50 (21%)**, 84 kompakcje | Co 5. sesja traci kontekst |
+| Przerwane przez usera | **122 (52%)** | Agent wymagał interwencji w co 2. sesji |
+| CLAUDE.md | ~60 linii | W normie (<150) |
+| MEMORY.md | ~50 linii + 4 topic files | Dobrze zorganizowane |
 
-1. **Brak semantic search** — user pisał "napraw sync NC" → agent nie wiedział o regułach ACL opisanych jako "permissions synchronization"
-2. **Powtarzające się pułapki** — `BUNDLE_DEPLOYMENT=0` w MEMORY.md, ale agent czasem zapominał
-3. **Mega-sesje** — 24k linii = wielokrotna kompakcja = utrata szczegółów
-4. **Pusty start** — każda sesja od zera, bez kontekstu poprzednich
-5. **Brak tagów** — MEMORY.md bez [USER]/[AUTO] → agent zmieniał ustalenia usera
+### Zidentyfikowane problemy — TWARDE DANE
 
-### Jak Smart Context to rozwiązuje
+| # | Problem | Skala | Źródło danych |
+|---|---------|-------|---------------|
+| 1 | **Backup compliance** | **6%** — 31/33 sesji deploy bez backupu | Analiza pg_dump w Bash tool calls |
+| 2 | **Rails runner multiline** | **150 błędów** w 40 sesjach, ten sam bug | Analiza error patterns w JSONL |
+| 3 | **Restart w godzinach pracy** | **45%** — 63/139 restartów 8-17 CET | Analiza timestamps `openproject restart` |
+| 4 | **Kompakcja = amnezja** | CLAUDE.md czytany **3-4x** w jednej sesji | Analiza Read tool calls po compaction |
+| 5 | **Brak semantic search** | "napraw sync NC" → nie znalazł "permissions sync" | Ręczna analiza sesji |
+| 6 | **Sesja-monstrum** | 22.3 MB, 940 narzędzi, **12 kompakcji**, 55 błędów | Sesja `6c18bdfe` (budget→sales) |
 
-| Problem | Rozwiązanie Smart Context | Efekt |
-|---------|--------------------------|-------|
-| Brak semantic search | Vector DB z memory/ + docs/ | "napraw sync" → finds "permissions sync" |
-| Pułapki zapominane | Preprocessor wstrzykuje pitfalls | BUNDLE_DEPLOYMENT=0 pojawia się auto |
-| Mega-sesje | Observational Memory kompresuje | 24k→4k linii, 0 utraty |
-| Pusty start | SessionStart ładuje session-report | Agent zna historię od razu |
-| Brak tagów | Reguła tagowania w CLAUDE.md | [USER] chronione, [AUTO] rewizowalne |
+### Jak Smart Context rozwiązałoby te problemy
 
-### Symulacja: token savings
+| Problem | Mechanizm | Szacowany efekt |
+|---------|-----------|-----------------|
+| Backup 6% → 100% | PreToolUse hook: regex na rsync/restart/migrate → wymaga pg_dump | Deterministyczny, niemożliwy do zignorowania |
+| 150 błędów rails runner | Preprocessor: wstrzykuje "NIGDY inline Ruby" przy wykryciu `rails runner` | -90% błędów (z 150 na ~15) |
+| Restart 45% → <5% | PreToolUse hook: `date +%H` → block jeśli 8-17 bez `--force` | Deterministyczny |
+| CLAUDE.md 3-4x po kompakcji | Observational Memory (kompresja 3-6x) + SessionStart hook | -80% re-reads, oszczędność tokenów |
+| Brak semantic search | Vector DB hybrid search (keyword+semantic) | "sync" → "permissions synchronization" |
+| Sesja 940 narzędzi | Auto-split przy 500 narzędziach + subagent delegation | -70% wielkości sesji |
+
+### Token savings — symulacja na realnych danych
 
 ```
-BEZ Smart Context:
+BEZ Smart Context (dane z Nuconic):
   Session start: CLAUDE.md(4k) + MEMORY.md(3k) = 7k
   Po eksploracji: +50k (file reads, greps)
-  Kompakcja przy: 150k
-  Efektywne rozumowanie: 60% okna
+  Powtórzone reads po kompakcji: +15k (CLAUDE.md 3x, pliki 2-4x)
+  Kompakcja: 50 z 234 sesji (21%)
+  Efektywne rozumowanie: ~60% okna
 
-Z Smart Context:
+Z Smart Context (szacunki):
   Session start: CLAUDE.md(4k) + MEMORY.md(3k) + SmartCtx(6k) = 13k
-  Po eksploracji: +20k (targeted reads, mniej grep'ów)
-  Kompakcja: RZADKO (mniej śmieciowego kontekstu)
-  Efektywne rozumowanie: 85% okna
+  Po eksploracji: +20k (targeted reads — preprocessor wskazuje pliki)
+  Powtórzone reads: ~0k (Observational Memory zachowuje stan)
+  Kompakcja: ~5% sesji (zamiast 21%)
+  Efektywne rozumowanie: ~85% okna
 
-Poprawa: +42% wolnego kontekstu na rozumowanie
+Poprawa: +42% wolnego kontekstu, -75% kompakcji, -90% re-reads
 ```
 
 ---
@@ -790,6 +818,26 @@ Poprawa: +42% wolnego kontekstu na rozumowanie
 26. [everything-claude-code — hackathon winner](https://github.com/affaan-m/everything-claude-code)
 27. [claude-code-best-practice — Shan Raisshan](https://github.com/shanraisshan/claude-code-best-practice)
 28. [Volt — Lossless Context Management](https://github.com/voltropy/volt)
+
+#### Realne implementacje kontekstowe (open-source, 2025-2026)
+29. [severity1/claude-code-prompt-improver](https://github.com/severity1/claude-code-prompt-improver) — 4-fazowy prompt refinement
+30. [c0ntextKeeper](https://github.com/Capnjbrown/c0ntextKeeper) — 187 semantic patterns, temporal decay
+31. [Continuous-Claude-v3](https://github.com/parcadei/Continuous-Claude-v3) — 32 agentów, ledger-based
+32. [Conductor — Gemini CLI](https://github.com/gemini-cli-extensions/conductor) — Context-Driven Development
+33. [Mem0 — Universal Memory Layer](https://github.com/mem0ai/mem0) — 26% poprawa trafności
+34. [CASS — session search](https://github.com/Dicklesworthstone/coding_agent_session_search) — sub-60ms, 11+ providerów
+35. [total-recall](https://github.com/radu2lupu/total-recall) — cross-session semantic memory
+
+#### Udokumentowane awarie i ograniczenia
+36. [GH #19471 — CLAUDE.md ignored after compaction](https://github.com/anthropics/claude-code/issues/19471)
+37. [GH #17530 — CLAUDE.md ignored 50% sessions](https://github.com/anthropics/claude-code/issues/17530)
+38. [GH #2142 — Security rules ignored (P0)](https://github.com/anthropics/claude-code/issues/2142)
+39. [GH #14258 — PostCompact Hook request](https://github.com/anthropics/claude-code/issues/14258)
+40. [GH #6549 — Behavioral drift / digital punding](https://github.com/anthropics/claude-code/issues/6549)
+41. [Boris Cherny — why Claude Code dropped vector DB](https://x.com/bcherny/status/2017824286489383315)
+42. [SmartScope — Agentic search vs RAG](https://smartscope.blog/en/ai-development/practices/rag-debate-agentic-search-code-exploration/)
+43. [Anthropic — Effective Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+44. [Context Rot at 147k tokens](https://www.producttalk.org/context-rot/)
 
 ---
 
