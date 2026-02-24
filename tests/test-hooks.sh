@@ -1171,6 +1171,73 @@ rm -rf "$ETD_HOME"
 
 # ============================================================
 echo ""
+echo "=== check-user-tags.sh ==="
+# ============================================================
+
+UT_HOME=$(mktemp -d)
+UT_PROJECT="$UT_HOME/project"
+mkdir -p "$UT_PROJECT/.claude"
+UT_KEY=$(echo "$UT_PROJECT" | tr '/' '-')
+UT_MEMORY="$UT_HOME/.claude/projects/$UT_KEY/memory"
+mkdir -p "$UT_MEMORY"
+
+cat > "$UT_MEMORY/decisions.md" <<'DEC'
+# Decisions
+- [USER] JWT for auth — non-negotiable.
+- [AUTO] Use REST API for backend.
+- [USER] Deploy only after tests pass.
+DEC
+
+# Test: Write removing [USER] entry -> block (exit 2)
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"'"$UT_MEMORY/decisions.md"'","content":"# Decisions\n- [AUTO] Use REST API for backend.\n- [AUTO] New decision."}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: Write removing [USER] -> block" "2" "$CODE"
+assert_contains "[USER] tag: BLOCKED message" "$OUTPUT" "BLOCKED"
+
+# Test: Write preserving all [USER] entries -> allow (exit 0)
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"'"$UT_MEMORY/decisions.md"'","content":"# Decisions\n- [USER] JWT for auth — non-negotiable.\n- [AUTO] Use GraphQL instead.\n- [USER] Deploy only after tests pass."}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: Write preserving [USER] -> allow" "0" "$CODE"
+
+# Test: Edit removing [USER] from old_string -> block (exit 2)
+OUTPUT=$(echo '{"tool_name":"Edit","tool_input":{"file_path":"'"$UT_MEMORY/decisions.md"'","old_string":"- [USER] JWT for auth — non-negotiable.","new_string":"- [AUTO] Maybe use sessions instead."}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: Edit removing [USER] -> block" "2" "$CODE"
+
+# Test: Edit changing [AUTO] entry -> allow (exit 0)
+OUTPUT=$(echo '{"tool_name":"Edit","tool_input":{"file_path":"'"$UT_MEMORY/decisions.md"'","old_string":"- [AUTO] Use REST API for backend.","new_string":"- [AUTO] Use GraphQL for backend."}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: Edit changing [AUTO] -> allow" "0" "$CODE"
+
+# Test: Non-memory file -> allow (exit 0)
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"/tmp/random-file.md","content":"overwrite everything"}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: non-memory file -> allow" "0" "$CODE"
+
+# Test: New file (doesn't exist yet) -> allow (exit 0)
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"'"$UT_MEMORY/brand-new.md"'","content":"# New File\n- [AUTO] Fresh content"}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: new file creation -> allow" "0" "$CODE"
+
+# Test: Bash tool -> passthrough (exit 0)
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"echo hello"}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: Bash tool -> passthrough" "0" "$CODE"
+
+# Test: File with no [USER] entries -> allow any edit (exit 0)
+cat > "$UT_MEMORY/auto-only.md" <<'AUTO'
+# Auto Notes
+- [AUTO] Some note
+- [AUTO] Another note
+AUTO
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"'"$UT_MEMORY/auto-only.md"'","content":"# Completely different content"}}' | HOME="$UT_HOME" CLAUDE_PROJECT_DIR="$UT_PROJECT" bash "$HOOKS_DIR/check-user-tags.sh" 2>&1)
+CODE=$?
+assert_exit "[USER] tag: file with no [USER] -> allow any edit" "0" "$CODE"
+
+rm -rf "$UT_HOME"
+
+# ============================================================
+echo ""
 echo -e "${YELLOW}=== RESULTS ===${NC}"
 echo -e "Total: $TOTAL | ${GREEN}Pass: $PASS${NC} | ${RED}Fail: $FAIL${NC}"
 [ "$FAIL" -eq 0 ] && echo -e "${GREEN}ALL TESTS PASSED${NC}" || echo -e "${RED}SOME TESTS FAILED${NC}"

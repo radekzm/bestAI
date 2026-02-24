@@ -40,7 +40,9 @@ WAL Entry Format:
 [2026-02-23T14:36:05] [LSN:49] [MODIFY] [BASH] git commit -m "fix auth"
 ```
 
-**Recovery**: After compaction or `/clear`, SessionStart hook reads WAL from last checkpoint.
+**Two tiers:**
+- **P1: WAL Logging** (recommended) — audit trail for destructive actions. Hook: `hooks/wal-logger.sh`. Zero risk, high value.
+- **P2: WAL Recovery** (optional, experimental) — SessionStart hook reads WAL after compaction/`/clear` to restore context. Useful in theory, but most agents don't benefit from raw WAL replay. Enable via REHYDRATE hook extension (module 06, line 48).
 
 ### 3. ARC (Adaptive Replacement Cache)
 

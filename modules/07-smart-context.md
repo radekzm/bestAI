@@ -56,6 +56,21 @@ Minimum controls:
 - cap injected budget
 - keep escape hatch: `.claude/DISABLE_SMART_CONTEXT`
 
+## Progressive Retrieval Strategy
+
+The 4 approaches below form a **progressive retrieval** escalation — start with the simplest (grep) and only add complexity when results are insufficient:
+
+```
+Level 1: Keyword (grep)     — fast, literal matching, handles 60% of cases
+Level 2: Trigram + Intent   — fuzzy matching, catches morphological variants
+Level 3: Subagent (Haiku)   — semantic understanding, handles "different words" problem
+Level 4: Vector DB          — full semantic search, for large codebases (100+ files)
+```
+
+**This is NOT "semantic > literal"** (Module 00, Principle #5 applies to agent *understanding*, not retrieval). For retrieval, grep is the correct first step — it's fast, deterministic, and sufficient for most queries. Semantic layers add value only when keyword matching fails.
+
+The production hook (`hooks/preprocess-prompt.sh`) operates at Level 2: keyword + trigram + intent routing. Level 3 is available via `hooks/smart-preprocess-v2.sh`.
+
 ## 4 Approaches (simplest first)
 
 ### A: Hook + grep (10 min setup)

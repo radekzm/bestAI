@@ -24,7 +24,7 @@
 | `PostToolUse` | After tool execution | stdout shown | Linting, formatting |
 | `UserPromptSubmit` | When user sends prompt | **stdout added to context** | Smart context injection |
 | `SessionStart` | On session start | stdout shown | State restoration |
-| `Stop` | After agent response | stdout shown | Memory sync, WAL |
+| `Stop` | After agent response | stdout shown | Memory sync, WAL logging (P1) |
 
 ## Fragment Freeze — Hook-Enforced Protection
 
