@@ -1,0 +1,154 @@
+# Module 07: Smart Context — Semantic Routing & Preprocessing
+
+> Use this module when static CLAUDE.md + MEMORY.md is insufficient
+> and you need intelligent, task-specific context loading.
+>
+> **WARNING**: This module describes OPTIONAL techniques. Most projects work fine
+> with modules 00-06. Add smart context only when you experience repeated
+> "agent didn't know about X" situations.
+
+<!-- agents-md-compat -->
+
+---
+
+## The Problem
+
+```
+User:    "fix login"
+Context: "authentication error handling" ← keyword search WON'T find this
+Vector:  [0.23, -0.45, ...] ↔ [0.25, -0.43, ...] ← semantic search WILL find this
+```
+
+## Key Mechanism: UserPromptSubmit Hook
+
+**stdout from UserPromptSubmit hook is added to Claude's context**. This is the injection point for smart context.
+
+## 3 Approaches (simplest first)
+
+### A: Hook + grep (10 min setup)
+
+```bash
+#!/bin/bash
+# .claude/hooks/preprocess-prompt.sh
+PROMPT=$(cat | jq -r '.prompt // empty')
+[ -z "$PROMPT" ] && exit 0
+[ -f ".claude/DISABLE_SMART_CONTEXT" ] && exit 0
+
+MEMORY_DIR="$HOME/.claude/projects/$(echo $CLAUDE_PROJECT_DIR | tr '/' '-')/memory"
+[ ! -d "$MEMORY_DIR" ] && exit 0
+
+KEYWORDS=$(echo "$PROMPT" | tr ' ' '\n' | sort -u | tr '\n' '|' | sed 's/|$//')
+FOUND=$(grep -rli "$KEYWORDS" "$MEMORY_DIR"/*.md 2>/dev/null | head -3)
+
+if [ -n "$FOUND" ]; then
+    echo "[CONTEXT] Relevant memory:"
+    for f in $FOUND; do
+        echo "--- $(basename $f) ---"
+        grep -i -C 1 "$KEYWORDS" "$f" 2>/dev/null | head -15
+    done
+fi
+exit 0
+```
+
+### B: Subagent Selector (RECOMMENDED, 20 min)
+
+Uses fast model (Haiku) to intelligently select context:
+
+```bash
+#!/bin/bash
+# .claude/hooks/smart-preprocess.sh
+PROMPT=$(cat | jq -r '.prompt // empty')
+[ -z "$PROMPT" ] && exit 0
+
+CONTEXT_INDEX="$HOME/.claude/projects/$(echo $CLAUDE_PROJECT_DIR | tr '/' '-')/memory/context-index.md"
+[ ! -f "$CONTEXT_INDEX" ] && exit 0
+
+SELECTED=$(claude -p --model haiku "
+Task: '$PROMPT'
+Available contexts:
+$(cat "$CONTEXT_INDEX")
+Return ONLY 1-3 most relevant file paths." 2>/dev/null)
+
+if [ -n "$SELECTED" ]; then
+    echo "[CONTEXT] Smart selection:"
+    echo "$SELECTED" | while read f; do [ -f "$f" ] && head -30 "$f"; done
+fi
+exit 0
+```
+
+**Cost**: ~$0.001/query. **Latency**: 500ms-2s.
+
+### C: Vector DB (most accurate, 1-2h setup)
+
+For large projects (100+ files):
+
+```python
+# Embed: rules, memory, code, commits, issues
+# Query: embedding of user prompt → cosine similarity → top 5
+# Return: snippets with relevance score > 70%
+```
+
+### D: Agent Hook (native, 2026)
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "agent",
+        "prompt": "Analyze this task and find relevant context files in docs/ and memory/. $ARGUMENTS",
+        "model": "haiku",
+        "timeout": 60
+      }]
+    }]
+  }
+}
+```
+
+## Comparison
+
+| Feature | A: grep | B: Subagent | C: Vector DB | D: Agent Hook |
+|---------|---------|-------------|--------------|---------------|
+| Accuracy | 60% | 85% | 95% | 85% |
+| Latency | <100ms | 500ms-2s | 200ms-1s | 1-3s |
+| "Different words" | NO | YES | YES | YES |
+| Setup | 10 min | 20 min | 1-2h | 5 min |
+| **Recommendation** | MVP | **Best balance** | Large projects | Native option |
+
+## Context Budget Rule
+
+```
+NEVER inject more than 15% of context window.
+At 200k tokens: max 30,000 tokens from preprocessor (~15%)
+```
+
+## Escape Hatch
+
+Always maintain ability to disable:
+
+```bash
+# Disable: touch .claude/DISABLE_SMART_CONTEXT
+# Enable:  rm .claude/DISABLE_SMART_CONTEXT
+```
+
+## Important Caveat: Anthropic's Decision
+
+> Anthropic tested RAG with local vector DB in early Claude Code versions and
+> **deliberately dropped it** in favor of "agentic search" (grep + glob + read).
+> — [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+
+Community filled this gap with open-source projects (claude-mem 4700+ stars, claude-context 4000+ stars). The pragmatic consensus: **agentic as backbone, semantic index only where needed**.
+
+## When Smart Context IS vs ISN'T Worth It
+
+| Project Size | Smart Context? | Why |
+|-------------|---------------|-----|
+| < 20 files | **NO** | CLAUDE.md + MEMORY.md sufficient |
+| 20-100 files | **MAYBE** | If many rules/decisions/memory files |
+| 100-500 files | **YES** | Keyword search can't keep up |
+| 500+ files | **ESSENTIAL** | Without semantic search, agent drowns |
+
+---
+
+*See [08-advanced](08-advanced.md) for vector DB details and observational memory.*
