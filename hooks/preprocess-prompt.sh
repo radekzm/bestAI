@@ -18,7 +18,7 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 INPUT=$(cat)
-PROMPT=$(echo "$INPUT" | jq -r '.prompt // .tool_input.prompt // .user_prompt // .input // empty' 2>/dev/null || echo "")
+PROMPT=$(printf '%s\n' "$INPUT" | jq -r '.prompt // .tool_input.prompt // .user_prompt // .input // empty' 2>/dev/null || echo "")
 [ -z "$PROMPT" ] && exit 0
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
@@ -92,7 +92,7 @@ sanitize_line() {
     line=$(echo "$line" | tr '\t\r' '  ' | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//')
     [ -z "$line" ] && return 1
 
-    if echo "$line" | grep -Eqi '(ignore previous|ignore all|system prompt|developer message|jailbreak|override instructions|run command|execute this|tool call|assistant:|user:|```|<script|curl http|rm -rf)'; then
+    if echo "$line" | grep -Eqi '(ignore previous|ignore all|system prompt|developer message|jailbreak|override instructions|run command|execute this|tool call|assistant:|user:|Human:|<\|im_start|<\|im_end|\[INST\]|\[/INST\]|```|<script|curl http|rm -rf)'; then
         echo "[REDACTED: potential instruction-like content]"
         return 0
     fi

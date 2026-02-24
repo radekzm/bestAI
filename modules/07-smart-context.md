@@ -200,4 +200,4 @@ Community filled this gap with open-source projects (claude-mem 4700+ stars, cla
 
 ---
 
-*See [08-advanced](08-advanced.md) for vector DB details and [09-prompt-caching-ops](09-prompt-caching-ops.md) for cache-aware runtime optimization.*
+*See [08-advanced](08-advanced.md) for vector DB details and [11-prompt-caching](11-prompt-caching.md) for cache-aware runtime optimization.*

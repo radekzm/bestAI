@@ -18,17 +18,19 @@ if ! command -v jq &>/dev/null; then
 fi
 
 INPUT=$(cat)
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || exit 0
-TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null) || exit 0
+TOOL_NAME=$(printf '%s\n' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || exit 0
+TOOL_INPUT=$(printf '%s\n' "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null) || exit 0
 
 # Only check Bash commands
 [ "$TOOL_NAME" = "Bash" ] || exit 0
 
-COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // empty' 2>/dev/null)
+COMMAND=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.command // empty' 2>/dev/null)
 [ -z "$COMMAND" ] && exit 0
 
-# Only check dangerous operations
-if ! echo "$COMMAND" | grep -Eqi '(deploy|migrate|restart|rollback|production|staging)'; then
+# Only check dangerous operations (word-boundary match to avoid false positives
+# like "cat deployment-notes.txt" triggering on "deploy")
+if ! echo "$COMMAND" | grep -Eqi '\b(deploy|migrate|restart|rollback)\b' && \
+   ! echo "$COMMAND" | grep -Eqi '(--production|--staging|to[- ]production|to[- ]staging)'; then
     exit 0
 fi
 

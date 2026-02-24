@@ -50,7 +50,9 @@ bash evals/run.sh
 | [06-operational-patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists | ~165 | Recommended |
 | [07-smart-context](modules/07-smart-context.md) | Semantic routing, preprocessing | ~155 | Optional |
 | [08-advanced](modules/08-advanced.md) | Vector DB, agent teams | ~160 | Experimental |
-| [09-prompt-caching-ops](modules/09-prompt-caching-ops.md) | Stable prefix + cached token metrics | ~150 | Recommended |
+| [09-memory-compiler](modules/09-memory-compiler.md) | Memory GC, scoring, context index | ~170 | Recommended |
+| [10-context-os](modules/10-context-os.md) | 5-tier context architecture | ~200 | Recommended |
+| [11-prompt-caching](modules/11-prompt-caching.md) | Stable prefix + cached token metrics | ~130 | Recommended |
 
 ### Reading Order
 
@@ -58,7 +60,8 @@ bash evals/run.sh
 - **Robust agents**: Add modules 05-06 (CS algorithms + operational patterns)
 - **Large codebases (100+ files)**: Add module 07 (smart context)
 - **Research/enterprise**: Explore module 08 (experimental)
-- **Long-running/cost-sensitive sessions**: Add module 09 (prompt caching ops)
+- **Long-running multi-session work**: Add modules 09-10 (memory compiler + context OS)
+- **Cost/latency optimization**: Add module 11 (prompt caching)
 
 ## Hooks
 
@@ -124,14 +127,14 @@ Failure → HARD STOP → ROOT_CAUSE_TABLE → ask user
 
 ## Evolution
 
-v3.0 consolidates 6 files (5,268 lines, ~3,000 duplicated) into 10 focused modules (~1,400 lines total — 73% reduction). Key changes:
+v3.0 consolidates legacy guidelines into a modular architecture (currently 12 modules). Key changes:
 
 - Removed unvalidated metrics; retained sourced data (Nuconic, Lindquist)
 - Added 10 CS algorithms mapped to AI agent patterns
 - Added operational patterns from AION-NEOVERSE project
 - Fixed hook implementations (path normalization, error handling)
 - Marked experimental features clearly (modules 07-08)
-- Added prompt caching operations module (09) with usage metrics playbook
+- Added prompt caching playbook module (11) with usage metrics playbook
 - Preserved Nuconic case study as sole validated evidence
 
 ## Sources & Inspiration

@@ -111,12 +111,64 @@ The 5-tier architecture (module 10) naturally supports caching:
 | T3 (COLD) | Never injected → no cache impact |
 | T4 (FROZEN) | Immutable → perfect cache candidate |
 
+## Provider-Specific Token Mapping
+
+| Provider | Field | Meaning |
+|----------|-------|---------|
+| OpenAI | `usage.prompt_tokens_details.cached_tokens` | Input tokens served from cache |
+| OpenAI | `usage.prompt_tokens`, `completion_tokens`, `total_tokens` | Input / output / total |
+| Anthropic | `usage.cache_read_input_tokens` | Input tokens read from cache |
+| Anthropic | `usage.cache_creation_input_tokens` | Tokens used to create cache entry |
+| Anthropic | `usage.input_tokens`, `output_tokens` | Non-cached input / output |
+
+## Normalized JSONL Format
+
+Log each request in a JSONL file with consistent schema:
+
+```json
+{"timestamp":"...","provider":"openai","model":"gpt-5","run_id":"R-123","usage":{"prompt_tokens":3200,"completion_tokens":420,"total_tokens":3620,"prompt_tokens_details":{"cached_tokens":2400}}}
+{"timestamp":"...","provider":"anthropic","model":"claude-sonnet-4-5","run_id":"R-123","usage":{"input_tokens":260,"output_tokens":390,"cache_read_input_tokens":2940,"cache_creation_input_tokens":0}}
+```
+
+Generate a report with:
+
+```bash
+bash evals/cache-usage-report.sh --input evals/data/cache-usage-sample.jsonl
+```
+
+## Trend Interpretation Thresholds
+
+| Metric | Green | Yellow | Red |
+|--------|-------|--------|-----|
+| Weighted cache hit ratio | >= 60% | 30-59% | < 30% |
+| Cold large prompt rate | < 20% | 20-40% | > 40% |
+| Cache key churn | < 30% unique keys | 30-60% | > 60% |
+
+## Common Cache Busters
+
+| Anti-pattern | Effect | Fix |
+|---|---|---|
+| Timestamp/UUID in stable prefix | Every call creates new cache key | Move to TAIL or logs |
+| Reordering sections between runs | Low hit ratio despite similar content | Maintain fixed template |
+| Overwriting full CLAUDE.md for small change | Permanent cache busting | Isolate changes to small topic files |
+| Mixing session data with stable rules | Unpredictable hit rate | Separate HEAD/TAIL |
+
+## Runbook: Sudden Cache Hit Ratio Drop
+
+1. Compare last 24h vs previous 7 days (`weighted_hit_ratio`).
+2. Check diffs in CLAUDE.md, modules, and preprocess hooks.
+3. Detect cache key variability (`cache_key`, `prefix_hash`) if available.
+4. Revert last change to HEAD or separate dynamic part to TAIL.
+5. Confirm improvement over next 50+ requests.
+
 ## Best Practices
 
 1. **Audit your prefix monthly**: check what's before the first dynamic content
 2. **Move timestamps to end**: don't bust cache with date stamps at the top
 3. **Use `context-index.md` as routing table**: it changes less often than full file contents
 4. **Monitor `cached_tokens` trend**: declining cache rate means something destabilized the prefix
+5. **Freeze stable instructions**: use frozen-fragments.md for perfect cache candidates
+6. **Deterministic ordering**: fixed section order, no random IDs, no generated-at timestamps in cacheable blocks
 
 ---
 

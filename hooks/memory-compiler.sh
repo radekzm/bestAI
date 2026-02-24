@@ -86,7 +86,7 @@ score_entry() {
     # Read usage data
     if [ -f "$USAGE_LOG" ]; then
         local line
-        line=$(grep "^${filename}	" "$USAGE_LOG" 2>/dev/null | head -1)
+        line=$(awk -F'\t' -v fn="$filename" '$1 == fn { print; exit }' "$USAGE_LOG" 2>/dev/null)
         if [ -n "$line" ]; then
             last_sess=$(echo "$line" | cut -f2)
             use_count=$(echo "$line" | cut -f3)
@@ -210,6 +210,15 @@ enforce_memory_cap() {
         sed -n "${overflow_start},\$p" "$memory_file"
     } > "${overflow_file}.tmp"
     mv "${overflow_file}.tmp" "$overflow_file"
+
+    # Cap overflow file at 500 lines to prevent unbounded growth
+    local MAX_OVERFLOW_LINES=500
+    local overflow_lines
+    overflow_lines=$(wc -l < "$overflow_file")
+    if [ "$overflow_lines" -gt "$MAX_OVERFLOW_LINES" ]; then
+        tail -n "$MAX_OVERFLOW_LINES" "$overflow_file" > "${overflow_file}.tmp"
+        mv "${overflow_file}.tmp" "$overflow_file"
+    fi
 
     # Truncate MEMORY.md to cap
     head -n "$MAX_MEMORY_LINES" "$memory_file" > "${memory_file}.tmp"
