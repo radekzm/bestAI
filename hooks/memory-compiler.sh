@@ -56,7 +56,10 @@ update_usage() {
     if [ -f "$USAGE_LOG" ]; then
         while IFS=$'\t' read -r fname last_sess count entry_tag; do
             if [ "$fname" = "$filename" ]; then
-                printf '%s\t%s\t%s\t%s\n' "$fname" "$CURRENT_SESSION" "$((count + 1))" "$tag" >> "$tmp"
+                # Never downgrade USER to AUTO (Module 03 Rule #1)
+                local effective_tag="$tag"
+                [ "$entry_tag" = "USER" ] && effective_tag="USER"
+                printf '%s\t%s\t%s\t%s\n' "$fname" "$CURRENT_SESSION" "$((count + 1))" "$effective_tag" >> "$tmp"
                 found=1
             else
                 printf '%s\t%s\t%s\t%s\n' "$fname" "$last_sess" "$count" "$entry_tag" >> "$tmp"
@@ -252,6 +255,9 @@ run_gc() {
                 } >> "$GC_ARCHIVE"
                 archived=$((archived + 1))
 
+                # Delete source file so find() won't rediscover it
+                rm -f "$filepath"
+
                 # Remove from usage log (will be filtered out below)
                 echo "$fname" >> "$gc_tmp"
             fi
@@ -263,7 +269,7 @@ run_gc() {
         local clean_tmp
         clean_tmp=$(mktemp)
         while IFS=$'\t' read -r fname rest; do
-            if ! grep -qF "$fname" "$gc_tmp" 2>/dev/null; then
+            if ! grep -qxF "$fname" "$gc_tmp" 2>/dev/null; then
                 printf '%s\t%s\n' "$fname" "$rest" >> "$clean_tmp"
             fi
         done < "$USAGE_LOG"

@@ -144,7 +144,7 @@ ghost_boost() {
     local basename
     basename=$(basename "$file")
     local hits
-    hits=$(grep -cF "$basename" "$GHOST_LOG" 2>/dev/null || echo 0)
+    hits=$(grep -cxF "$basename" "$GHOST_LOG" 2>/dev/null || echo 0)
     if [ "$hits" -gt 0 ]; then
         echo 4
     else
@@ -172,7 +172,6 @@ recency_boost() {
 
 SCORES_FILE=$(mktemp)
 SELECTED_FILE=$(mktemp)
-trap 'rm -f "$SCORES_FILE" "$SELECTED_FILE"' EXIT
 
 KEYWORDS=$(extract_keywords "$PROMPT" || true)
 if [ -z "$KEYWORDS" ]; then
@@ -180,8 +179,11 @@ if [ -z "$KEYWORDS" ]; then
 fi
 [ -z "$KEYWORDS" ] && exit 0
 
-REGEX=$(echo "$KEYWORDS" | paste -sd'|' -)
-[ -z "$REGEX" ] && exit 0
+# Create keyword file for grep -F (safe: no regex metachar interpretation)
+KEYWORD_FILE=$(mktemp)
+trap 'rm -f "$SCORES_FILE" "$SELECTED_FILE" "$KEYWORD_FILE"' EXIT
+echo "$KEYWORDS" > "$KEYWORD_FILE"
+[ ! -s "$KEYWORD_FILE" ] && exit 0
 
 PROMPT_TRIGRAMS=$(generate_trigrams "$PROMPT")
 INTENT=$(intent_from_prompt "$PROMPT")
@@ -212,7 +214,7 @@ done < <(find "$MEMORY_DIR" -maxdepth 1 -type f -name '*.md' | sort)
 for file in "${CANDIDATES[@]}"; do
     [ -f "$file" ] || continue
 
-    MATCHES=$(grep -Eic "$REGEX" "$file" 2>/dev/null) || MATCHES=0
+    MATCHES=$(grep -icFf "$KEYWORD_FILE" "$file" 2>/dev/null) || MATCHES=0
 
     # Trigram scoring (cap at 5 to avoid overwhelming keyword signal)
     TRI_SCORE=$(trigram_score "$PROMPT_TRIGRAMS" "$file")
@@ -284,7 +286,7 @@ while IFS=$'\t' read -r score file; do
 
     SOURCE_LIST+="- $(basename "$file") (score=$score)"$'\n'
 
-    mapfile -t line_numbers < <(grep -inE "$REGEX" "$file" 2>/dev/null | cut -d: -f1 | head -n 4)
+    mapfile -t line_numbers < <(grep -inFf "$KEYWORD_FILE" "$file" 2>/dev/null | cut -d: -f1 | head -n 4)
 
     if [ "${#line_numbers[@]}" -eq 0 ]; then
         # Trigram-only match: no keyword hits, pack first lines of file

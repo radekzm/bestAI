@@ -90,8 +90,8 @@ for fname in "${MERGE_FILES[@]}"; do
     [ -f "$filepath" ] || continue
     section_name="${fname%.md}"
 
-    # Extract section from merged output
-    section=$(echo "$MERGED" | sed -n "/^## $section_name/,/^## /p" | sed '1d;$d')
+    # Extract section from merged output (awk handles last section correctly)
+    section=$(echo "$MERGED" | awk "/^## ${section_name}$/{found=1;next} /^## /{found=0} found{print}")
     [ -z "$section" ] && continue
 
     # Preserve header and replace content

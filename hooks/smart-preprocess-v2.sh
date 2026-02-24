@@ -146,6 +146,10 @@ append_line() {
 
 while IFS= read -r filename; do
     [ -z "$filename" ] && continue
+    # Strip path components to prevent path traversal (e.g. ../../etc/shadow)
+    filename=$(basename "$filename")
+    # Only allow .md files from memory directory
+    [[ "$filename" == *.md ]] || continue
     filepath="$MEMORY_DIR/$filename"
     [ -f "$filepath" ] || continue
 

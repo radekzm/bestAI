@@ -84,7 +84,7 @@ fi
     echo ""
     echo "## Session $CURRENT_SESSION observations ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
     if [ "$HAIKU_AVAILABLE" -eq 1 ]; then
-        echo "_Compressed by $MODEL_"
+        echo "_Compressed by ${MODEL}_"
     else
         echo "_Raw extraction (Haiku unavailable)_"
     fi
