@@ -58,11 +58,16 @@
 ## Session Rules
 
 1. Read `MEMORY.md` at session start
-2. If runtime profile enabled: run REHYDRATE on session start and SYNC_STATE before `/clear`
-3. Use `/clear` after 3+ compactions (context rot prevention)
-4. One active checklist at a time
-5. Scope before action: state files, changes, verification, rollback plan
-6. Sync state at task end: update memory, commit if stable
+2. **REHYDRATE** (SessionStart hook, automatic if runtime profile enabled):
+   - Read 4 core files: CLAUDE.md, state-of-system-now.md, checklist-now.md, frozen-fragments.md
+   - Zero globs — paths from memory. Confirm: `REHYDRATE: DONE | LOADED: N files`
+3. **SYNC_STATE** (Stop hook, automatic; also run manually before `/clear`):
+   - Update TOP-10 FACTS / TOP-5 PROOFS / TOP-3 BLOCKERS
+   - Replace LAST SESSION DELTA (5-10 lines max)
+   - Commit if stable
+4. Use `/clear` after 3+ compactions (context rot prevention)
+5. One active checklist at a time
+6. Scope before action: state files, changes, verification, rollback plan
 
 ## Frozen Files
 
