@@ -81,6 +81,21 @@ The Memory Compiler generates `context-index.md` which the Smart Context compile
 
 The context-index.md serves as the "menu" that Haiku reads to decide which files to load (see module 07, Approach B).
 
+## E-Tag Cache
+
+The Memory Compiler generates an E-Tag cache to accelerate `preprocess-prompt.sh` scoring. Instead of re-reading files and recomputing trigrams on every prompt, the cache allows O(1) validation via `stat` comparison.
+
+**Cache lifecycle:** Written on Stop hook (`memory-compiler.sh`), read on UserPromptSubmit (`preprocess-prompt.sh`). Cache miss = graceful fallback to original behavior.
+
+| File | Purpose |
+|------|---------|
+| `.file-metadata` | TSV cache: filename, mtime, size, md5 etag, has_user flag, trigram_file path |
+| `.trigram-cache/` | Directory of pre-sorted `.tri` files (one per `.md`), used for `comm -12` set intersection |
+
+**Cache validation:** `stat -c '%Y %s'` compares mtime+size with cached values. If both match, the file hasn't changed and cached trigrams/has_user/mtime are used directly.
+
+**Debugging:** `cat $MEMORY_DIR/.file-metadata` to inspect cache state. Delete `.file-metadata` to force full recomputation on next session.
+
 ## Safety Guarantees
 
 1. `[USER]` entries are **never** auto-deleted

@@ -31,6 +31,15 @@ MEMORY_DIR_DEFAULT="$HOME/.claude/projects/$PROJECT_KEY/memory"
 MEMORY_DIR="${SMART_CONTEXT_MEMORY_DIR:-$MEMORY_DIR_DEFAULT}"
 [ -d "$MEMORY_DIR" ] || exit 0
 
+# --- E-Tag cache library (optional, for accelerated scoring) ---
+ETAG_LIB="$(cd "$(dirname "$0")" && pwd)/../modules/etag-cache-lib.sh"
+ETAG_AVAILABLE=0
+if [ -f "$ETAG_LIB" ]; then
+    source "$ETAG_LIB"
+    etag_init
+    ETAG_AVAILABLE=1
+fi
+
 MAX_FILES=${SMART_CONTEXT_MAX_FILES:-3}
 MAX_TOKENS=${SMART_CONTEXT_MAX_TOKENS:-1200}
 MIN_SCORE=${SMART_CONTEXT_MIN_SCORE:-3}
@@ -210,20 +219,45 @@ while IFS= read -r f; do
     [ "$local_already" -eq 0 ] && CANDIDATES+=("$f")
 done < <(find "$MEMORY_DIR" -maxdepth 1 -type f -name '*.md' | sort)
 
+# Pre-sort prompt trigrams once for comm-based set intersection (if cache available)
+PROMPT_TRIGRAMS_SORTED=""
+if [ "$ETAG_AVAILABLE" = "1" ]; then
+    PROMPT_TRIGRAMS_SORTED=$(echo "$PROMPT_TRIGRAMS" | tr ' ' '\n' | grep -v '^$' | sort -u)
+fi
+
 # Rank by keyword hits + trigram score + file importance + [USER] + recency + ghost.
 for file in "${CANDIDATES[@]}"; do
     [ -f "$file" ] || continue
 
     MATCHES=$(grep -icFf "$KEYWORD_FILE" "$file" 2>/dev/null) || MATCHES=0
 
+    BASENAME=$(basename "$file")
+
+    # Determine cache status for this file
+    CACHE_HIT=""
+    if [ "$ETAG_AVAILABLE" = "1" ]; then
+        CACHE_HIT=$(etag_validate "$BASENAME" "$file")
+    fi
+
     # Trigram scoring (cap at 5 to avoid overwhelming keyword signal)
-    TRI_SCORE=$(trigram_score "$PROMPT_TRIGRAMS" "$file")
+    if [ "$CACHE_HIT" = "valid" ]; then
+        TRI_FILE=$(etag_get_field "$BASENAME" "trigram_file")
+        if [ -n "$TRI_FILE" ] && [ -f "$MEMORY_DIR/$TRI_FILE" ]; then
+            # Set intersection via comm (both inputs must be sorted)
+            TRI_SCORE=$(comm -12 <(echo "$PROMPT_TRIGRAMS_SORTED") \
+                                 <(sort "$MEMORY_DIR/$TRI_FILE") | wc -l)
+            TRI_SCORE=$((TRI_SCORE + 0))  # ensure integer
+        else
+            TRI_SCORE=$(trigram_score "$PROMPT_TRIGRAMS" "$file")
+        fi
+    else
+        TRI_SCORE=$(trigram_score "$PROMPT_TRIGRAMS" "$file")
+    fi
     [ "$TRI_SCORE" -gt 5 ] && TRI_SCORE=5
 
     # Skip file only if both keyword and trigram score are zero
     [ "$MATCHES" -eq 0 ] && [ "$TRI_SCORE" -eq 0 ] && continue
 
-    BASENAME=$(basename "$file")
     BOOST=0
     case "$BASENAME" in
         MEMORY.md) BOOST=6 ;;
@@ -233,12 +267,25 @@ for file in "${CANDIDATES[@]}"; do
         session-log.md) BOOST=1 ;;
     esac
 
-    if grep -q '\[USER\]' "$file" 2>/dev/null; then
-        BOOST=$((BOOST + 2))
+    # [USER] tag check: use cache or fallback to grep
+    if [ "$CACHE_HIT" = "valid" ]; then
+        [ "$(etag_get_field "$BASENAME" "has_user")" = "1" ] && BOOST=$((BOOST + 2))
+    else
+        grep -q '\[USER\]' "$file" 2>/dev/null && BOOST=$((BOOST + 2))
     fi
 
     # Recency boost: +3 for files modified in last 24h
-    REC_BOOST=$(recency_boost "$file")
+    if [ "$CACHE_HIT" = "valid" ]; then
+        local_cached_mtime=$(etag_get_field "$BASENAME" "mtime")
+        local_age=$(( $(date +%s) - local_cached_mtime ))
+        if [ "$local_age" -lt 86400 ]; then
+            REC_BOOST=3
+        else
+            REC_BOOST=0
+        fi
+    else
+        REC_BOOST=$(recency_boost "$file")
+    fi
 
     # ARC ghost boost: +4 for files agent previously read manually
     GHOST_BOOST=$(ghost_boost "$file")

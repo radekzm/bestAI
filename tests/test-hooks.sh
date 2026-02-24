@@ -923,6 +923,215 @@ rm -rf "$PPE_HOME"
 
 # ============================================================
 echo ""
+echo "=== E-Tag cache (etag-cache-lib.sh) ==="
+# ============================================================
+
+ET_HOME=$(mktemp -d)
+ET_PROJECT="$ET_HOME/project"
+mkdir -p "$ET_PROJECT/.claude"
+ET_KEY=$(echo "$ET_PROJECT" | tr '/' '-')
+ET_MEMORY="$ET_HOME/.claude/projects/$ET_KEY/memory"
+mkdir -p "$ET_MEMORY"
+
+cat > "$ET_MEMORY/MEMORY.md" <<'MEM'
+# Project Memory
+- [USER] Keep auth flow unchanged.
+- [AUTO] Database uses PostgreSQL.
+MEM
+
+cat > "$ET_MEMORY/decisions.md" <<'DEC'
+# Decisions
+- [AUTO] Use REST API for backend.
+DEC
+
+cat > "$ET_MEMORY/pitfalls.md" <<'PIT'
+# Pitfalls
+- [USER] Token expiry causes silent failures in login flow.
+PIT
+
+# --- Run memory-compiler to generate cache ---
+echo '{}' | HOME="$ET_HOME" CLAUDE_PROJECT_DIR="$ET_PROJECT" bash "$HOOKS_DIR/memory-compiler.sh" 2>&1 >/dev/null
+
+# Test: etag_compute creates .file-metadata
+TOTAL=$((TOTAL + 1))
+if [ -f "$ET_MEMORY/.file-metadata" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: .file-metadata created"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: .file-metadata NOT created"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: etag_compute creates .trigram-cache/ directory with .tri files
+TOTAL=$((TOTAL + 1))
+TRI_COUNT=$(find "$ET_MEMORY/.trigram-cache" -name '*.tri' 2>/dev/null | wc -l)
+if [ "$TRI_COUNT" -ge 2 ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: .trigram-cache/ has $TRI_COUNT .tri files"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: .trigram-cache/ has $TRI_COUNT .tri files (expected >=2)"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: etag_validate returns "valid" for unchanged file
+source "$HOOKS_DIR/../modules/etag-cache-lib.sh"
+MEMORY_DIR="$ET_MEMORY"
+etag_init
+RESULT=$(etag_validate "MEMORY.md" "$ET_MEMORY/MEMORY.md")
+TOTAL=$((TOTAL + 1))
+if [ "$RESULT" = "valid" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: validate 'valid' for unchanged file"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: validate returned '$RESULT', expected 'valid'"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: etag_validate returns "stale" after touch
+sleep 1
+touch "$ET_MEMORY/MEMORY.md"
+RESULT=$(etag_validate "MEMORY.md" "$ET_MEMORY/MEMORY.md")
+TOTAL=$((TOTAL + 1))
+if [ "$RESULT" = "stale" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: validate 'stale' after touch"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: validate returned '$RESULT', expected 'stale'"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: etag_validate returns "missing" for new file
+cat > "$ET_MEMORY/newfile.md" <<'NEW'
+# New File
+- [AUTO] Something new
+NEW
+RESULT=$(etag_validate "newfile.md" "$ET_MEMORY/newfile.md")
+TOTAL=$((TOTAL + 1))
+if [ "$RESULT" = "missing" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: validate 'missing' for new file"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: validate returned '$RESULT', expected 'missing'"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: has_user flag = 1 for [USER] file
+HAS_USER=$(etag_get_field "pitfalls.md" "has_user")
+TOTAL=$((TOTAL + 1))
+if [ "$HAS_USER" = "1" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: has_user=1 for [USER] file (pitfalls.md)"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: has_user='$HAS_USER', expected '1' (pitfalls.md)"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: has_user flag = 0 for non-[USER] file
+HAS_USER=$(etag_get_field "decisions.md" "has_user")
+TOTAL=$((TOTAL + 1))
+if [ "$HAS_USER" = "0" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: has_user=0 for non-[USER] file (decisions.md)"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: has_user='$HAS_USER', expected '0' (decisions.md)"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: Trigram cache content matches live generation
+# Generate trigrams the old way and compare with cached .tri file
+LIVE_TRIGRAMS=$(head -100 "$ET_MEMORY/decisions.md" | tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' ' ')
+LIVE_TRI_SORTED=$(
+    for word in $LIVE_TRIGRAMS; do
+        len=${#word}
+        if [ "$len" -ge 3 ]; then
+            i=0
+            while [ $((i + 3)) -le "$len" ]; do
+                echo "${word:$i:3}"
+                i=$((i + 1))
+            done
+        fi
+    done | sort -u
+)
+CACHED_TRI=$(cat "$ET_MEMORY/.trigram-cache/decisions.md.tri" 2>/dev/null)
+TOTAL=$((TOTAL + 1))
+if [ "$LIVE_TRI_SORTED" = "$CACHED_TRI" ]; then
+    echo -e "  ${GREEN}PASS${NC} E-Tag: trigram cache matches live generation"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} E-Tag: trigram cache differs from live generation"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: Cache cleaned for GC'd files
+# Set up pitfalls.md as old AUTO entry and run GC
+echo "pitfalls.md	1	1	AUTO" > "$ET_MEMORY/.usage-log"
+echo "25" > "$ET_MEMORY/.session-counter"
+# Re-create pitfalls.md without [USER] tag so GC can archive it
+cat > "$ET_MEMORY/pitfalls.md" <<'PIT2'
+# Pitfalls
+- [AUTO] Watch for token expiry edge cases.
+PIT2
+# Run compiler to build fresh cache
+echo '{}' | HOME="$ET_HOME" CLAUDE_PROJECT_DIR="$ET_PROJECT" bash "$HOOKS_DIR/memory-compiler.sh" 2>&1 >/dev/null
+# Now set up for GC archival again
+echo "pitfalls.md	1	1	AUTO" > "$ET_MEMORY/.usage-log"
+echo "50" > "$ET_MEMORY/.session-counter"
+echo '{}' | HOME="$ET_HOME" CLAUDE_PROJECT_DIR="$ET_PROJECT" MEMORY_COMPILER_GC_AGE=10 bash "$HOOKS_DIR/memory-compiler.sh" 2>&1 >/dev/null
+# After GC, pitfalls.md should be removed from .file-metadata
+TOTAL=$((TOTAL + 1))
+if [ -f "$ET_MEMORY/.file-metadata" ] && grep -q 'pitfalls.md' "$ET_MEMORY/.file-metadata" 2>/dev/null; then
+    echo -e "  ${RED}FAIL${NC} E-Tag: GC'd file still in .file-metadata"
+    FAIL=$((FAIL + 1))
+else
+    echo -e "  ${GREEN}PASS${NC} E-Tag: GC'd file removed from .file-metadata"
+    PASS=$((PASS + 1))
+fi
+
+rm -rf "$ET_HOME"
+
+# Test: Missing cache = graceful fallback (preprocess-prompt still works)
+ETF_HOME=$(mktemp -d)
+ETF_PROJECT="$ETF_HOME/project"
+mkdir -p "$ETF_PROJECT/.claude"
+ETF_KEY=$(echo "$ETF_PROJECT" | tr '/' '-')
+ETF_MEMORY="$ETF_HOME/.claude/projects/$ETF_KEY/memory"
+mkdir -p "$ETF_MEMORY"
+cat > "$ETF_MEMORY/decisions.md" <<'DEC'
+# Decisions
+- [USER] Login flow uses token refresh on 401.
+DEC
+# Explicitly ensure NO .file-metadata exists
+rm -f "$ETF_MEMORY/.file-metadata"
+OUTPUT=$(echo '{"prompt":"Fix login bug in token refresh path"}' | HOME="$ETF_HOME" CLAUDE_PROJECT_DIR="$ETF_PROJECT" bash "$HOOKS_DIR/preprocess-prompt.sh" 2>&1)
+CODE=$?
+assert_exit "E-Tag: missing cache -> graceful fallback" "0" "$CODE"
+assert_contains "E-Tag: missing cache -> still injects context" "$OUTPUT" "[SMART_CONTEXT]"
+rm -rf "$ETF_HOME"
+
+# Test: DRY_RUN skips cache write
+ETD_HOME=$(mktemp -d)
+ETD_PROJECT="$ETD_HOME/project"
+mkdir -p "$ETD_PROJECT/.claude"
+ETD_KEY=$(echo "$ETD_PROJECT" | tr '/' '-')
+ETD_MEMORY="$ETD_HOME/.claude/projects/$ETD_KEY/memory"
+mkdir -p "$ETD_MEMORY"
+cat > "$ETD_MEMORY/MEMORY.md" <<'MEM'
+# Memory
+- Test entry
+MEM
+echo '{}' | HOME="$ETD_HOME" CLAUDE_PROJECT_DIR="$ETD_PROJECT" MEMORY_COMPILER_DRY_RUN=1 bash "$HOOKS_DIR/memory-compiler.sh" 2>&1 >/dev/null
+TOTAL=$((TOTAL + 1))
+if [ -f "$ETD_MEMORY/.file-metadata" ]; then
+    echo -e "  ${RED}FAIL${NC} E-Tag: DRY_RUN created .file-metadata"
+    FAIL=$((FAIL + 1))
+else
+    echo -e "  ${GREEN}PASS${NC} E-Tag: DRY_RUN skips cache write"
+    PASS=$((PASS + 1))
+fi
+rm -rf "$ETD_HOME"
+
+# ============================================================
+echo ""
 echo -e "${YELLOW}=== RESULTS ===${NC}"
 echo -e "Total: $TOTAL | ${GREEN}Pass: $PASS${NC} | ${RED}Fail: $FAIL${NC}"
 [ "$FAIL" -eq 0 ] && echo -e "${GREEN}ALL TESTS PASSED${NC}" || echo -e "${RED}SOME TESTS FAILED${NC}"

@@ -27,6 +27,15 @@ DRY_RUN="${MEMORY_COMPILER_DRY_RUN:-0}"
 GC_AGE_THRESHOLD="${MEMORY_COMPILER_GC_AGE:-20}"
 MAX_MEMORY_LINES=200
 
+# --- E-Tag cache library ---
+ETAG_LIB="$(cd "$(dirname "$0")" && pwd)/../modules/etag-cache-lib.sh"
+ETAG_AVAILABLE=0
+if [ -f "$ETAG_LIB" ]; then
+    source "$ETAG_LIB"
+    etag_init
+    ETAG_AVAILABLE=1
+fi
+
 SESSION_COUNTER="$MEMORY_DIR/.session-counter"
 GC_ARCHIVE="$MEMORY_DIR/gc-archive.md"
 CONTEXT_INDEX="$MEMORY_DIR/context-index.md"
@@ -151,6 +160,11 @@ generate_index() {
             # Update usage tracking
             [ "$DRY_RUN" = "0" ] && update_usage "$basename" "AUTO"
 
+            # Compute E-Tag cache entry (trigrams, has_user, mtime, etag)
+            if [ "$ETAG_AVAILABLE" = "1" ] && [ "$DRY_RUN" = "0" ]; then
+                etag_compute "$basename" "$mdfile"
+            fi
+
             # Classify into topic clusters
             case "$basename" in
                 MEMORY.md|frozen-fragments.md)
@@ -174,6 +188,8 @@ generate_index() {
 
     if [ "$DRY_RUN" = "0" ]; then
         mv "$index_tmp" "$CONTEXT_INDEX"
+        # Persist E-Tag cache after all files are processed
+        [ "$ETAG_AVAILABLE" = "1" ] && etag_persist
     else
         echo "[DRY RUN] Would write context-index.md:"
         cat "$index_tmp"
@@ -263,6 +279,9 @@ run_gc() {
                     fi
                 } >> "$GC_ARCHIVE"
                 archived=$((archived + 1))
+
+                # Remove E-Tag cache entry for archived file
+                [ "$ETAG_AVAILABLE" = "1" ] && etag_remove "$fname"
 
                 # Delete source file so find() won't rediscover it
                 rm -f "$filepath"
