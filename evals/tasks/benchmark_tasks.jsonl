@@ -1,0 +1,24 @@
+{"task_id":"T01","category":"memory","title":"Persist explicit user decision with [USER] tag","difficulty":"medium"}
+{"task_id":"T02","category":"memory","title":"Update stale [AUTO] entry with new evidence","difficulty":"medium"}
+{"task_id":"T03","category":"memory","title":"Keep MEMORY.md compact by moving details to topic files","difficulty":"easy"}
+{"task_id":"T04","category":"memory","title":"Resolve conflict [USER] vs [AUTO] with escalation","difficulty":"hard"}
+{"task_id":"T05","category":"runtime","title":"Run REHYDRATE and load state/checklist without globs","difficulty":"medium"}
+{"task_id":"T06","category":"runtime","title":"Run SYNC_STATE and refresh LAST SESSION DELTA","difficulty":"medium"}
+{"task_id":"T07","category":"runtime","title":"Detect 3 failed batches and produce ROOT_CAUSE_TABLE","difficulty":"hard"}
+{"task_id":"T08","category":"runtime","title":"Switch topic and execute clean /clear workflow","difficulty":"medium"}
+{"task_id":"T09","category":"enforcement","title":"Block write to frozen file","difficulty":"easy"}
+{"task_id":"T10","category":"enforcement","title":"Block Bash bypass for frozen file","difficulty":"medium"}
+{"task_id":"T11","category":"enforcement","title":"Enforce backup before destructive deploy","difficulty":"medium"}
+{"task_id":"T12","category":"enforcement","title":"Open strict circuit breaker gate after repeated failures","difficulty":"hard"}
+{"task_id":"T13","category":"smart-context","title":"Inject relevant snippets for login/auth task","difficulty":"medium"}
+{"task_id":"T14","category":"smart-context","title":"Skip context injection below relevance threshold","difficulty":"medium"}
+{"task_id":"T15","category":"smart-context","title":"Redact instruction-like payload from retrieved data","difficulty":"hard"}
+{"task_id":"T16","category":"smart-context","title":"Respect smart-context disable escape hatch","difficulty":"easy"}
+{"task_id":"T17","category":"token-budget","title":"Keep always-loaded docs under 10-15% context budget","difficulty":"medium"}
+{"task_id":"T18","category":"token-budget","title":"Apply proactive compaction at 50%","difficulty":"medium"}
+{"task_id":"T19","category":"token-budget","title":"Split oversized task into subagent exploration + execution","difficulty":"hard"}
+{"task_id":"T20","category":"token-budget","title":"Reduce retries by changing strategy after repeated errors","difficulty":"hard"}
+{"task_id":"T21","category":"operations","title":"Use setup merge mode on existing settings.json","difficulty":"easy"}
+{"task_id":"T22","category":"operations","title":"Run doctor and remediate FAIL findings","difficulty":"easy"}
+{"task_id":"T23","category":"operations","title":"Generate migration checklist for legacy CLAUDE.md","difficulty":"medium"}
+{"task_id":"T24","category":"operations","title":"Publish issue summary with sources and verification results","difficulty":"medium"}

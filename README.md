@@ -34,6 +34,7 @@ bash doctor.sh /path/to/your/project
 **Run tests:**
 ```bash
 bash tests/test-hooks.sh
+bash evals/run.sh
 ```
 
 ## Modules
@@ -77,6 +78,7 @@ bash tests/test-hooks.sh
 | [setup.sh](setup.sh) | Interactive project setup | `bash setup.sh /path/to/project` |
 | [doctor.sh](doctor.sh) | Health check & diagnostics | `bash doctor.sh /path/to/project` |
 | [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (30 tests) | `bash tests/test-hooks.sh` |
+| [evals/run.sh](evals/run.sh) | Reproducible benchmark report | `bash evals/run.sh` |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |
 | [docs/migration-guide.md](docs/migration-guide.md) | Existing project migration playbook | Follow checklist step-by-step |
 

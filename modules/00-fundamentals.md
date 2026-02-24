@@ -82,6 +82,15 @@ Tokenomics research (2026) reports a major share of spend in iterative refinemen
 
 > **"Lazy loading, not removal"** — agent needs trigger awareness upfront, detailed protocols load on-demand.
 
+## Evidence Register
+
+| Claim | Status | Evidence |
+|------|--------|----------|
+| Hook enforcement outperforms advisory docs in production | validated locally | Nuconic case study metrics in this module |
+| Auto-compaction appears around 64-75% occupancy | external | Anthropic docs / observed sessions |
+| Trigger-table style reduces static token load | heuristic | Community measurements (Lindquist) |
+| Runtime optimization must be eval-driven | external | Anthropic eval guidance |
+
 ## Validated Data: Nuconic Case Study
 
 | Metric | Value | Insight |

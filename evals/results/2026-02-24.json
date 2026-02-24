@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-02-24T11:37:48Z",
+  "tasks_file": "/root/bestAI/evals/tasks/benchmark_tasks.jsonl",
+  "input_dir": "/root/bestAI/evals/data",
+  "output_file": "/root/bestAI/evals/results/2026-02-24.md",
+  "expected_tasks": 24,
+  "metrics": {
+    "baseline": {
+      "runs": 24,
+      "unique_tasks": 24,
+      "success_count": 20,
+      "success_rate": 83.33333333333334,
+      "avg_input_tokens": 2262.5,
+      "avg_output_tokens": 657.5,
+      "avg_total_tokens": 2920,
+      "avg_latency_ms": 4075,
+      "p95_latency_ms": 4740,
+      "avg_retries": 1
+    },
+    "hooks_only": {
+      "runs": 24,
+      "unique_tasks": 24,
+      "success_count": 21,
+      "success_rate": 87.5,
+      "avg_input_tokens": 1967.5,
+      "avg_output_tokens": 625,
+      "avg_total_tokens": 2592.5,
+      "avg_latency_ms": 3600,
+      "p95_latency_ms": 4170,
+      "avg_retries": 0.5
+    },
+    "smart_context": {
+      "runs": 24,
+      "unique_tasks": 24,
+      "success_count": 22,
+      "success_rate": 91.66666666666666,
+      "avg_input_tokens": 1697.5,
+      "avg_output_tokens": 615,
+      "avg_total_tokens": 2312.5,
+      "avg_latency_ms": 3345,
+      "p95_latency_ms": 3896,
+      "avg_retries": 0.5
+    }
+  }
+}

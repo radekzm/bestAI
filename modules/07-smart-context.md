@@ -178,6 +178,15 @@ Community filled this gap with open-source projects (claude-mem 4700+ stars, cla
 - OWASP GenAI Top 10 (prompt injection risk model): https://genai.owasp.org/llm-top-10/
 - Anthropic Hooks docs (UserPromptSubmit behavior): https://docs.anthropic.com/en/docs/claude-code/hooks
 
+## Evidence Register
+
+| Claim | Status | Evidence |
+|------|--------|----------|
+| UserPromptSubmit stdout is injected into model context | external | Anthropic hooks docs |
+| Guardrails are required for retrieval safety | external | OWASP GenAI Top 10 |
+| Lightweight retrieval + ranking is sufficient for many repos | validated locally | `hooks/preprocess-prompt.sh` + tests |
+| Semantic/vector layer improves large-codebase recall | heuristic | community benchmarks and practice |
+
 ## When Smart Context IS vs ISN'T Worth It
 
 | Project Size | Smart Context? | Why |
