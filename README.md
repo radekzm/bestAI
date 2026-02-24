@@ -46,15 +46,15 @@ Hooks + exit 2 = enforcement (deterministic, cannot be bypassed)
 
 | Module | Topic | Lines | Status |
 |--------|-------|-------|--------|
-| [00-fundamentals](modules/00-fundamentals.md) | Context engineering, token budget | ~100 | Core |
-| [01-file-architecture](modules/01-file-architecture.md) | File hierarchy, progressive disclosure | ~120 | Core |
+| [00-fundamentals](modules/00-fundamentals.md) | Context engineering, token budget | ~85 | Core |
+| [01-file-architecture](modules/01-file-architecture.md) | File hierarchy, progressive disclosure | ~110 | Core |
 | [02-session-management](modules/02-session-management.md) | Sessions, compaction, subagents | ~130 | Core |
 | [03-persistence](modules/03-persistence.md) | Memory layers, Weight & Source | ~130 | Core |
-| [04-enforcement](modules/04-enforcement.md) | Hooks, frozen files, Nuconic data | ~150 | Core |
-| [05-cs-algorithms](modules/05-cs-algorithms.md) | 10 CS algorithms for AI agents | ~130 | Recommended |
-| [06-operational-patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists | ~140 | Recommended |
-| [07-smart-context](modules/07-smart-context.md) | Semantic routing, preprocessing | ~140 | Optional |
-| [08-advanced](modules/08-advanced.md) | Vector DB, agent teams | ~150 | Experimental |
+| [04-enforcement](modules/04-enforcement.md) | Hooks, frozen files, Nuconic data | ~170 | Core |
+| [05-cs-algorithms](modules/05-cs-algorithms.md) | 10 CS algorithms for AI agents | ~140 | Recommended |
+| [06-operational-patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists | ~165 | Recommended |
+| [07-smart-context](modules/07-smart-context.md) | Semantic routing, preprocessing | ~155 | Optional |
+| [08-advanced](modules/08-advanced.md) | Vector DB, agent teams | ~160 | Experimental |
 
 ### Reading Order
 
@@ -106,9 +106,9 @@ Failure → HARD STOP → ROOT_CAUSE_TABLE → ask user
 
 ## Evolution
 
-v3.0 consolidates 6 files (5,268 lines, ~3,000 duplicated) into 9 focused modules (~700 lines total). Key changes:
+v3.0 consolidates 6 files (5,268 lines, ~3,000 duplicated) into 9 focused modules (~1,250 lines total — 76% reduction). Key changes:
 
-- Removed unvalidated metrics ("70% improvement", "99% improvement")
+- Removed unvalidated metrics; retained sourced data (Nuconic, Lindquist)
 - Added 10 CS algorithms mapped to AI agent patterns
 - Added operational patterns from AION-NEOVERSE project
 - Fixed hook implementations (path normalization, error handling)

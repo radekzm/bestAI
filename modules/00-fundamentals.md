@@ -75,7 +75,7 @@ IDEAL DISTRIBUTION:
 | Sessions analyzed | 234 + 383 subagents | ~8 sessions/day |
 | Total tool calls | 16,761 | Bash 56.5%, Read 12.1% |
 | Error rate | 7.7% (1,298 errors) | Bash exit code 1 = 68% |
-| CLAUDE.md compliance | **6%** | 31/33 deploy sessions without backup |
+| CLAUDE.md backup compliance | **6%** | 31/33 deploy sessions without backup |
 | Sessions with compaction | 50 (21%) | Every 5th session loses context |
 
 **Critical insight**: Documentation ≠ enforcement. Critical rules MUST be enforced by hooks, not text.

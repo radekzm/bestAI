@@ -29,6 +29,8 @@
 
 ## Context Loading
 
+<!-- Adapt paths below to your project's bestAI location -->
+
 | Trigger | Module |
 |---------|--------|
 | Architecture questions | → Read `modules/00-fundamentals.md` |

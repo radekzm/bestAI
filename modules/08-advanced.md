@@ -158,4 +158,4 @@ Team Lead (main session)
 ---
 
 *This module is experimental. Validate everything against your specific use case.*
-*See [modules 00-06](.) for production-ready guidelines.*
+*See [modules 00-06](../modules/) for production-ready guidelines.*

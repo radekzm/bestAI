@@ -23,7 +23,7 @@ Vector:  [0.23, -0.45, ...] ↔ [0.25, -0.43, ...] ← semantic search WILL find
 
 **stdout from UserPromptSubmit hook is added to Claude's context**. This is the injection point for smart context.
 
-## 3 Approaches (simplest first)
+## 4 Approaches (simplest first)
 
 ### A: Hook + grep (10 min setup)
 
@@ -38,7 +38,7 @@ MEMORY_DIR="$HOME/.claude/projects/$(echo $CLAUDE_PROJECT_DIR | tr '/' '-')/memo
 [ ! -d "$MEMORY_DIR" ] && exit 0
 
 KEYWORDS=$(echo "$PROMPT" | tr ' ' '\n' | sort -u | tr '\n' '|' | sed 's/|$//')
-FOUND=$(grep -rli "$KEYWORDS" "$MEMORY_DIR"/*.md 2>/dev/null | head -3)
+FOUND=$(grep -liE "$KEYWORDS" "$MEMORY_DIR"/*.md 2>/dev/null | head -3)
 
 if [ -n "$FOUND" ]; then
     echo "[CONTEXT] Relevant memory:"

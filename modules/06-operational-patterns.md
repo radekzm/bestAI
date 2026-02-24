@@ -17,25 +17,33 @@ When starting a new session or after `/clear`, the agent must recover context im
 SessionStart:
   1. Read MEMORY.md (project index, max 200 lines)
   2. Read frozen-fragments.md (what NOT to touch)
-  3. Read session-log.md (last 20 entries — recent decisions)
-  4. Read WAL if exists (recovery from compaction)
-  → Total: 4 file reads, zero globs, deterministic
+  3. (Optional) Read session-log.md (last 20 entries — recent decisions)
+  4. (Optional) Read WAL if exists (recovery from compaction)
+  → Minimal: 2 file reads. Full: 4 file reads. Zero globs, deterministic.
 ```
 
 ### Implementation (SessionStart hook)
 
 ```bash
 #!/bin/bash
-# hooks/rehydrate.sh
+# hooks/rehydrate.sh — minimal implementation (reads 2 core files)
+# Extend with session-log.md and WAL reads for full REHYDRATE
 MEMORY_DIR="$HOME/.claude/projects/$(echo $CLAUDE_PROJECT_DIR | tr '/' '-')/memory"
+WAL_DIR="$HOME/.claude/projects/$(echo $CLAUDE_PROJECT_DIR | tr '/' '-')"
 [ ! -d "$MEMORY_DIR" ] && exit 0
 
 echo "=== SESSION REHYDRATE ==="
+# Step 1: MEMORY.md (always)
 [ -f "$MEMORY_DIR/MEMORY.md" ] && head -50 "$MEMORY_DIR/MEMORY.md"
+# Step 2: Frozen files (always)
 [ -f "$MEMORY_DIR/frozen-fragments.md" ] && {
   echo "--- FROZEN FILES (do not edit) ---"
-  grep -A0 "FROZEN" "$MEMORY_DIR/frozen-fragments.md" | head -10
+  grep -E '^\s*-\s*`' "$MEMORY_DIR/frozen-fragments.md" | head -10
 }
+# Step 3: Session log (optional — uncomment to enable)
+# [ -f "$MEMORY_DIR/session-log.md" ] && tail -20 "$MEMORY_DIR/session-log.md"
+# Step 4: WAL recovery (optional — uncomment to enable)
+# [ -f "$WAL_DIR/wal.log" ] && { echo "--- WAL (last 10) ---"; tail -10 "$WAL_DIR/wal.log"; }
 echo "=== END REHYDRATE ==="
 exit 0
 ```
@@ -151,7 +159,7 @@ This prevents confirmation bias and groupthink in agent teams.
 | REHYDRATE 4 files | Bootstrap/Cold Start | This module |
 | SYNC_STATE commit | WAL checkpoint | [05-cs-algorithms](05-cs-algorithms.md) |
 | CONF scoring | Feature Flags | [05-cs-algorithms](05-cs-algorithms.md) |
-| DEVIL'S ADVOCATE | Raft validation node | [05-cs-algorithms](05-cs-algorithms.md) |
+| DEVIL'S ADVOCATE | Adversarial validation | This module |
 
 ---
 

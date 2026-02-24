@@ -77,26 +77,14 @@
 
 ### Backup Before Destructive Operations
 
+See `hooks/backup-enforcement.sh` for the full implementation. Key design:
+
 ```bash
-#!/bin/bash
-# hooks/backup-enforcement.sh — PreToolUse hook
-# Requires backup before deploy/restart/migrate
-
-INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-[ -z "$COMMAND" ] && exit 0
-
-# Check if destructive operation
-if echo "$COMMAND" | grep -qE '(restart|migrate|deploy|rsync.*prod)'; then
-  # Check if backup was done in this session
-  BACKUP_FLAG="/tmp/claude-backup-done-$$"
-  if [ ! -f "$BACKUP_FLAG" ]; then
-    echo "BLOCKED: Run backup first (pg_dump). Then retry." >&2
-    echo "After backup, the operation will be allowed." >&2
-    exit 2
-  fi
-fi
-exit 0
+# hooks/backup-enforcement.sh — PreToolUse hook (Bash matcher)
+# Fails CLOSED: blocks when jq missing or input malformed
+# Uses project-specific flag (not PID or session ID)
+# Checks backup recency (must be within 4 hours)
+# See hooks/ directory for complete, tested implementation
 ```
 
 ### Work Hours Protection
@@ -149,11 +137,21 @@ for hook in "$HOOKS_DIR"/*.sh; do
   }
 done
 
-# Check jq availability (required by most hooks)
-command -v jq >/dev/null 2>&1 || {
-  echo "WARNING: jq not installed — hooks may fail silently"
-  FAILED=$((FAILED + 1))
-}
+# Check required dependencies
+for dep in jq; do
+  command -v "$dep" >/dev/null 2>&1 || {
+    echo "CRITICAL: $dep not installed — enforcement hooks will BLOCK all operations (fail-closed design)"
+    FAILED=$((FAILED + 1))
+  }
+done
+
+# Check optional dependencies
+for dep in realpath python3; do
+  command -v "$dep" >/dev/null 2>&1 || {
+    echo "WARNING: $dep not installed — path normalization may be degraded"
+    FAILED=$((FAILED + 1))
+  }
+done
 
 [ "$FAILED" -gt 0 ] && echo "Hook health check: $FAILED issues found"
 exit 0

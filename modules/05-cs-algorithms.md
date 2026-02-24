@@ -1,7 +1,8 @@
 # Module 05: CS Algorithms for AI Agents
 
 > Use this module when implementing robust agent behaviors.
-> Each algorithm includes: Problem → CS Origin → Agent Implementation → Hook/Rule.
+> P0 algorithms include full implementation details (Problem → CS Origin → Agent Implementation → Hook/Rule).
+> P1/P2 algorithms provide conceptual mapping for future implementation.
 
 <!-- agents-md-compat -->
 
@@ -15,13 +16,14 @@
 - **CS Origin**: Michael Nygard, "Release It!" (2007), distributed systems
 - **States**: CLOSED (normal) → OPEN (failing, block calls) → HALF-OPEN (test one call)
 - **Agent Implementation**: Track consecutive failures per error pattern. After N failures → STOP → show alternative → ask user
-- **Hook**: PreToolUse — count failures in `/tmp/circuit-state`, block after threshold
+- **Hook**: PostToolUse (advisory) — tracks failures in `~/.cache/claude-circuit-breaker/`, injects STOP guidance into context after threshold. For deterministic blocking, pair with a PreToolUse hook that checks state.
 
 ```bash
 # hooks/circuit-breaker.sh — see hooks/ directory for full implementation
 # Tracks: pattern → failure_count → state (CLOSED/OPEN/HALF-OPEN)
-# OPEN state: exit 2 + show alternative approach
+# OPEN state: advisory output telling agent to STOP + ROOT_CAUSE_TABLE
 # HALF-OPEN: allow 1 attempt, if success → CLOSED
+# NOTE: PostToolUse = advisory (context injection), not deterministic block
 ```
 
 ### 2. Write-Ahead Log (WAL)
@@ -29,12 +31,13 @@
 - **Problem**: Destructive action without rollback; memory lost after compaction
 - **CS Origin**: Database systems (PostgreSQL, SQLite) — log intent before execution
 - **Agent Implementation**: Before any destructive action → write intent + timestamp to WAL file
-- **Hook**: PreToolUse on Write/Edit to memory/ — append to `.claude/wal.log`
+- **Hook**: PreToolUse on Bash|Write|Edit — append to `~/.claude/projects/<project>/wal.log`
 
 ```
 WAL Entry Format:
-[2026-02-23T14:32:01] [LSN:47] [DECISION] [USER] Stack: Rails 8, not changeable
-[2026-02-23T14:35:22] [LSN:48] [DISCOVERY] [AUTO] Port 3000 busy, using 3001
+[2026-02-23T14:32:01] [LSN:47] [DESTRUCTIVE] [BASH] rm -rf /tmp/old-cache
+[2026-02-23T14:35:22] [LSN:48] [WRITE] [FILE] src/auth/login.ts
+[2026-02-23T14:36:05] [LSN:49] [MODIFY] [BASH] git commit -m "fix auth"
 ```
 
 **Recovery**: After compaction or `/clear`, SessionStart hook reads WAL from last checkpoint.
@@ -42,14 +45,18 @@ WAL Entry Format:
 ### 3. ARC (Adaptive Replacement Cache)
 
 - **Problem**: Context window fills with stale/irrelevant information
-- **CS Origin**: IBM Research (2003) — balances frequency vs recency
-- **Agent Implementation**: Track both recently-used and frequently-used context files. Maintain "ghost lists" — what was evicted and later needed
+- **CS Origin**: IBM Research, Megiddo & Modha (2003) — dynamically partitions cache between LRU and LFU sublists
+- **Agent Implementation**: Track both recently-used and frequently-used context files. Maintain "ghost lists" (B1, B2) — what was evicted and later needed
 - **Application**: Memory eviction policy; smart context preprocessor scoring
 
 ```
-Scoring: score(file) = α × recency + (1-α) × frequency
-Ghost list: if agent manually loads a file preprocessor skipped → boost that file's score
-Adaptive: α adjusts based on ghost list hits (more recency misses → lower α)
+ARC-inspired heuristic for AI agents:
+- T1 (recent): files loaded in current/last session
+- T2 (frequent): files loaded in 3+ sessions
+- B1 (ghost-recent): recently evicted files agent later needed
+- B2 (ghost-frequent): frequently used files agent later needed
+- Adaptive: ghost list hits shift the partition point (not a weighted score)
+Note: This is an ARC-inspired heuristic, not a faithful ARC implementation.
 ```
 
 ### 4. Exponential Backoff + Jitter

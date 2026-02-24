@@ -46,7 +46,7 @@ Deeper files override conflicts from higher levels. Layers are additive.
 
 | Rule | Details |
 |------|---------|
-| **Max 150 lines** | Longer → Claude ignores rules (lost in noise) |
+| **Max 100 lines** | Longer → Claude ignores rules (lost in noise) |
 | **Trigger tables** | Tables instead of narratives = **70% reduction** |
 | **Lazy loading** | CLAUDE.md = minimal triggers; details via Skills |
 | **Test each line** | "Will removing this line cause errors?" → if not, cut |

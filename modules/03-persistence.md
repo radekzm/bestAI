@@ -107,15 +107,7 @@ Agent wants to change entry
 
 ## "Tell, Don't Hope" — The Most Important Rule
 
-Don't rely on the agent "figuring out" what to save:
-
-```markdown
-IMPORTANT: After every significant decision, user preference, or pitfall discovery —
-save to the appropriate file in memory/ WITHOUT asking the user. Tag [USER] or [AUTO].
-Don't wait for session end. Save AS YOU GO.
-```
-
-This turns auto-memory from **"might save"** to **"always saves"**.
+Don't rely on the agent "figuring out" what to save. Use the CLAUDE.md rule above (L2 section) — it turns auto-memory from **"might save"** to **"always saves"**.
 
 ## Common Mistakes
 

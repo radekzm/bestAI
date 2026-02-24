@@ -118,7 +118,7 @@ Two sessions with separate contexts:
 |---|---------|---------|-----|
 | 1 | Kitchen Sink Session | Mixed tasks in one session | `/clear` between tasks |
 | 2 | Correction Loop | 3+ fixes of same thing | Max 2, then `/clear` + better prompt |
-| 3 | Overloaded CLAUDE.md | >150 lines, agent ignores | Trim, move to Skills/Rules |
+| 3 | Overloaded CLAUDE.md | >100 lines, agent ignores | Trim, move to Skills/Rules |
 | 4 | Trust-then-verify gap | Looks correct, fails edge cases | Always provide tests |
 | 5 | Unbounded exploration | "Investigate how this works" without scope | Scope narrowly OR use subagent |
 | 6 | Too many MCP servers | 15 servers = 50%+ context on schemas | Max 3-4, rest via CLI |
