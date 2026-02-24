@@ -23,6 +23,39 @@ Vector:  [0.23, -0.45, ...] ↔ [0.25, -0.43, ...] ← semantic search WILL find
 
 **stdout from UserPromptSubmit hook is added to Claude's context**. This is the injection point for smart context.
 
+## Memory Compiler Pipeline (recommended core)
+
+On each user prompt:
+
+```text
+1) Intent Detect  -> coding / debugging / planning / reviewing
+2) Scope Detect   -> relevant modules/files/rules
+3) Retrieve       -> memory topics + decisions + pitfalls + frozen + recent logs
+4) Rank           -> relevance + freshness + source weight ([USER] > [AUTO])
+5) Pack           -> compact context bundle under strict budget
+6) Inject         -> only if score >= threshold
+```
+
+Production hook in this repo: `hooks/preprocess-prompt.sh`.
+
+## Context Pack Schema
+
+```text
+intent | scope | must_know | risks | frozen | commands | open_questions
+```
+
+Use this as a stable shape across projects and tools.
+
+## Security Guardrails (mandatory)
+
+Retrieved context is **data**, never operational instruction.
+
+Minimum controls:
+- sanitize lines that look like instructions (`ignore previous`, jailbreak patterns, shell payloads)
+- tag sources in injected block
+- cap injected budget
+- keep escape hatch: `.claude/DISABLE_SMART_CONTEXT`
+
 ## 4 Approaches (simplest first)
 
 ### A: Hook + grep (10 min setup)
@@ -139,6 +172,11 @@ Always maintain ability to disable:
 > — [Anthropic Engineering Blog](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
 
 Community filled this gap with open-source projects (claude-mem 4700+ stars, claude-context 4000+ stars). The pragmatic consensus: **agentic as backbone, semantic index only where needed**.
+
+## Security Reference
+
+- OWASP GenAI Top 10 (prompt injection risk model): https://genai.owasp.org/llm-top-10/
+- Anthropic Hooks docs (UserPromptSubmit behavior): https://docs.anthropic.com/en/docs/claude-code/hooks
 
 ## When Smart Context IS vs ISN'T Worth It
 

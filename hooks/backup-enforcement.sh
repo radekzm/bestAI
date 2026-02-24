@@ -7,24 +7,46 @@
 
 set -euo pipefail
 
-# Fail closed: if jq is missing, block destructive ops
 if ! command -v jq &>/dev/null; then
     echo "BLOCKED: jq is not installed. Cannot validate backup status." >&2
     exit 2
 fi
 
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>&1) || {
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || {
     echo "BLOCKED: Failed to parse hook input." >&2
     exit 2
 }
 [ -z "$COMMAND" ] && exit 0
 
-# Check if destructive operation
-if echo "$COMMAND" | grep -qE '(restart|migrate|deploy|rsync.*prod|docker.*push)'; then
-    # Use project dir hash for session-independent, project-specific flag
-    PROJECT_HASH=$(echo "${CLAUDE_PROJECT_DIR:-.}" | md5sum 2>/dev/null | cut -c1-16 || echo "default")
-    BACKUP_FLAG="/tmp/claude-backup-done-${PROJECT_HASH}"
+is_destructive() {
+    echo "$1" | grep -Eqi '(restart|migrate|deploy|rsync.*prod|docker.*(push|kill|rm)|systemctl\s+(restart|stop)|dropdb|truncate\s+)'
+}
+
+project_hash() {
+    local src="$1"
+    if command -v md5sum >/dev/null 2>&1; then
+        echo "$src" | md5sum | awk '{print substr($1,1,16)}'
+    elif command -v md5 >/dev/null 2>&1; then
+        echo -n "$src" | md5 -q | cut -c1-16
+    elif command -v shasum >/dev/null 2>&1; then
+        echo "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
+    else
+        # Last-resort portable fallback (still project-specific, never "default")
+        echo "$src" | cksum | awk '{print $1}'
+    fi
+}
+
+if is_destructive "$COMMAND"; then
+    PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
+    PROJECT_HASH=$(project_hash "$PROJECT_DIR")
+
+    BACKUP_FLAG_DIR="${BACKUP_FLAG_DIR:-/tmp}"
+    BACKUP_FLAG="${BACKUP_FLAG_FILE:-$BACKUP_FLAG_DIR/claude-backup-done-${PROJECT_HASH}}"
+
+    FRESH_HOURS=${BACKUP_FRESHNESS_HOURS:-4}
+    [[ "$FRESH_HOURS" =~ ^[0-9]+$ ]] || FRESH_HOURS=4
+    MAX_AGE=$((FRESH_HOURS * 3600))
 
     if [ ! -f "$BACKUP_FLAG" ]; then
         echo "BLOCKED: Destructive operation requires backup first." >&2
@@ -35,20 +57,18 @@ if echo "$COMMAND" | grep -qE '(restart|migrate|deploy|rsync.*prod|docker.*push)
         echo "" >&2
         echo "Then: touch $BACKUP_FLAG" >&2
         echo "After that, the operation will be allowed for this project." >&2
-        echo "Note: flag resets on reboot." >&2
+        echo "Note: flag location is configurable with BACKUP_FLAG_DIR/BACKUP_FLAG_FILE." >&2
         exit 2
     fi
 
-    # Check backup recency (must be within last 4 hours)
-    if [ -f "$BACKUP_FLAG" ]; then
-        BACKUP_TIME=$(stat -c %Y "$BACKUP_FLAG" 2>/dev/null || stat -f %m "$BACKUP_FLAG" 2>/dev/null || echo 0)
-        NOW=$(date +%s)
-        AGE=$((NOW - BACKUP_TIME))
-        if [ "$AGE" -gt 14400 ]; then  # 4 hours
-            echo "BLOCKED: Backup flag is ${AGE}s old (>4 hours). Run a fresh backup." >&2
-            echo "Then: touch $BACKUP_FLAG" >&2
-            exit 2
-        fi
+    BACKUP_TIME=$(stat -c %Y "$BACKUP_FLAG" 2>/dev/null || stat -f %m "$BACKUP_FLAG" 2>/dev/null || echo 0)
+    NOW=$(date +%s)
+    AGE=$((NOW - BACKUP_TIME))
+
+    if [ "$AGE" -gt "$MAX_AGE" ]; then
+        echo "BLOCKED: Backup flag is ${AGE}s old (>${MAX_AGE}s). Run a fresh backup." >&2
+        echo "Then: touch $BACKUP_FLAG" >&2
+        exit 2
     fi
 fi
 

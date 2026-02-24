@@ -24,11 +24,12 @@ L3: Stop Hook Pipeline         — deterministic save (optional)
 - Built into Claude Code, works automatically
 - Saves every ~5,000 tokens: title, status, decisions
 - Survives `/compact`
+- Does **not** survive `/clear` (critical facts must live in L2+)
 - Limitation: "reference material", not hard instructions
 
 ### L2: Auto Memory (KEY LAYER)
 
-**Structure**:
+**Canonical structure**:
 ```
 ~/.claude/projects/<project>/memory/
 ├── MEMORY.md              # Index — max 200 lines, ALWAYS loaded
@@ -38,6 +39,8 @@ L3: Stop Hook Pipeline         — deterministic save (optional)
 ├── frozen-fragments.md    # Registry of frozen files
 └── session-log.md         # Chronological change log
 ```
+
+`memory/frozen-fragments.md` is canonical. `.claude/frozen-fragments.md` is legacy fallback for compatibility.
 
 **MEMORY.md format**:
 ```markdown
@@ -90,6 +93,34 @@ RULE #3: Conflict → [USER] ALWAYS wins
 RULE #4: Changing [USER] → STOP → ask user → log in session-log.md
 ```
 
+## Memory Entry Schema (recommended)
+
+Use structured entries for deterministic ranking and safe updates:
+
+```text
+timestamp | source_tag | confidence | scope | statement | evidence_ref
+```
+
+Example:
+
+```text
+2026-02-24T12:10:00Z | [USER] | 0.98 | deploy | Backups required before restart | docs/runbook.md#backup
+```
+
+## Selective Forgetting (required for long-running projects)
+
+Without forgetting, memory quality degrades even if storage grows.
+
+Suggested policy:
+- Remove stale `[AUTO]` entries with no supporting evidence after N sessions
+- Merge duplicates (same statement, different wording)
+- Keep `[USER]` entries unless user explicitly updates them
+- Log removals/replacements in `session-log.md`
+
+Minimal cadence:
+- Every 5 sessions: review newest `[AUTO]` entries
+- Every 20 sessions: defragment topic files and archive obsolete notes
+
 ### Escalation Flow
 
 ```
@@ -108,6 +139,16 @@ Agent wants to change entry
 ## "Tell, Don't Hope" — The Most Important Rule
 
 Don't rely on the agent "figuring out" what to save. Use the CLAUDE.md rule above (L2 section) — it turns auto-memory from **"might save"** to **"always saves"**.
+
+## Decision Extraction Playbook
+
+When bootstrapping memory in an existing repo, extract decisions from:
+- git history (`git log --oneline --since="90 days ago"`)
+- code comments with rationale ("because", "instead of", "decision")
+- PR/issue descriptions
+- runbooks and architecture docs
+
+Store only load-bearing decisions with reason + evidence. Skip obvious facts already inferable from code.
 
 ## Common Mistakes
 

@@ -37,6 +37,16 @@ IDEAL DISTRIBUTION:
 
 **Key metric**: Claude Code auto-compacts at ~64-75% fill. Stopping at 75% leaves ~50k tokens free for reasoning quality.
 
+### Token Budget Policy (operational thresholds)
+
+| Range | Action | Enforcement |
+|------|--------|-------------|
+| 0-40% | Normal work | — |
+| 40-50% | Proactive compaction recommended | Advisory |
+| 50-64% | Warning + selective trimming | Monitoring |
+| 64-75% | Auto-compaction likely | System behavior |
+| 75%+ | Hard guard: split topic or `/clear` | Team policy / hook rule |
+
 ## Context Quality Hierarchy
 
 1. **Correctness** — false information is worst
@@ -53,8 +63,12 @@ IDEAL DISTRIBUTION:
 | Large JSON from tools | High | Parse before passing |
 | MCP tool definitions | Fixed (per session) | Limit server count |
 | Hook injections | Cumulative | Eliminate duplicates |
-| Error corrections | Cumulative | Max 2, then `/clear` |
+| Error corrections | Cumulative | Max 3, then STOP + ROOT_CAUSE_TABLE |
 | Unbounded exploration | Uncontrolled | Scope + subagent |
+
+### Where Tokens Go (empirical pointer)
+
+Tokenomics research (2026) reports a major share of spend in iterative refinement loops (edit-test-fix), not initial generation. Design your workflow to reduce retries, not only prompt size.
 
 ## Token Reduction Techniques (Documented Results)
 

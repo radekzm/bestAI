@@ -132,6 +132,7 @@ Team Lead (main session)
 - Shared memory via files (MEMORY.md)
 - Team lead orchestrates via `claude -p`
 - 5-8 agents max (diminishing returns beyond)
+- Use `templates/agent-teams-output.md` for consistent aggregation format
 
 **CAVEAT**: Claude Code Agent Teams is still evolving. Manual coordination overhead may exceed benefits for most projects. Best suited for large refactoring or migration tasks.
 

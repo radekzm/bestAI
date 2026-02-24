@@ -24,9 +24,9 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Same error 10+ times in a row | No failure escalation | "3 batches → STOP" rule → [06-patterns](modules/06-operational-patterns.md) |
+| Same error 10+ times in a row | No failure escalation | "3 batches → STOP" + strict gate (`circuit-breaker-gate.sh`) → [06-patterns](modules/06-operational-patterns.md) |
 | Agent tries same approach after failure | No backoff/jitter | Exponential Backoff pattern → [05-cs-algorithms](modules/05-cs-algorithms.md) |
-| Agent ignores "digital punding" rule | CLAUDE.md rule not enforced | Circuit breaker hook (advisory) → [05-cs-algorithms](modules/05-cs-algorithms.md) |
+| Agent ignores "digital punding" rule | Advisory only | Pair `circuit-breaker.sh` + `circuit-breaker-gate.sh` for strict mode |
 
 ## Session Quality Degrades
 
@@ -35,6 +35,7 @@
 | Agent gets confused after long session | Context rot at ~147k tokens | `/clear` at 3+ compactions → [02-session](modules/02-session-management.md) |
 | Agent starts mixing up files/concepts | Overloaded context window | Split into focused sessions → [02-session](modules/02-session-management.md) |
 | Agent slower with many MCP servers | Tool definitions eat context (~55k tokens each) | Max 3-4 MCP servers → [01-architecture](modules/01-file-architecture.md) |
+| Smart Context injects noisy snippets | No guardrails / oversized budget | Use `preprocess-prompt.sh` defaults + `.claude/DISABLE_SMART_CONTEXT` escape hatch |
 
 ## Deployment/Safety Issues
 

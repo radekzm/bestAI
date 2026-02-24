@@ -49,7 +49,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
@@ -72,6 +72,23 @@
   }
 }
 ```
+
+## Hook Composition Rules
+
+When multiple hooks are attached to the same event:
+- Hooks execute in the order defined in `settings.json`
+- First `exit 2` blocks the tool call
+- Hooks are independent; no hook can override another hook's block
+- Place the most restrictive hooks first (`check-frozen`, security guards)
+
+## Known Limitations (and mitigations)
+
+- `PostToolUse` hooks are advisory by default (cannot block the current call)
+  Mitigation: pair advisory trackers with strict `PreToolUse` gates (example: `circuit-breaker-gate.sh`)
+- Bash command parsing is pattern-based, not a full shell parser
+  Mitigation: keep frozen paths explicit and reviewed
+- `[USER]` protection is only deterministic if enforced by dedicated hooks/diff checks
+  Mitigation: treat `[USER]` rules as critical and add guard hooks in strict deployments
 
 ## Example Enforcement Hooks
 
@@ -166,6 +183,18 @@ Hooks with exit 2 = enforcement (deterministic, cannot be bypassed)
 CRITICAL RULES → HOOKS
 STYLE/PREFERENCES → CLAUDE.md
 ```
+
+## Hook Selection Guide
+
+| Need | Hook | Event |
+|------|------|-------|
+| Protect frozen files (Edit/Write/Bash) | `check-frozen.sh` | PreToolUse |
+| Backup before destructive ops | `backup-enforcement.sh` | PreToolUse |
+| Smart context injection | `preprocess-prompt.sh` | UserPromptSubmit |
+| Session bootstrap | `rehydrate.sh` | SessionStart |
+| Session sync + delta | `sync-state.sh` | Stop |
+| Anti-loop advisory tracking | `circuit-breaker.sh` | PostToolUse |
+| Anti-loop strict blocking | `circuit-breaker-gate.sh` | PreToolUse |
 
 ---
 

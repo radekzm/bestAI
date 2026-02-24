@@ -17,6 +17,10 @@ fi
 WAL_DIR="$HOME/.claude/projects/$(echo "${CLAUDE_PROJECT_DIR:-.}" | tr '/' '-')"
 WAL_FILE="$WAL_DIR/wal.log"
 mkdir -p "$WAL_DIR"
+SESSION_ID="${CLAUDE_SESSION_ID:-unknown}"
+ROTATE_AT="${WAL_ROTATE_AT:-500}"
+KEEP_LINES="${WAL_KEEP_LINES:-300}"
+CMD_MAX_CHARS="${WAL_COMMAND_MAX_CHARS:-400}"
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
@@ -35,14 +39,14 @@ log_entry() {
         lsn=$(cat "$LSN_FILE" 2>/dev/null || echo 0)
         lsn=$((lsn + 1))
         echo "$lsn" > "$LSN_FILE"
-        echo "[$TIMESTAMP] [LSN:$lsn] $entry" >> "$WAL_FILE"
+        echo "[$TIMESTAMP] [LSN:$lsn] [SESSION:$SESSION_ID] $entry" >> "$WAL_FILE"
 
-        # WAL rotation: trigger at 500 entries, keep last 300 (hysteresis)
+        # WAL rotation with hysteresis.
         if [ -f "$WAL_FILE" ]; then
             local line_count
             line_count=$(wc -l < "$WAL_FILE")
-            if [ "$line_count" -gt 500 ]; then
-                tail -300 "$WAL_FILE" > "${WAL_FILE}.tmp"
+            if [ "$line_count" -gt "$ROTATE_AT" ]; then
+                tail -"$KEEP_LINES" "$WAL_FILE" > "${WAL_FILE}.tmp"
                 mv "${WAL_FILE}.tmp" "$WAL_FILE"
             fi
         fi
@@ -55,7 +59,7 @@ case "$TOOL_NAME" in
         [ -z "$COMMAND" ] && exit 0
 
         # Sanitize command for log (replace newlines with \n literal)
-        SAFE_CMD=$(echo "$COMMAND" | tr '\n' ' ' | head -c 200)
+        SAFE_CMD=$(echo "$COMMAND" | tr '\n' ' ' | head -c "$CMD_MAX_CHARS")
 
         # Only log potentially destructive commands
         if echo "$COMMAND" | grep -qE '(rm |mv |cp |chmod|chown|deploy|restart|migrate|rsync|docker|git push|git reset|git checkout|kill |drop |truncate )'; then

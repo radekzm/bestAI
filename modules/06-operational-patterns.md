@@ -15,11 +15,14 @@ When starting a new session or after `/clear`, the agent must recover context im
 
 ```
 SessionStart:
-  1. Read MEMORY.md (project index, max 200 lines)
-  2. Read frozen-fragments.md (what NOT to touch)
-  3. (Optional) Read session-log.md (last 20 entries — recent decisions)
-  4. (Optional) Read WAL if exists (recovery from compaction)
-  → Minimal: 2 file reads. Full: 4 file reads. Zero globs, deterministic.
+  1. Read memory index (max 8 lines with file pointers)
+  2. Direct read only listed files (target: 4 files, zero globs)
+     - Constitution / core rules
+     - State_Of_System_Now
+     - Checklist_Now
+     - Avatar / role profile
+  3. Confirm loaded context in one short status block
+  → Deterministic bootstrap, no file discovery overhead.
 ```
 
 ### Implementation (SessionStart hook)
@@ -79,12 +82,22 @@ ROOT_CAUSE_TABLE:
 After completing a task or before ending a session:
 
 ```
-1. Update MEMORY.md with new decisions/discoveries
-2. Update session-log.md with changes made
-3. Update frozen-fragments.md if files should be frozen
-4. Git commit if changes are stable
-5. Report status to user
+1. Update State (TOP-10 FACTS / TOP-5 PROOFS / TOP-3 BLOCKERS)
+2. Update MEMORY.md + session-log.md
+3. Replace `LAST SESSION DELTA` (5-10 lines max)
+4. Move overflow evidence to `/docs/PROOFS/<AREA>_<YYYYMMDD>.md`
+5. Commit if stable and report status
 ```
+
+## Blocker Taxonomy (canonical names)
+
+| Group | Canonical blockers |
+|------|---------------------|
+| DATA | `STALE_DATA`, `NEED_DATA` |
+| TECH | `BUILD_ERROR`, `DEPLOY_FAIL`, `API_REJECT` |
+| PRODUCT | `UX_UNCLEAR`, `SCOPE_CREEP`, `VALUE_UNPROVEN` |
+| EXTERNAL | `BLOCKED_EXTERNAL` |
+| BUSINESS | `PRICING_UNVALIDATED`, `MARKET_FIT_UNKNOWN` |
 
 ## Checklist-Driven Work
 

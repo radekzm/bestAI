@@ -19,11 +19,11 @@
 - **Hook**: PostToolUse (advisory) — tracks failures in `~/.cache/claude-circuit-breaker/`, injects STOP guidance into context after threshold. For deterministic blocking, pair with a PreToolUse hook that checks state.
 
 ```bash
-# hooks/circuit-breaker.sh — see hooks/ directory for full implementation
+# hooks/circuit-breaker.sh — advisory tracker (PostToolUse)
 # Tracks: pattern → failure_count → state (CLOSED/OPEN/HALF-OPEN)
 # OPEN state: advisory output telling agent to STOP + ROOT_CAUSE_TABLE
 # HALF-OPEN: allow 1 attempt, if success → CLOSED
-# NOTE: PostToolUse = advisory (context injection), not deterministic block
+# NOTE: Pair with hooks/circuit-breaker-gate.sh for deterministic strict mode.
 ```
 
 ### 2. Write-Ahead Log (WAL)

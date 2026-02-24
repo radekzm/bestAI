@@ -14,7 +14,10 @@ STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker"
 mkdir -p "$STATE_DIR"
 
 THRESHOLD=${CIRCUIT_BREAKER_THRESHOLD:-3}  # Failures before OPEN
-COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN:-300}  # Seconds before HALF-OPEN (5 min)
+COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN_SECS:-${CIRCUIT_BREAKER_COOLDOWN:-300}}  # Seconds before HALF-OPEN (5 min)
+PROJECT_KEY=$(echo "${CLAUDE_PROJECT_DIR:-.}" | tr '/' '-')
+METRICS_FILE="$HOME/.claude/projects/$PROJECT_KEY/hook-metrics.log"
+mkdir -p "$(dirname "$METRICS_FILE")" 2>/dev/null || true
 
 INPUT=$(cat)
 
@@ -36,9 +39,9 @@ error_sig() {
     normalized=$(echo "$input" | tr '[:upper:]' '[:lower:]' | sed 's/[0-9]/#/g')
     # Use md5sum (Linux) or md5 (macOS)
     if command -v md5sum &>/dev/null; then
-        echo "$normalized" | md5sum | cut -c1-12
+        echo "$normalized" | md5sum | cut -c1-16
     elif command -v md5 &>/dev/null; then
-        echo "$normalized" | md5 -q | cut -c1-12
+        echo "$normalized" | md5 -q | cut -c1-16
     else
         # Fallback: use cksum
         echo "$normalized" | cksum | cut -d' ' -f1
@@ -99,6 +102,7 @@ fi
                 echo "| $COUNT failures | $(echo "$STDERR" | head -c 60) | Try a different approach |"
                 echo ""
                 echo "STOP: Ask user for guidance or try a fundamentally different approach."
+                printf '%s circuit-breaker OPEN sig=%s count=%s\n' "$(date -u +%FT%TZ)" "$SIG" "$COUNT" >> "$METRICS_FILE" 2>/dev/null || true
             else
                 printf "CLOSED\n%s\n%s\n" "$COUNT" "$NOW" > "$STATE_FILE"
             fi
@@ -108,6 +112,7 @@ fi
             if [ "$ELAPSED" -ge "$COOLDOWN" ]; then
                 printf "HALF-OPEN\n%s\n%s\n" "$COUNT" "$NOW" > "$STATE_FILE"
                 echo "[Circuit Breaker] Cooldown elapsed. OPEN -> HALF-OPEN. Allowing 1 retry."
+                printf '%s circuit-breaker HALF_OPEN sig=%s count=%s\n' "$(date -u +%FT%TZ)" "$SIG" "$COUNT" >> "$METRICS_FILE" 2>/dev/null || true
             else
                 REMAINING=$((COOLDOWN - ELAPSED))
                 echo "[Circuit Breaker] OPEN — advisory stop. ${REMAINING}s until retry allowed."
@@ -118,6 +123,7 @@ fi
             printf "OPEN\n%s\n%s\n" "$((COUNT + 1))" "$NOW" > "$STATE_FILE"
             echo "[Circuit Breaker] Failed in HALF-OPEN. Back to OPEN."
             echo "This approach is not working. STOP and ask the user."
+            printf '%s circuit-breaker REOPEN sig=%s count=%s\n' "$(date -u +%FT%TZ)" "$SIG" "$((COUNT + 1))" >> "$METRICS_FILE" 2>/dev/null || true
             ;;
     esac
 

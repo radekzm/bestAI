@@ -16,9 +16,10 @@ Hooks + exit 2 = enforcement (deterministic, cannot be bypassed)
 **Automated (recommended):**
 ```bash
 bash setup.sh /path/to/your/project
+bash setup.sh /path/to/your/project --profile aion-runtime
 ```
 
-This interactive setup (~5 min) installs templates, hooks, and generates `settings.json`.
+This interactive setup (~5 min) installs templates, hooks, merges/creates `settings.json`, and can enable runtime profile (REHYDRATE + SYNC_STATE).
 
 **Manual:**
 1. Copy a template: `cp templates/claude-md-standard.md your-project/CLAUDE.md`
@@ -60,8 +61,12 @@ bash tests/test-hooks.sh
 
 | Hook | Type | Purpose |
 |------|------|---------|
-| [check-frozen.sh](hooks/check-frozen.sh) | PreToolUse | Block edits to frozen files |
-| [circuit-breaker.sh](hooks/circuit-breaker.sh) | PostToolUse | Stop after N consecutive failures |
+| [check-frozen.sh](hooks/check-frozen.sh) | PreToolUse | Block edits to frozen files (Edit/Write/Bash) |
+| [preprocess-prompt.sh](hooks/preprocess-prompt.sh) | UserPromptSubmit | Smart Context compiler with guardrails |
+| [rehydrate.sh](hooks/rehydrate.sh) | SessionStart | Runtime context bootstrap |
+| [sync-state.sh](hooks/sync-state.sh) | Stop | Runtime state sync + session delta |
+| [circuit-breaker.sh](hooks/circuit-breaker.sh) | PostToolUse | Advisory anti-loop tracker |
+| [circuit-breaker-gate.sh](hooks/circuit-breaker-gate.sh) | PreToolUse | Strict anti-loop block when OPEN |
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require backup before deploy/migrate |
 
@@ -71,8 +76,9 @@ bash tests/test-hooks.sh
 |------|---------|-------|
 | [setup.sh](setup.sh) | Interactive project setup | `bash setup.sh /path/to/project` |
 | [doctor.sh](doctor.sh) | Health check & diagnostics | `bash doctor.sh /path/to/project` |
-| [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (14 tests) | `bash tests/test-hooks.sh` |
+| [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (30 tests) | `bash tests/test-hooks.sh` |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |
+| [docs/migration-guide.md](docs/migration-guide.md) | Existing project migration playbook | Follow checklist step-by-step |
 
 ## Templates
 
@@ -81,6 +87,11 @@ bash tests/test-hooks.sh
 | [claude-md-minimal](templates/claude-md-minimal.md) | <50 lines | Small projects, quick start |
 | [claude-md-standard](templates/claude-md-standard.md) | <100 lines | Standard projects with full context loading |
 | [agents-md-template](templates/agents-md-template.md) | ~60 lines | Multi-tool compatibility (Codex, Cursor, etc.) |
+| [checklist-now](templates/checklist-now.md) | runtime | Active checklist template |
+| [state-of-system-now](templates/state-of-system-now.md) | runtime | Bounded state template (facts/proofs/blockers) |
+| [memory-md-template](templates/memory-md-template.md) | runtime | Decision extraction starter |
+| [agent-teams-output](templates/agent-teams-output.md) | optional | Structured multi-agent verdict |
+| [blocker-taxonomy](templates/blocker-taxonomy.md) | optional | Canonical blocker map |
 
 ## Key Concepts
 
@@ -120,6 +131,13 @@ v3.0 consolidates 6 files (5,268 lines, ~3,000 duplicated) into 9 focused module
 ## Sources & Inspiration
 
 - [Anthropic: Effective Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- [Anthropic Docs: Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks)
+- [Anthropic Docs: Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+- [Anthropic Docs: Context Editing / Tool Result Clearing](https://docs.anthropic.com/en/docs/claude-code/context-windows)
+- [Anthropic: Claude Code 1.0.43](https://www.anthropic.com/news/claude-code-1-0-43)
+- [OWASP GenAI Top 10](https://genai.owasp.org/llm-top-10/)
+- [Google: Agent Development Kit](https://developers.googleblog.com/en/agent-development-kit-easy-to-build-multi-agent-applications/)
+- [Letta: Context Repositories](https://www.letta.com/blog/context-repositories)
 - [claude-mem](https://github.com/thedotmack/claude-mem) — 6-layer memory, 4700+ stars
 - [AION-NEOVERSE](https://github.com/damianjedryka39-create/AION-NEOVERSE-NEW) — Operational discipline patterns
 - [CASS](https://github.com/Dicklesworthstone/coding_agent_session_search) — Session search
