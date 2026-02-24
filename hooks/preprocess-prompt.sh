@@ -30,6 +30,8 @@ PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 MEMORY_DIR_DEFAULT="$HOME/.claude/projects/$PROJECT_KEY/memory"
 MEMORY_DIR="${SMART_CONTEXT_MEMORY_DIR:-$MEMORY_DIR_DEFAULT}"
 [ -d "$MEMORY_DIR" ] || exit 0
+USAGE_LOG="$MEMORY_DIR/.usage-log"
+SESSION_COUNTER="$MEMORY_DIR/.session-counter"
 
 # --- E-Tag cache library (optional, for accelerated scoring) ---
 ETAG_LIB="$(cd "$(dirname "$0")" && pwd)/../modules/etag-cache-lib.sh"
@@ -107,6 +109,51 @@ sanitize_line() {
     fi
 
     echo "$line" | cut -c1-240
+}
+
+update_usage_from_retrieval() {
+    local filename="$1"
+    [ -z "$filename" ] && return 0
+
+    local file_tag="AUTO"
+    if [ -f "$MEMORY_DIR/$filename" ] && grep -q '\[USER\]' "$MEMORY_DIR/$filename" 2>/dev/null; then
+        file_tag="USER"
+    fi
+
+    local session_ref=0
+    if [ -f "$SESSION_COUNTER" ]; then
+        session_ref=$(cat "$SESSION_COUNTER" 2>/dev/null || echo 0)
+        [[ "$session_ref" =~ ^[0-9]+$ ]] || session_ref=0
+    fi
+
+    local tmp
+    tmp=$(mktemp)
+    local found=0
+
+    if [ -f "$USAGE_LOG" ]; then
+        while IFS=$'\t' read -r fname last_sess count tag; do
+            [ -z "$fname" ] && continue
+            [[ "$last_sess" =~ ^[0-9]+$ ]] || last_sess=0
+            [[ "$count" =~ ^[0-9]+$ ]] || count=0
+            [ -z "${tag:-}" ] && tag="AUTO"
+
+            if [ "$fname" = "$filename" ]; then
+                if [ "$tag" = "USER" ] || [ "$file_tag" = "USER" ]; then
+                    tag="USER"
+                fi
+                printf '%s\t%s\t%s\t%s\n' "$fname" "$session_ref" "$((count + 1))" "$tag" >> "$tmp"
+                found=1
+            else
+                printf '%s\t%s\t%s\t%s\n' "$fname" "$last_sess" "$count" "$tag" >> "$tmp"
+            fi
+        done < "$USAGE_LOG"
+    fi
+
+    if [ "$found" -eq 0 ]; then
+        printf '%s\t%s\t%s\t%s\n' "$filename" "$session_ref" "1" "$file_tag" >> "$tmp"
+    fi
+
+    mv "$tmp" "$USAGE_LOG"
 }
 
 # --- Intent detection with topic routing ---
@@ -331,7 +378,9 @@ append_line() {
 while IFS=$'\t' read -r score file; do
     [ -f "$file" ] || continue
 
-    SOURCE_LIST+="- $(basename "$file") (score=$score)"$'\n'
+    BASENAME=$(basename "$file")
+    SOURCE_LIST+="- $BASENAME (score=$score)"$'\n'
+    update_usage_from_retrieval "$BASENAME"
 
     mapfile -t line_numbers < <(grep -inFf "$KEYWORD_FILE" "$file" 2>/dev/null | cut -d: -f1 | head -n 4)
 

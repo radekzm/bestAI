@@ -14,9 +14,27 @@ if command -v jq >/dev/null 2>&1; then
     [ -n "$TOOL_NAME" ] && [ "$TOOL_NAME" != "Bash" ] && exit 0
 fi
 
-STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker"
-COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN:-300}
+BASE_STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker"
+COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN_SECS:-${CIRCUIT_BREAKER_COOLDOWN:-300}}
 NOW=$(date +%s)
+
+project_hash() {
+    local src="$1"
+    if command -v md5sum >/dev/null 2>&1; then
+        echo "$src" | md5sum | awk '{print substr($1,1,16)}'
+    elif command -v md5 >/dev/null 2>&1; then
+        echo -n "$src" | md5 -q | cut -c1-16
+    elif command -v shasum >/dev/null 2>&1; then
+        echo "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
+    else
+        echo "$src" | cksum | awk '{print $1}'
+    fi
+}
+
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
+PROJECT_HASH=$(project_hash "$PROJECT_DIR")
+# Project-scoped breaker state prevents cross-repo strict-gate blocking.
+STATE_DIR="$BASE_STATE_DIR/$PROJECT_HASH"
 
 [ -d "$STATE_DIR" ] || exit 0
 

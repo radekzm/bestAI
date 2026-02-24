@@ -248,6 +248,34 @@ add_hook_config() {
     mv "$tmp" "$file"
 }
 
+remove_hook_config() {
+    local file="$1" event="$2" matcher="$3" command="$4"
+    local tmp
+    tmp=$(mktemp)
+
+    jq \
+      --arg event "$event" \
+      --arg matcher "$matcher" \
+      --arg command "$command" '
+        .hooks = (.hooks // {}) |
+        .hooks[$event] = (.hooks[$event] // []) |
+        .hooks[$event] = (
+          .hooks[$event] | map(
+            if .matcher == $matcher then
+              .hooks = (
+                (.hooks // [])
+                | map(select(.type != "command" or .command != $command))
+              )
+            else
+              .
+            end
+          )
+        )
+      ' "$file" > "$tmp"
+
+    mv "$tmp" "$file"
+}
+
 echo ""
 echo -e "${BOLD}Step 3: Hook configuration${NC}"
 SETTINGS_FILE="$TARGET/.claude/settings.json"
@@ -306,6 +334,12 @@ else
                 ;;
         esac
     done
+
+    # smart-v2 uses preprocess-prompt as internal fallback.
+    # Keep only smart-preprocess-v2 in UserPromptSubmit to avoid duplicate injection.
+    if [ "$PROFILE" = "smart-v2" ] && [[ " ${INSTALLED[*]} " == *" smart-preprocess-v2.sh "* ]]; then
+        remove_hook_config "$SETTINGS_FILE" "UserPromptSubmit" "" ".claude/hooks/preprocess-prompt.sh"
+    fi
 
     PRE_COUNT=$(jq '.hooks.PreToolUse // [] | length' "$SETTINGS_FILE")
     POST_COUNT=$(jq '.hooks.PostToolUse // [] | length' "$SETTINGS_FILE")

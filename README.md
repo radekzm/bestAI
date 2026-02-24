@@ -82,7 +82,7 @@ bash evals/run.sh
 |------|---------|-------|
 | [setup.sh](setup.sh) | Interactive project setup | `bash setup.sh /path/to/project` |
 | [doctor.sh](doctor.sh) | Health check & diagnostics | `bash doctor.sh /path/to/project` |
-| [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (30 tests) | `bash tests/test-hooks.sh` |
+| [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (100+ tests) | `bash tests/test-hooks.sh` |
 | [evals/run.sh](evals/run.sh) | Reproducible benchmark report | `bash evals/run.sh` |
 | [evals/cache-usage-report.sh](evals/cache-usage-report.sh) | Prompt cache usage trend report | `bash evals/cache-usage-report.sh --input evals/data/cache-usage-sample.jsonl` |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |

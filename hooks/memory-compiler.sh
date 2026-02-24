@@ -55,8 +55,11 @@ fi
 # --- Step 2: Score memory entries ---
 # Score format in usage-log: filename<TAB>last_used_session<TAB>use_count<TAB>tag
 # tag is USER or AUTO
-
-update_usage() {
+#
+# IMPORTANT:
+# - Actual "use" events are written by UserPromptSubmit hook (selected sources).
+# - Memory compiler only bootstraps missing entries and preserves historical recency.
+ensure_usage_entry() {
     local filename="$1" tag="$2"
     local tmp
     tmp=$(mktemp)
@@ -64,11 +67,18 @@ update_usage() {
 
     if [ -f "$USAGE_LOG" ]; then
         while IFS=$'\t' read -r fname last_sess count entry_tag; do
+            [[ "$last_sess" =~ ^[0-9]+$ ]] || last_sess=0
+            [[ "$count" =~ ^[0-9]+$ ]] || count=0
+            [ -z "${entry_tag:-}" ] && entry_tag="AUTO"
+
             if [ "$fname" = "$filename" ]; then
-                # Never downgrade USER to AUTO (Module 03 Rule #1)
-                local effective_tag="$tag"
-                [ "$entry_tag" = "USER" ] && effective_tag="USER"
-                printf '%s\t%s\t%s\t%s\n' "$fname" "$CURRENT_SESSION" "$((count + 1))" "$effective_tag" >> "$tmp"
+                # Never downgrade USER to AUTO (Module 03 Rule #1).
+                # Do not touch last_sess/use_count here; preserve real recency signal.
+                local effective_tag="$entry_tag"
+                if [ "$effective_tag" = "USER" ] || [ "$tag" = "USER" ]; then
+                    effective_tag="USER"
+                fi
+                printf '%s\t%s\t%s\t%s\n' "$fname" "$last_sess" "$count" "$effective_tag" >> "$tmp"
                 found=1
             else
                 printf '%s\t%s\t%s\t%s\n' "$fname" "$last_sess" "$count" "$entry_tag" >> "$tmp"
@@ -77,6 +87,7 @@ update_usage() {
     fi
 
     if [ "$found" -eq 0 ]; then
+        # Initialize new file as recently seen (but not repeatedly "used" by compiler).
         printf '%s\t%s\t%s\t%s\n' "$filename" "$CURRENT_SESSION" "1" "$tag" >> "$tmp"
     fi
 
@@ -157,8 +168,12 @@ generate_index() {
             local file_score
             file_score=$(score_entry "$basename")
 
-            # Update usage tracking
-            [ "$DRY_RUN" = "0" ] && update_usage "$basename" "AUTO"
+            # Bootstrap usage tracking entry without resetting recency each run.
+            if [ "$DRY_RUN" = "0" ]; then
+                local file_tag="AUTO"
+                grep -q '\[USER\]' "$mdfile" 2>/dev/null && file_tag="USER"
+                ensure_usage_entry "$basename" "$file_tag"
+            fi
 
             # Compute E-Tag cache entry (trigrams, has_user, mtime, etag)
             if [ "$ETAG_AVAILABLE" = "1" ] && [ "$DRY_RUN" = "0" ]; then
@@ -312,7 +327,7 @@ run_gc() {
 }
 
 # --- Execute pipeline ---
-# GC runs first (before generate_index updates usage timestamps)
+# GC runs first (before index generation bootstraps missing usage entries)
 run_gc
 generate_index
 enforce_memory_cap

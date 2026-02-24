@@ -20,7 +20,8 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || {
 [ -z "$COMMAND" ] && exit 0
 
 is_destructive() {
-    echo "$1" | grep -Eqi '(restart|migrate|deploy|rsync.*prod|docker.*(push|kill|rm)|systemctl\s+(restart|stop)|dropdb|truncate\s+)'
+    # Match command tokens, not substrings (e.g. "deployment-notes.txt" is safe).
+    echo "$1" | grep -Eqi '(^|[^[:alnum:]_])(restart|migrate|deploy)([^[:alnum:]_]|$)|rsync.*prod|docker.*(push|kill|rm)|systemctl[[:space:]]+(restart|stop)|dropdb|truncate[[:space:]]+'
 }
 
 project_hash() {
