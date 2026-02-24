@@ -23,7 +23,7 @@
 | # | Rule | How |
 |---|------|-----|
 | 1 | **`/clear` between tasks** | Each new task = fresh context |
-| 2 | **Max 3 corrections** | After 3 failed fixes → STOP + ROOT_CAUSE_TABLE + user escalation |
+| 2 | **Max 3 batches** | After 3 failed approach batches → STOP + ROOT_CAUSE_TABLE + user escalation |
 | 3 | **Commit after each subtask** | Checkpoint = safety + clean context |
 | 4 | **Compact at 50%** | Don't wait for auto-compaction (75%) |
 | 5 | **Subagent for exploration** | grep/search in subagent = clean main window |
@@ -117,7 +117,7 @@ Two sessions with separate contexts:
 | # | Problem | Symptom | Fix |
 |---|---------|---------|-----|
 | 1 | Kitchen Sink Session | Mixed tasks in one session | `/clear` between tasks |
-| 2 | Correction Loop | 3+ fixes of same thing | Max 3, then STOP + ROOT_CAUSE_TABLE |
+| 2 | Correction Loop | 3+ failed approach batches | Max 3 batches, then STOP + ROOT_CAUSE_TABLE |
 | 3 | Overloaded CLAUDE.md | >100 lines, agent ignores | Trim, move to Skills/Rules |
 | 4 | Trust-then-verify gap | Looks correct, fails edge cases | Always provide tests |
 | 5 | Unbounded exploration | "Investigate how this works" without scope | Scope narrowly OR use subagent |

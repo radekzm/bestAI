@@ -9,7 +9,9 @@
 
 ---
 
-## Observational Memory (L4)
+## Observational Memory (L4) — RECOMMENDED
+
+**Status: Recommended** — implemented in `hooks/observer.sh` (Stop hook) and `hooks/reflector.sh` (maintenance). Install via `--profile smart-v2` or `--profile aion-runtime`.
 
 ### Concept: Observer + Reflector
 

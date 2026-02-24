@@ -50,6 +50,7 @@ bash evals/run.sh
 | [06-operational-patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists | ~165 | Recommended |
 | [07-smart-context](modules/07-smart-context.md) | Semantic routing, preprocessing | ~155 | Optional |
 | [08-advanced](modules/08-advanced.md) | Vector DB, agent teams | ~160 | Experimental |
+| [09-prompt-caching-ops](modules/09-prompt-caching-ops.md) | Stable prefix + cached token metrics | ~150 | Recommended |
 
 ### Reading Order
 
@@ -57,6 +58,7 @@ bash evals/run.sh
 - **Robust agents**: Add modules 05-06 (CS algorithms + operational patterns)
 - **Large codebases (100+ files)**: Add module 07 (smart context)
 - **Research/enterprise**: Explore module 08 (experimental)
+- **Long-running/cost-sensitive sessions**: Add module 09 (prompt caching ops)
 
 ## Hooks
 
@@ -79,6 +81,7 @@ bash evals/run.sh
 | [doctor.sh](doctor.sh) | Health check & diagnostics | `bash doctor.sh /path/to/project` |
 | [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (30 tests) | `bash tests/test-hooks.sh` |
 | [evals/run.sh](evals/run.sh) | Reproducible benchmark report | `bash evals/run.sh` |
+| [evals/cache-usage-report.sh](evals/cache-usage-report.sh) | Prompt cache usage trend report | `bash evals/cache-usage-report.sh --input evals/data/cache-usage-sample.jsonl` |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |
 | [docs/migration-guide.md](docs/migration-guide.md) | Existing project migration playbook | Follow checklist step-by-step |
 
@@ -121,19 +124,21 @@ Failure → HARD STOP → ROOT_CAUSE_TABLE → ask user
 
 ## Evolution
 
-v3.0 consolidates 6 files (5,268 lines, ~3,000 duplicated) into 9 focused modules (~1,250 lines total — 76% reduction). Key changes:
+v3.0 consolidates 6 files (5,268 lines, ~3,000 duplicated) into 10 focused modules (~1,400 lines total — 73% reduction). Key changes:
 
 - Removed unvalidated metrics; retained sourced data (Nuconic, Lindquist)
 - Added 10 CS algorithms mapped to AI agent patterns
 - Added operational patterns from AION-NEOVERSE project
 - Fixed hook implementations (path normalization, error handling)
 - Marked experimental features clearly (modules 07-08)
+- Added prompt caching operations module (09) with usage metrics playbook
 - Preserved Nuconic case study as sole validated evidence
 
 ## Sources & Inspiration
 
 - [Anthropic: Effective Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
 - [Anthropic Docs: Hooks](https://docs.anthropic.com/en/docs/claude-code/hooks)
+- [OpenAI Docs: Prompt Caching](https://platform.openai.com/docs/guides/prompt-caching)
 - [Anthropic Docs: Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
 - [Anthropic Docs: Context Editing / Tool Result Clearing](https://docs.anthropic.com/en/docs/claude-code/context-windows)
 - [Anthropic: Claude Code 1.0.43](https://www.anthropic.com/news/claude-code-1-0-43)

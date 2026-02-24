@@ -196,6 +196,123 @@ elif [ "$EST_RATIO" -gt 10 ]; then
     check "WARN" "Always-loaded docs exceed 10% of context window" "Recommended target: <=10%"
 fi
 
+# === Prompt Cache Hygiene ===
+echo ""
+echo -e "${BOLD}Prompt Cache Hygiene${NC}"
+if [ -f "$TARGET_ABS/CLAUDE.md" ]; then
+    if grep -qEi '(\$\(date|\{\{(date|timestamp|uuid|random)\}\}|<TIMESTAMP>|<DATE>|<UUID>|generated at|last updated: [0-9]{4}-[0-9]{2}-[0-9]{2})' "$TARGET_ABS/CLAUDE.md" 2>/dev/null; then
+        check "WARN" "Detected dynamic markers in CLAUDE.md (possible prompt cache busting)" "Keep always-loaded prefix stable; move dynamic fields to runtime logs/tail context"
+    else
+        check "OK" "No obvious dynamic markers in CLAUDE.md"
+    fi
+fi
+
+CACHE_USAGE_FILE="${CACHE_USAGE_LOG:-$HOME/.claude/projects/$(echo "$TARGET_ABS" | tr '/' '-')/cache-usage.jsonl}"
+if [ -f "$CACHE_USAGE_FILE" ]; then
+    if command -v jq &>/dev/null; then
+        CACHE_TMP="$(mktemp)"
+        tail -n 200 "$CACHE_USAGE_FILE" > "$CACHE_TMP"
+
+        if jq empty "$CACHE_TMP" >/dev/null 2>&1; then
+            CACHE_METRICS="$(jq -s '
+              def num:
+                if . == null then 0
+                elif type == "number" then .
+                elif type == "string" then (tonumber? // 0)
+                else 0 end;
+
+              def usage_obj: (.usage // .response.usage // {});
+              def provider_guess:
+                (
+                  (.provider // .metadata.provider // null) as $p
+                  | if $p != null then ($p|tostring|ascii_downcase)
+                    elif (usage_obj.cache_read_input_tokens? != null or usage_obj.cache_creation_input_tokens? != null) then "anthropic"
+                    elif (usage_obj.prompt_tokens_details.cached_tokens? != null) then "openai"
+                    else "unknown"
+                    end
+                );
+              def input_tokens:
+                (usage_obj.input_tokens? // usage_obj.prompt_tokens? // .input_tokens? // .prompt_tokens? // 0 | num);
+              def cached_read_tokens:
+                (usage_obj.prompt_tokens_details.cached_tokens? // usage_obj.cache_read_input_tokens? // .cached_tokens? // 0 | num);
+              def ratio_denom($p; $i; $c):
+                if $p == "anthropic" then ($i + $c) else $i end;
+
+              [ .[] |
+                (provider_guess) as $provider
+                | (input_tokens) as $input
+                | (cached_read_tokens) as $cached
+                | (ratio_denom($provider; $input; $cached)) as $denom
+                | {
+                    denom: $denom,
+                    cached: $cached,
+                    low_hit: ($denom >= 1500 and (if $denom > 0 then ($cached / $denom * 100) else 0 end) < 20),
+                    cold_large: ($cached == 0 and $denom >= 1500),
+                    cache_key: (.cache_key // .prompt_cache_key // .prefix_hash // .metadata.cache_key // "")
+                  }
+              ] as $rows
+              | {
+                  rows: ($rows|length),
+                  weighted_hit_ratio: (if (($rows|map(.denom)|add // 0) > 0) then (($rows|map(.cached)|add // 0) / ($rows|map(.denom)|add // 0) * 100) else 0 end),
+                  low_hit_rate: (if ($rows|length) == 0 then 0 else (($rows|map(select(.low_hit))|length) / ($rows|length) * 100) end),
+                  cold_large_rate: (if ($rows|length) == 0 then 0 else (($rows|map(select(.cold_large))|length) / ($rows|length) * 100) end),
+                  cache_key_rows: ($rows|map(select(.cache_key != ""))|length),
+                  cache_key_unique_rate: (
+                    if (($rows|map(select(.cache_key != ""))|length) == 0)
+                    then 0
+                    else (($rows|map(select(.cache_key != "")|.cache_key)|unique|length) / ($rows|map(select(.cache_key != ""))|length) * 100)
+                    end
+                  )
+                }
+            ' "$CACHE_TMP")"
+
+            CACHE_ROWS=$(jq -r '.rows' <<< "$CACHE_METRICS")
+            CACHE_HIT=$(jq -r '.weighted_hit_ratio' <<< "$CACHE_METRICS")
+            LOW_HIT=$(jq -r '.low_hit_rate' <<< "$CACHE_METRICS")
+            COLD_RATE=$(jq -r '.cold_large_rate' <<< "$CACHE_METRICS")
+            KEY_ROWS=$(jq -r '.cache_key_rows' <<< "$CACHE_METRICS")
+            KEY_RATE=$(jq -r '.cache_key_unique_rate' <<< "$CACHE_METRICS")
+
+            check "OK" "Cache usage log found ($CACHE_ROWS recent rows analyzed)"
+
+            if [ "$CACHE_ROWS" -lt 20 ]; then
+                check "WARN" "Low sample size for cache trend ($CACHE_ROWS < 20 rows)" "Collect more runs before hard conclusions"
+            fi
+
+            if awk -v n="$CACHE_HIT" 'BEGIN { exit !(n < 30) }'; then
+                check "WARN" "Weighted cache hit ratio is low (${CACHE_HIT}%)" "Inspect stable prefix and split volatile prompt tail"
+            else
+                check "OK" "Weighted cache hit ratio looks healthy (${CACHE_HIT}%)"
+            fi
+
+            if awk -v n="$COLD_RATE" 'BEGIN { exit !(n > 40) }'; then
+                check "WARN" "High cold large prompt rate (${COLD_RATE}%)" "Likely cache busting by dynamic prefix or key churn"
+            else
+                check "OK" "Cold large prompt rate acceptable (${COLD_RATE}%)"
+            fi
+
+            if awk -v n="$LOW_HIT" 'BEGIN { exit !(n > 35) }'; then
+                check "WARN" "Many low-hit large prompts (${LOW_HIT}%)" "Track prefix diffs and cache keys between runs"
+            fi
+
+            if [ "$KEY_ROWS" -gt 0 ]; then
+                if awk -v n="$KEY_RATE" 'BEGIN { exit !(n > 60) }'; then
+                    check "WARN" "High cache key uniqueness (${KEY_RATE}%)" "Too many unique keys suggest unstable prompt prefix"
+                else
+                    check "OK" "Cache key churn seems controlled (${KEY_RATE}%)"
+                fi
+            fi
+        else
+            check "WARN" "Cache usage log exists but JSONL is invalid" "Validate log lines and rerun evals/cache-usage-report.sh"
+        fi
+        rm -f "$CACHE_TMP"
+    else
+        check "WARN" "jq not installed — cannot analyze prompt cache usage log" "Install jq for cache diagnostics"
+    fi
+else
+    check "WARN" "No cache usage log found" "Optional: store JSONL usage in $CACHE_USAGE_FILE and run evals/cache-usage-report.sh"
+fi
+
 # === Hook Activity ===
 echo ""
 echo -e "${BOLD}Hook Activity${NC}"

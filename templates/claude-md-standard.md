@@ -53,6 +53,7 @@
 | Operational patterns | `modules/06-operational-patterns.md` | Anti-loop, cold start |
 | Smart context | `modules/07-smart-context.md` | Large codebase (100+ files) |
 | Advanced/experimental | `modules/08-advanced.md` | Vector DB, agent teams |
+| Prompt caching ops | `modules/09-prompt-caching-ops.md` | Long sessions, cost/latency optimization |
 
 ## Session Rules
 

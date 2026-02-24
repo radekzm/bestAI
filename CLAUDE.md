@@ -21,6 +21,9 @@
 | 06 | [Operational Patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists |
 | 07 | [Smart Context](modules/07-smart-context.md) | Semantic routing (optional) |
 | 08 | [Advanced](modules/08-advanced.md) | Vector DB, agent teams (experimental) |
+| 09 | [Memory Compiler](modules/09-memory-compiler.md) | GC, scoring, context-index |
+| 10 | [Context OS](modules/10-context-os.md) | 5-tier architecture, budget management |
+| 11 | [Prompt Caching](modules/11-prompt-caching.md) | Stable prefix, cached token metrics |
 
 ## Core Principle
 

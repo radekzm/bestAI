@@ -63,7 +63,7 @@ IDEAL DISTRIBUTION:
 | Large JSON from tools | High | Parse before passing |
 | MCP tool definitions | Fixed (per session) | Limit server count |
 | Hook injections | Cumulative | Eliminate duplicates |
-| Error corrections | Cumulative | Max 3, then STOP + ROOT_CAUSE_TABLE |
+| Error batches | Cumulative | Max 3 batches, then STOP + ROOT_CAUSE_TABLE |
 | Unbounded exploration | Uncontrolled | Scope + subagent |
 
 ### Where Tokens Go (empirical pointer)

@@ -1,6 +1,6 @@
 #!/bin/bash
 # setup.sh — bestAI Quick Setup (5 minutes)
-# Usage: bash setup.sh [target-project-dir] [--profile default|aion-runtime] [--merge-settings|--no-merge-settings]
+# Usage: bash setup.sh [target-project-dir] [--profile default|aion-runtime|smart-v2] [--merge-settings|--no-merge-settings]
 
 set -euo pipefail
 
@@ -24,6 +24,7 @@ Usage:
 Examples:
   bash setup.sh /path/to/project
   bash setup.sh /path/to/project --profile aion-runtime
+  bash setup.sh /path/to/project --profile smart-v2
   bash setup.sh . --no-merge-settings
 USAGE
 }
@@ -61,9 +62,9 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
-if [ "$PROFILE" != "default" ] && [ "$PROFILE" != "aion-runtime" ]; then
+if [ "$PROFILE" != "default" ] && [ "$PROFILE" != "aion-runtime" ] && [ "$PROFILE" != "smart-v2" ]; then
     echo "Unsupported profile: $PROFILE" >&2
-    echo "Supported: default, aion-runtime" >&2
+    echo "Supported: default, aion-runtime, smart-v2" >&2
     exit 1
 fi
 
@@ -179,7 +180,19 @@ install_hook() {
     fi
 }
 
-if [ "$PROFILE" = "aion-runtime" ]; then
+if [ "$PROFILE" = "smart-v2" ]; then
+    install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
+    install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
+    install_hook "wal-logger.sh" "write-ahead log for destructive actions" "Y"
+    install_hook "circuit-breaker.sh" "advisory anti-loop tracker (PostToolUse)" "Y"
+    install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
+    install_hook "smart-preprocess-v2.sh" "Haiku semantic context routing (UserPromptSubmit)" "Y"
+    install_hook "preprocess-prompt.sh" "keyword context compiler (fallback for smart-v2)" "Y"
+    install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "Y"
+    install_hook "sync-state.sh" "Stop hook runtime sync" "Y"
+    install_hook "memory-compiler.sh" "Stop hook memory GC + indexing" "Y"
+    install_hook "observer.sh" "Stop hook observational memory compression" "Y"
+elif [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
     install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
     install_hook "wal-logger.sh" "write-ahead log for destructive actions" "y"
@@ -188,6 +201,7 @@ if [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "preprocess-prompt.sh" "UserPromptSubmit smart context compiler" "Y"
     install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "Y"
     install_hook "sync-state.sh" "Stop hook runtime sync" "Y"
+    install_hook "memory-compiler.sh" "Stop hook memory GC + indexing" "Y"
 else
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
     install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
@@ -280,6 +294,15 @@ else
                 ;;
             sync-state.sh)
                 add_hook_config "$SETTINGS_FILE" "Stop" "" ".claude/hooks/sync-state.sh"
+                ;;
+            memory-compiler.sh)
+                add_hook_config "$SETTINGS_FILE" "Stop" "" ".claude/hooks/memory-compiler.sh"
+                ;;
+            smart-preprocess-v2.sh)
+                add_hook_config "$SETTINGS_FILE" "UserPromptSubmit" "" ".claude/hooks/smart-preprocess-v2.sh"
+                ;;
+            observer.sh)
+                add_hook_config "$SETTINGS_FILE" "Stop" "" ".claude/hooks/observer.sh"
                 ;;
         esac
     done

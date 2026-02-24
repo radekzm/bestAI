@@ -118,7 +118,7 @@ Attempt 4: STOP + ROOT_CAUSE_TABLE (what tried | why failed | what to try next)
 | Agent repeats same error | Circuit Breaker | P0 |
 | Need audit trail / recovery | WAL | P0 |
 | Context routing optimization | ARC | P0 |
-| Correction loop (2+ fails) | Exponential Backoff | P0 |
+| Correction loop (3 failed batches) | Exponential Backoff | P0 |
 | Subagent memory safety | Copy-on-Write | P1 |
 | Auto-tuning thresholds | PID Controller | P1 |
 | Fast context pre-screening | Bloom Filter | P1 |

@@ -83,7 +83,9 @@ fi
 exit 0
 ```
 
-### B: Subagent Selector (RECOMMENDED, 20 min)
+### B: Subagent Selector (PRODUCTION, 20 min)
+
+**Status: Production** — implemented in `hooks/smart-preprocess-v2.sh` with automatic fallback to keyword matching. Install via `--profile smart-v2`.
 
 Uses fast model (Haiku) to intelligently select context:
 
@@ -198,4 +200,4 @@ Community filled this gap with open-source projects (claude-mem 4700+ stars, cla
 
 ---
 
-*See [08-advanced](08-advanced.md) for vector DB details and observational memory.*
+*See [08-advanced](08-advanced.md) for vector DB details and [09-prompt-caching-ops](09-prompt-caching-ops.md) for cache-aware runtime optimization.*

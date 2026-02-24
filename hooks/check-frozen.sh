@@ -100,7 +100,9 @@ check_bash_bypass() {
     [ -z "$command" ] && return 0
 
     # Only check commands that can modify files.
-    if ! echo "$command" | grep -Eqi '(sed\s+-i|perl\s+-i|awk.*inplace|echo\s+.*>|printf\s+.*>|cat\s+.*>|tee\s+|rm\s+|mv\s+|cp\s+|truncate\s+|dd\s+|git\s+(checkout|restore))'; then
+    # Extended pattern covers: direct editors, redirect operators, file manipulation,
+    # git file-level commands, and pipe-to-file patterns.
+    if ! echo "$command" | grep -Eqi '(sed\s+-i|perl\s+-i|awk.*inplace|echo\s+.*>|printf\s+.*>|cat\s+.*>|>\s*[^&]|tee\s+|rm\s+|mv\s+|cp\s+|truncate\s+|dd\s+|install\s+|patch\s+|git\s+(checkout|restore|mv|rm)|chmod\s+|chown\s+|ln\s+|rsync\s+|sponge\s+)'; then
         return 0
     fi
 
