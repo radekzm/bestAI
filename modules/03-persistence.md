@@ -121,6 +121,53 @@ Minimal cadence:
 - Every 5 sessions: review newest `[AUTO]` entries
 - Every 20 sessions: defragment topic files and archive obsolete notes
 
+## Memory Lifecycle
+
+Memory evolves through three phases:
+
+```
+1. Initialization     — bootstrap from codebase (git log, PRs, code comments)
+                        Populate MEMORY.md + topic files with load-bearing decisions.
+
+2. Reflection         — periodic review of memory quality (every 5 sessions)
+                        Validate [AUTO] entries against current evidence.
+                        Merge duplicates, flag stale entries.
+                        Hook: observer.sh runs at configurable interval.
+
+3. Defragmentation    — reorganize and archive (every 20 sessions)
+                        Archive old [AUTO] entries → gc-archive.md
+                        Compact topic files, remove redundancy.
+                        Hook: memory-compiler.sh runs generational GC.
+```
+
+| Phase | Trigger | Hook |
+|-------|---------|------|
+| Initialization | New project / first session | Manual (Decision Extraction Playbook below) |
+| Reflection | Every N sessions | `hooks/observer.sh` (configurable via `OBSERVER_INTERVAL`) |
+| Defragmentation | Every GC cycle | `hooks/memory-compiler.sh` (configurable via `MEMORY_COMPILER_GC_AGE`) |
+
+## Git-Backed Memory
+
+For projects requiring auditability, version memory changes with git:
+
+```bash
+# In CLAUDE.md or hooks/sync-state.sh:
+cd "$MEMORY_DIR" && git add -A && git commit -m "SYNC_STATE $(date -u +%Y-%m-%dT%H:%M:%SZ)" 2>/dev/null
+```
+
+**Benefits:**
+- Every memory change is versioned (who changed what, when)
+- `git log --oneline memory/` shows memory evolution
+- `git diff HEAD~1 memory/MEMORY.md` shows what changed last session
+- Recoverable: `git checkout HEAD~1 -- memory/decisions.md` restores previous state
+
+**Trade-offs:**
+- Adds ~50ms per session end (negligible)
+- Repository grows with history (mitigated by `gc-archive.md` reducing active file count)
+- Not needed for small projects with few sessions
+
+**When to use:** Projects with >50 sessions, team environments, or compliance requirements.
+
 ### Escalation Flow
 
 ```

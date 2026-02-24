@@ -148,6 +148,59 @@ Team Lead (main session)
 | [Mem0](https://github.com/mem0ai/mem0) | Graph memory | — | 26% accuracy improvement |
 | [Volt](https://github.com/voltropy/volt) | DAG summarization | — | Lossless context management |
 
+## AION Manual vs Automated Pipeline — Trade-offs
+
+Two approaches to context compilation exist in production:
+
+| Aspect | AION (manual) | bestAI (automated) |
+|--------|---------------|-------------------|
+| **Method** | Agent writes TOP-10/5/3 explicitly via SYNC_STATE | Hooks compute scores, trigrams, and inject automatically |
+| **Latency** | ~0ms on read (pre-compiled state file) | ~50-200ms per prompt (scoring pipeline) |
+| **Accuracy** | High — agent curates with full session context | Medium — keyword/trigram matching, no semantic understanding |
+| **Staleness** | Risk: agent forgets to SYNC_STATE | Low: hooks run deterministically on every event |
+| **Token cost** | ~200 tokens for state file | ~50-1500 tokens for injected context |
+| **Failure mode** | Incomplete SYNC → stale state next session | Cache miss → slightly slower, still correct |
+| **Best for** | Small teams, high-stakes projects | Large memory dirs, frequent prompts |
+
+**Recommendation**: Use both. AION's SYNC_STATE maintains human-readable state (module 06), while automated hooks handle high-frequency scoring (module 07). They complement — SYNC_STATE captures intent, hooks capture relevance.
+
+## Success Metrics for Memory Systems
+
+| Metric | Formula | Target | How to Measure |
+|--------|---------|--------|----------------|
+| **Token ROI** | useful_tokens / injected_tokens | >0.5 | Count lines from injected context that appear in agent's response |
+| **Retrieval accuracy** | relevant_files_injected / relevant_files_total | >0.7 | Compare injected sources vs files agent actually reads |
+| **Cost-per-task** | total_tokens_used / tasks_completed | Decreasing | Track via `evals/cache-usage-report.sh` over time |
+| **Cache hit rate** | cache_valid / (cache_valid + cache_miss) | >0.8 | Count etag_validate "valid" vs "stale"+"missing" |
+| **False injection rate** | irrelevant_injections / total_injections | <0.1 | Review [SMART_CONTEXT] blocks in session transcripts |
+
+**Measuring in practice:**
+```bash
+# Token ROI proxy: compare injected sources with files agent reads in session
+grep 'sources:' /path/to/transcript.jsonl | # what was injected
+grep 'Read tool' /path/to/transcript.jsonl   # what agent actually read
+
+# Cache hit rate (from E-Tag cache)
+grep -c 'valid' /tmp/etag-debug.log   # hits
+grep -c 'stale\|missing' /tmp/etag-debug.log  # misses
+```
+
+## Context-Bench Integration (research)
+
+[Context-Bench](https://www.letta.com/blog/context-bench) (Letta, 2026) benchmarks long-context memory tasks. Key finding: even frontier models achieve only **74% accuracy** on structured memory retrieval.
+
+**Relevance to bestAI:**
+- Validates the need for active context management (models alone aren't enough)
+- Provides standardized tasks for evaluating memory systems
+- bestAI's eval framework (`evals/run.sh`) can be extended with Context-Bench-style tasks
+
+**Integration path** (when ready):
+1. Add Context-Bench task format to `evals/tasks/`
+2. Map bestAI scoring dimensions to Context-Bench metrics
+3. Compare: Smart Context injection accuracy vs raw model accuracy on same tasks
+
+**Status**: Not yet integrated. Current evals use custom benchmarks (`evals/data/`). Context-Bench compatibility is a future enhancement.
+
 ## Maturity Guide
 
 | Feature | Maturity | Confidence | When to Use |
