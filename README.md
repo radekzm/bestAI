@@ -13,34 +13,27 @@ Hooks + exit 2 = enforcement (deterministic, cannot be bypassed)
 
 ## Quick Start
 
-1. Copy a template to your project:
-   ```bash
-   cp templates/claude-md-standard.md your-project/CLAUDE.md
-   ```
+**Automated (recommended):**
+```bash
+bash setup.sh /path/to/your/project
+```
 
-2. Copy hooks you need:
-   ```bash
-   mkdir -p your-project/.claude/hooks
-   cp hooks/check-frozen.sh your-project/.claude/hooks/
-   cp hooks/circuit-breaker.sh your-project/.claude/hooks/
-   chmod +x your-project/.claude/hooks/*.sh
-   ```
+This interactive setup (~5 min) installs templates, hooks, and generates `settings.json`.
 
-3. Configure hooks in `.claude/settings.json`:
-   ```json
-   {
-     "hooks": {
-       "PreToolUse": [{
-         "matcher": "Edit|Write",
-         "hooks": [{"type": "command", "command": ".claude/hooks/check-frozen.sh"}]
-       }],
-       "PostToolUse": [{
-         "matcher": "Bash",
-         "hooks": [{"type": "command", "command": ".claude/hooks/circuit-breaker.sh"}]
-       }]
-     }
-   }
-   ```
+**Manual:**
+1. Copy a template: `cp templates/claude-md-standard.md your-project/CLAUDE.md`
+2. Copy hooks: `cp hooks/*.sh your-project/.claude/hooks/ && chmod +x your-project/.claude/hooks/*.sh`
+3. Configure in `.claude/settings.json` (see [04-enforcement](modules/04-enforcement.md))
+
+**Diagnose problems:**
+```bash
+bash doctor.sh /path/to/your/project
+```
+
+**Run tests:**
+```bash
+bash tests/test-hooks.sh
+```
 
 ## Modules
 
@@ -71,6 +64,15 @@ Hooks + exit 2 = enforcement (deterministic, cannot be bypassed)
 | [circuit-breaker.sh](hooks/circuit-breaker.sh) | PostToolUse | Stop after N consecutive failures |
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require backup before deploy/migrate |
+
+## Tooling
+
+| Tool | Purpose | Usage |
+|------|---------|-------|
+| [setup.sh](setup.sh) | Interactive project setup | `bash setup.sh /path/to/project` |
+| [doctor.sh](doctor.sh) | Health check & diagnostics | `bash doctor.sh /path/to/project` |
+| [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (14 tests) | `bash tests/test-hooks.sh` |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |
 
 ## Templates
 

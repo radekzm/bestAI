@@ -55,7 +55,7 @@ PROJECT_FROZEN="${CLAUDE_PROJECT_DIR:-.}/.claude/frozen-fragments.md"
 
 check_frozen() {
     local registry="$1"
-    [ ! -f "$registry" ] && return 1
+    [ ! -f "$registry" ] && return 0  # No registry = nothing frozen = allow
 
     # Extract paths from frozen registry (lines starting with "- `path`")
     while IFS= read -r line; do
