@@ -1,0 +1,56 @@
+name: bestAI CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq shellcheck
+
+      - name: Shell syntax check
+        run: |
+          bash -n setup.sh
+          bash -n doctor.sh
+          bash -n tests/test-hooks.sh
+          for f in hooks/*.sh evals/*.sh; do
+            bash -n "$f"
+          done
+
+      - name: Shellcheck (errors only)
+        run: |
+          shellcheck --severity=error setup.sh doctor.sh tests/test-hooks.sh hooks/*.sh evals/*.sh
+
+      - name: Python compile check
+        run: |
+          python3 -m py_compile tools/*.py
+
+      - name: Hook regression tests
+        run: |
+          bash tests/test-hooks.sh
+
+      - name: Setup smoke test (non-interactive)
+        run: |
+          TMP_PROJECT="$RUNNER_TEMP/bestai-smoke"
+          mkdir -p "$TMP_PROJECT"
+          bash setup.sh "$TMP_PROJECT" \
+            --profile smart-v2 \
+            --non-interactive \
+            --template standard \
+            --blueprint none \
+            --memory yes \
+            --agents yes \
+            --run-tests no
+          bash doctor.sh "$TMP_PROJECT"
+
+      - name: Benchmark gates
+        run: |
+          bash evals/run.sh --enforce-gates --output "$RUNNER_TEMP/evals.md"

@@ -41,9 +41,9 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Agent deploys without backup | Advisory rule ignored | Install `backup-enforcement.sh` hook → [04-enforcement](modules/04-enforcement.md) |
+| Agent deploys without backup | Backup gate missing/disabled | Install `backup-enforcement.sh` and provide backup manifest (path+timestamp+checksum) → [04-enforcement](modules/04-enforcement.md) |
 | No audit trail of destructive actions | Nothing logs intent | Install `wal-logger.sh` hook → [05-cs-algorithms](modules/05-cs-algorithms.md) |
-| Agent commits secrets to git | No PreToolUse guard | Add secret-detection hook → [04-enforcement](modules/04-enforcement.md) |
+| Agent commits secrets to git | Missing/disabled secret guard | Install/enable `secret-guard.sh` hook → [04-enforcement](modules/04-enforcement.md) |
 
 ## Setup Issues
 

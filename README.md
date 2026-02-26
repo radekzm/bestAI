@@ -17,9 +17,10 @@ Hooks + exit 2 = enforcement (deterministic, cannot be bypassed)
 ```bash
 bash setup.sh /path/to/your/project
 bash setup.sh /path/to/your/project --profile aion-runtime
+bash setup.sh /path/to/your/project --profile smart-v2 --non-interactive --secure-defaults
 ```
 
-This interactive setup (~5 min) installs templates, hooks, merges/creates `settings.json`, and can enable runtime profile (REHYDRATE + SYNC_STATE).
+Setup installs templates/hooks, merges or creates `settings.json`, and supports deterministic CI mode (`--non-interactive`).
 
 **Manual:**
 1. Copy a template: `cp templates/claude-md-standard.md your-project/CLAUDE.md`
@@ -29,12 +30,13 @@ This interactive setup (~5 min) installs templates, hooks, merges/creates `setti
 **Diagnose problems:**
 ```bash
 bash doctor.sh /path/to/your/project
+bash doctor.sh --strict /path/to/your/project
 ```
 
 **Run tests:**
 ```bash
 bash tests/test-hooks.sh
-bash evals/run.sh
+bash evals/run.sh --enforce-gates
 ```
 
 ## Modules
@@ -72,23 +74,26 @@ bash evals/run.sh
 | Hook | Type | Purpose |
 |------|------|---------|
 | [check-frozen.sh](hooks/check-frozen.sh) | PreToolUse | Block edits to frozen files (Edit/Write/Bash) |
+| [check-user-tags.sh](hooks/check-user-tags.sh) | PreToolUse | Block edits that remove `[USER]` memory entries |
+| [secret-guard.sh](hooks/secret-guard.sh) | PreToolUse | Block obvious secret leakage patterns and secret-file git ops |
+| [confidence-gate.sh](hooks/confidence-gate.sh) | PreToolUse | Block dangerous operations below confidence threshold |
 | [preprocess-prompt.sh](hooks/preprocess-prompt.sh) | UserPromptSubmit | Smart Context compiler with guardrails |
 | [rehydrate.sh](hooks/rehydrate.sh) | SessionStart | Runtime context bootstrap |
 | [sync-state.sh](hooks/sync-state.sh) | Stop | Runtime state sync + session delta |
 | [circuit-breaker.sh](hooks/circuit-breaker.sh) | PostToolUse | Advisory anti-loop tracker |
 | [circuit-breaker-gate.sh](hooks/circuit-breaker-gate.sh) | PreToolUse | Strict anti-loop block when OPEN |
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
-| [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require backup before deploy/migrate |
+| [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require validated backup manifest before deploy/migrate |
 | [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State (v4.0) |
 
 ## Tooling
 
 | Tool | Purpose | Usage |
 |------|---------|-------|
-| [setup.sh](setup.sh) | Interactive project setup | `bash setup.sh /path/to/project` |
-| [doctor.sh](doctor.sh) | Health check & diagnostics | `bash doctor.sh /path/to/project` |
+| [setup.sh](setup.sh) | Interactive or deterministic project setup | `bash setup.sh /path/to/project --non-interactive --secure-defaults` |
+| [doctor.sh](doctor.sh) | Health check & diagnostics (`--strict` for CI) | `bash doctor.sh --strict /path/to/project` |
 | [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (100+ tests) | `bash tests/test-hooks.sh` |
-| [evals/run.sh](evals/run.sh) | Reproducible benchmark report | `bash evals/run.sh` |
+| [evals/run.sh](evals/run.sh) | Reproducible benchmark report (+ optional quality gates) | `bash evals/run.sh --enforce-gates` |
 | [evals/cache-usage-report.sh](evals/cache-usage-report.sh) | Prompt cache usage trend report | `bash evals/cache-usage-report.sh --input evals/data/cache-usage-sample.jsonl` |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |
 | [docs/migration-guide.md](docs/migration-guide.md) | Existing project migration playbook | Follow checklist step-by-step |

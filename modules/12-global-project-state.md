@@ -28,8 +28,14 @@ To keep the GPS up-to-date, bestAI uses a PostToolUse or Stop hook (`hooks/sync-
 
 **How it works:**
 1. After significant actions (or at the end of a session), the agent is required to summarize its progress.
-2. The `sync-gps.sh` hook parses this summary and updates the `GPS.json` file.
+2. The `sync-gps.sh` Stop hook parses session output, changed files, and blocker signals, then performs an atomic `GPS.json` update.
 3. When a new agent (or the next session) starts, the `rehydrate.sh` hook (from Module 10) loads the `GPS.json` into the T0 (HOT) context tier.
+
+Current schema requires:
+- `project.owner`
+- `project.target_date`
+- `project.success_metric`
+- `project.status_updated_at`
 
 ## Example GPS File
 

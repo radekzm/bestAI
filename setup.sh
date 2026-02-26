@@ -1,6 +1,7 @@
 #!/bin/bash
-# setup.sh — bestAI Quick Setup (5 minutes)
-# Usage: bash setup.sh [target-project-dir] [--profile default|aion-runtime|smart-v2] [--merge-settings|--no-merge-settings]
+# setup.sh — bestAI Quick Setup
+# Usage:
+#   bash setup.sh [target-project-dir] [options]
 
 set -euo pipefail
 
@@ -15,18 +16,35 @@ TARGET="."
 PROFILE="default"
 MERGE_SETTINGS=1
 TARGET_SET=0
+NON_INTERACTIVE=0
+SECURE_DEFAULTS=0
+TEMPLATE_MODE=""
+BLUEPRINT_MODE=""
+MEMORY_MODE=""
+AGENTS_MODE=""
+TEST_MODE=""
+FAIL_ON_TEST_FAILURE=0
 
 usage() {
     cat <<USAGE
 Usage:
-  bash setup.sh [target-project-dir] [--profile default|aion-runtime] [--merge-settings|--no-merge-settings]
+  bash setup.sh [target-project-dir] [--profile default|aion-runtime|smart-v2] [--merge-settings|--no-merge-settings]
+                [--non-interactive|--yes] [--secure-defaults]
+                [--template minimal|standard|skip]
+                [--blueprint none|fullstack|swarm]
+                [--memory yes|no] [--agents yes|no] [--run-tests yes|no]
 
 Examples:
   bash setup.sh /path/to/project
   bash setup.sh /path/to/project --profile aion-runtime
   bash setup.sh /path/to/project --profile smart-v2
   bash setup.sh . --no-merge-settings
+  bash setup.sh /path/to/project --non-interactive --secure-defaults --profile smart-v2
 USAGE
+}
+
+is_yes() {
+    [[ "$1" =~ ^[Yy]$ ]]
 }
 
 while [ "$#" -gt 0 ]; do
@@ -34,6 +52,40 @@ while [ "$#" -gt 0 ]; do
         --profile)
             PROFILE="${2:-}"
             [ -z "$PROFILE" ] && { echo "Missing value for --profile" >&2; exit 1; }
+            shift 2
+            ;;
+        --non-interactive|--yes)
+            NON_INTERACTIVE=1
+            shift
+            ;;
+        --secure-defaults)
+            SECURE_DEFAULTS=1
+            FAIL_ON_TEST_FAILURE=1
+            shift
+            ;;
+        --template)
+            TEMPLATE_MODE="${2:-}"
+            [ -z "$TEMPLATE_MODE" ] && { echo "Missing value for --template" >&2; exit 1; }
+            shift 2
+            ;;
+        --blueprint)
+            BLUEPRINT_MODE="${2:-}"
+            [ -z "$BLUEPRINT_MODE" ] && { echo "Missing value for --blueprint" >&2; exit 1; }
+            shift 2
+            ;;
+        --memory)
+            MEMORY_MODE="${2:-}"
+            [ -z "$MEMORY_MODE" ] && { echo "Missing value for --memory" >&2; exit 1; }
+            shift 2
+            ;;
+        --agents)
+            AGENTS_MODE="${2:-}"
+            [ -z "$AGENTS_MODE" ] && { echo "Missing value for --agents" >&2; exit 1; }
+            shift 2
+            ;;
+        --run-tests)
+            TEST_MODE="${2:-}"
+            [ -z "$TEST_MODE" ] && { echo "Missing value for --run-tests" >&2; exit 1; }
             shift 2
             ;;
         --merge-settings)
@@ -68,11 +120,57 @@ if [ "$PROFILE" != "default" ] && [ "$PROFILE" != "aion-runtime" ] && [ "$PROFIL
     exit 1
 fi
 
+case "$TEMPLATE_MODE" in
+    ""|minimal|standard|skip) ;;
+    *)
+        echo "Unsupported --template value: $TEMPLATE_MODE (use minimal|standard|skip)" >&2
+        exit 1
+        ;;
+esac
+
+case "$BLUEPRINT_MODE" in
+    ""|none|fullstack|swarm) ;;
+    *)
+        echo "Unsupported --blueprint value: $BLUEPRINT_MODE (use none|fullstack|swarm)" >&2
+        exit 1
+        ;;
+esac
+
+case "$MEMORY_MODE" in
+    ""|yes|no) ;;
+    *)
+        echo "Unsupported --memory value: $MEMORY_MODE (use yes|no)" >&2
+        exit 1
+        ;;
+esac
+
+case "$AGENTS_MODE" in
+    ""|yes|no) ;;
+    *)
+        echo "Unsupported --agents value: $AGENTS_MODE (use yes|no)" >&2
+        exit 1
+        ;;
+esac
+
+case "$TEST_MODE" in
+    ""|yes|no) ;;
+    *)
+        echo "Unsupported --run-tests value: $TEST_MODE (use yes|no)" >&2
+        exit 1
+        ;;
+esac
+
+if [ ! -d "$TARGET" ]; then
+    mkdir -p "$TARGET"
+fi
+
 echo -e "${BOLD}bestAI Quick Setup${NC}"
 echo "Source: $BESTAI_DIR"
 echo "Target: $(cd "$TARGET" && pwd)"
 echo "Profile: $PROFILE"
 echo "Merge settings.json: $MERGE_SETTINGS"
+echo "Non-interactive: $NON_INTERACTIVE"
+echo "Secure defaults: $SECURE_DEFAULTS"
 echo ""
 
 # Check dependencies
@@ -105,16 +203,30 @@ echo -e "${BOLD}Step 1: CLAUDE.md template${NC}"
 if [ -f "$TARGET/CLAUDE.md" ]; then
     echo -e "  ${YELLOW}CLAUDE.md already exists${NC} — keeping current file"
 else
-    echo "  1) Minimal (<50 lines) — small projects"
-    echo "  2) Standard (<100 lines) — recommended"
-    echo "  3) Skip"
-    read -r -p "  Choose [1/2/3]: " TEMPLATE_CHOICE
+    TEMPLATE_CHOICE="2"
+    case "$TEMPLATE_MODE" in
+        minimal) TEMPLATE_CHOICE="1" ;;
+        standard) TEMPLATE_CHOICE="2" ;;
+        skip) TEMPLATE_CHOICE="3" ;;
+        "")
+            if [ "$NON_INTERACTIVE" -eq 1 ]; then
+                TEMPLATE_CHOICE="2"
+                echo "  Auto-select template: standard (non-interactive)"
+            else
+                echo "  1) Minimal (<50 lines) — small projects"
+                echo "  2) Standard (<100 lines) — recommended"
+                echo "  3) Skip"
+                read -r -p "  Choose [1/2/3]: " TEMPLATE_CHOICE
+            fi
+            ;;
+    esac
+
     case "${TEMPLATE_CHOICE:-2}" in
-        1)
+        1|minimal)
             cp "$BESTAI_DIR/templates/claude-md-minimal.md" "$TARGET/CLAUDE.md"
             echo -e "  ${GREEN}Copied${NC} minimal template"
             ;;
-        2)
+        2|standard)
             cp "$BESTAI_DIR/templates/claude-md-standard.md" "$TARGET/CLAUDE.md"
             echo -e "  ${GREEN}Copied${NC} standard template"
             ;;
@@ -127,6 +239,11 @@ fi
 customize_claude() {
     local file="$1"
     [ -f "$file" ] || return 0
+
+    if [ "$NON_INTERACTIVE" -eq 1 ]; then
+        echo "  Skipping CLAUDE.md metadata prompts (non-interactive)"
+        return 0
+    fi
 
     read -r -p "  Fill CLAUDE.md project metadata now? [Y/n]: " META_CHOICE
     if ! [[ "${META_CHOICE:-Y}" =~ ^[Yy]$ ]]; then
@@ -155,21 +272,56 @@ customize_claude "$TARGET/CLAUDE.md"
 # Step 1b: Project Blueprints (v4.0)
 echo ""
 echo -e "${BOLD}Step 1b: Project Blueprints (v4.0)${NC}"
-read -r -p "  Do you want to initialize a Project Blueprint? [y/N]: " BLUEPRINT_CHOICE
-if [[ "${BLUEPRINT_CHOICE:-N}" =~ ^[Yy]$ ]]; then
-    echo "  1) Full-Stack (Next.js + FastAPI + PostgreSQL)"
-    echo "  2) Agent Swarm (Master + Multiple sub-agents)"
-    read -r -p "  Choose blueprint [1/2]: " BP_SELECTION
+BP_SELECTION=""
+case "$BLUEPRINT_MODE" in
+    fullstack) BP_SELECTION="1" ;;
+    swarm) BP_SELECTION="2" ;;
+    none) BP_SELECTION="" ;;
+    "")
+        if [ "$NON_INTERACTIVE" -eq 1 ]; then
+            BP_SELECTION=""
+            echo "  Skipped Blueprints (non-interactive default)"
+        else
+            read -r -p "  Do you want to initialize a Project Blueprint? [y/N]: " BLUEPRINT_CHOICE
+            if is_yes "${BLUEPRINT_CHOICE:-N}"; then
+                echo "  1) Full-Stack (Next.js + FastAPI + PostgreSQL)"
+                echo "  2) Agent Swarm (Master + Multiple sub-agents)"
+                read -r -p "  Choose blueprint [1/2]: " BP_SELECTION
+            fi
+        fi
+        ;;
+esac
+
+if [ -n "$BP_SELECTION" ]; then
     mkdir -p "$TARGET/.bestai"
     if [ -f "$BESTAI_DIR/templates/gps-template.json" ]; then
         cp "$BESTAI_DIR/templates/gps-template.json" "$TARGET/.bestai/GPS.json"
         echo -e "  ${GREEN}Created${NC} Global Project State (.bestai/GPS.json)"
-        
-        # Here we could inject stack-specific frozen files or linting hooks
+
+        # Minimal deterministic scaffold for blueprint-specific artifacts.
         if [ "$BP_SELECTION" == "1" ]; then
-            echo -e "  ${GREEN}Initialized${NC} Full-Stack Blueprint settings."
+            if [ -f "$BESTAI_DIR/templates/blueprint-fullstack.md" ]; then
+                cp "$BESTAI_DIR/templates/blueprint-fullstack.md" "$TARGET/.bestai/blueprint.md"
+            else
+                cat > "$TARGET/.bestai/blueprint.md" <<'EOF'
+# Full-Stack Blueprint
+
+- Frontend: Next.js
+- Backend: FastAPI
+- Database: PostgreSQL
+- Add stack-specific frozen files and commands before first run.
+EOF
+            fi
+            echo -e "  ${GREEN}Initialized${NC} Full-Stack Blueprint scaffold (.bestai/blueprint.md)."
         elif [ "$BP_SELECTION" == "2" ]; then
-            echo -e "  ${GREEN}Initialized${NC} Agent Swarm Blueprint settings."
+            cat > "$TARGET/.bestai/blueprint.md" <<'EOF'
+# Agent Swarm Blueprint
+
+- Define roles: Developer / Reviewer / Tester
+- Create per-role instruction files
+- Use GPS active_tasks to coordinate ownership
+EOF
+            echo -e "  ${GREEN}Initialized${NC} Agent Swarm Blueprint scaffold (.bestai/blueprint.md)."
         fi
     fi
 else
@@ -184,17 +336,43 @@ mkdir -p "$HOOKS_DIR"
 
 INSTALLED=()
 
+secure_default_for_hook() {
+    local name="$1" base_default="$2"
+    if [ "$SECURE_DEFAULTS" -ne 1 ]; then
+        echo "$base_default"
+        return
+    fi
+
+    case "$name" in
+        check-frozen.sh|check-user-tags.sh|secret-guard.sh|backup-enforcement.sh|confidence-gate.sh|wal-logger.sh|circuit-breaker.sh|circuit-breaker-gate.sh|preprocess-prompt.sh|smart-preprocess-v2.sh|rehydrate.sh|sync-state.sh|memory-compiler.sh|observer.sh|sync-gps.sh)
+            echo "Y"
+            ;;
+        *)
+            echo "$base_default"
+            ;;
+    esac
+}
+
 install_hook() {
     local name="$1" desc="$2" default="$3"
+    local effective_default choice
+    effective_default="$(secure_default_for_hook "$name" "$default")"
+
     if [ -f "$HOOKS_DIR/$name" ]; then
         echo -e "  ${YELLOW}EXISTS${NC} $name — keeping"
         INSTALLED+=("$name")
         return
     fi
 
-    read -r -p "  Install $name ($desc)? [${default}]: " CHOICE
-    CHOICE="${CHOICE:-$default}"
-    if [[ "$CHOICE" =~ ^[Yy]$ ]]; then
+    if [ "$NON_INTERACTIVE" -eq 1 ]; then
+        choice="$effective_default"
+        echo "  Auto-select $name: $choice (non-interactive)"
+    else
+        read -r -p "  Install $name ($desc)? [${effective_default}]: " choice
+        choice="${choice:-$effective_default}"
+    fi
+
+    if is_yes "$choice"; then
         cp "$BESTAI_DIR/hooks/$name" "$HOOKS_DIR/$name"
         chmod +x "$HOOKS_DIR/$name"
         INSTALLED+=("$name")
@@ -206,7 +384,10 @@ install_hook() {
 
 if [ "$PROFILE" = "smart-v2" ]; then
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
+    install_hook "check-user-tags.sh" "protect [USER] memory entries from accidental removal" "Y"
+    install_hook "secret-guard.sh" "block obvious secret leakage in commands/writes" "Y"
     install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
+    install_hook "confidence-gate.sh" "block dangerous ops when confidence is too low" "Y"
     install_hook "wal-logger.sh" "write-ahead log for destructive actions" "Y"
     install_hook "circuit-breaker.sh" "advisory anti-loop tracker (PostToolUse)" "Y"
     install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
@@ -219,7 +400,10 @@ if [ "$PROFILE" = "smart-v2" ]; then
     install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "Y"
 elif [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
+    install_hook "check-user-tags.sh" "protect [USER] memory entries from accidental removal" "Y"
+    install_hook "secret-guard.sh" "block obvious secret leakage in commands/writes" "y"
     install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
+    install_hook "confidence-gate.sh" "block dangerous ops when confidence is too low" "y"
     install_hook "wal-logger.sh" "write-ahead log for destructive actions" "y"
     install_hook "circuit-breaker.sh" "advisory anti-loop tracker (PostToolUse)" "y"
     install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
@@ -227,15 +411,20 @@ elif [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "Y"
     install_hook "sync-state.sh" "Stop hook runtime sync" "Y"
     install_hook "memory-compiler.sh" "Stop hook memory GC + indexing" "Y"
+    install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "n"
 else
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
+    install_hook "check-user-tags.sh" "protect [USER] memory entries from accidental removal" "y"
+    install_hook "secret-guard.sh" "block obvious secret leakage in commands/writes" "n"
     install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
+    install_hook "confidence-gate.sh" "block dangerous ops when confidence is too low" "n"
     install_hook "wal-logger.sh" "write-ahead log for destructive actions" "y"
     install_hook "circuit-breaker.sh" "advisory anti-loop tracker (PostToolUse)" "y"
     install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
     install_hook "preprocess-prompt.sh" "UserPromptSubmit smart context compiler" "y"
     install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "n"
     install_hook "sync-state.sh" "Stop hook runtime sync" "n"
+    install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "n"
 fi
 
 # Step 3: Configure settings.json
@@ -327,8 +516,17 @@ else
             check-frozen.sh)
                 add_hook_config "$SETTINGS_FILE" "PreToolUse" "Edit|Write|Bash" ".claude/hooks/check-frozen.sh"
                 ;;
+            check-user-tags.sh)
+                add_hook_config "$SETTINGS_FILE" "PreToolUse" "Write|Edit" ".claude/hooks/check-user-tags.sh"
+                ;;
+            secret-guard.sh)
+                add_hook_config "$SETTINGS_FILE" "PreToolUse" "Bash|Write|Edit" ".claude/hooks/secret-guard.sh"
+                ;;
             backup-enforcement.sh)
                 add_hook_config "$SETTINGS_FILE" "PreToolUse" "Bash" ".claude/hooks/backup-enforcement.sh"
+                ;;
+            confidence-gate.sh)
+                add_hook_config "$SETTINGS_FILE" "PreToolUse" "Bash" ".claude/hooks/confidence-gate.sh"
                 ;;
             wal-logger.sh)
                 add_hook_config "$SETTINGS_FILE" "PreToolUse" "Bash|Write|Edit" ".claude/hooks/wal-logger.sh"
@@ -406,8 +604,26 @@ fi
 # Step 5: Memory scaffolding (optional, project-local reference)
 echo ""
 echo -e "${BOLD}Step 5: Memory scaffolding${NC}"
-read -r -p "  Create project-local memory templates in $TARGET/memory/? [y/N]: " MEM_CHOICE
-if [[ "${MEM_CHOICE:-N}" =~ ^[Yy]$ ]]; then
+MEM_CHOICE="N"
+case "$MEMORY_MODE" in
+    yes) MEM_CHOICE="Y" ;;
+    no) MEM_CHOICE="N" ;;
+    "")
+        if [ "$NON_INTERACTIVE" -eq 1 ]; then
+            if [ "$SECURE_DEFAULTS" -eq 1 ]; then
+                MEM_CHOICE="Y"
+            else
+                MEM_CHOICE="N"
+            fi
+            echo "  Auto-select memory scaffolding: $MEM_CHOICE (non-interactive)"
+        else
+            read -r -p "  Create project-local memory templates in $TARGET/memory/? [y/N]: " MEM_CHOICE
+            MEM_CHOICE="${MEM_CHOICE:-N}"
+        fi
+        ;;
+esac
+
+if is_yes "$MEM_CHOICE"; then
     mkdir -p "$TARGET/memory"
     [ -f "$TARGET/memory/MEMORY.md" ] || cp "$BESTAI_DIR/templates/memory-md-template.md" "$TARGET/memory/MEMORY.md"
     [ -f "$TARGET/memory/frozen-fragments.md" ] || cp "$BESTAI_DIR/templates/frozen-fragments-template.md" "$TARGET/memory/frozen-fragments.md"
@@ -425,8 +641,22 @@ echo -e "${BOLD}Step 6: AGENTS.md (multi-tool compatibility)${NC}"
 if [ -f "$TARGET/AGENTS.md" ]; then
     echo -e "  ${YELLOW}AGENTS.md already exists${NC} — keeping"
 else
-    read -r -p "  Create AGENTS.md? [Y/n]: " AGENTS_CHOICE
-    if [[ "${AGENTS_CHOICE:-Y}" =~ ^[Yy]$ ]]; then
+    AGENTS_CHOICE="Y"
+    case "$AGENTS_MODE" in
+        yes) AGENTS_CHOICE="Y" ;;
+        no) AGENTS_CHOICE="N" ;;
+        "")
+            if [ "$NON_INTERACTIVE" -eq 1 ]; then
+                AGENTS_CHOICE="Y"
+                echo "  Auto-select AGENTS.md: Y (non-interactive)"
+            else
+                read -r -p "  Create AGENTS.md? [Y/n]: " AGENTS_CHOICE
+                AGENTS_CHOICE="${AGENTS_CHOICE:-Y}"
+            fi
+            ;;
+    esac
+
+    if is_yes "$AGENTS_CHOICE"; then
         cp "$BESTAI_DIR/templates/agents-md-template.md" "$TARGET/AGENTS.md"
         echo -e "  ${GREEN}Copied${NC} AGENTS.md template"
     fi
@@ -435,15 +665,37 @@ fi
 # Step 7: Optional hook test run
 echo ""
 echo -e "${BOLD}Step 7: Verify hooks${NC}"
-read -r -p "  Run automated hook tests now (tests/test-hooks.sh)? [Y/n]: " TEST_CHOICE
-if [[ "${TEST_CHOICE:-Y}" =~ ^[Yy]$ ]]; then
+TEST_CHOICE="Y"
+case "$TEST_MODE" in
+    yes) TEST_CHOICE="Y" ;;
+    no) TEST_CHOICE="N" ;;
+    "")
+        if [ "$NON_INTERACTIVE" -eq 1 ]; then
+            TEST_CHOICE="Y"
+            echo "  Auto-select hook tests: Y (non-interactive)"
+        else
+            read -r -p "  Run automated hook tests now (tests/test-hooks.sh)? [Y/n]: " TEST_CHOICE
+            TEST_CHOICE="${TEST_CHOICE:-Y}"
+        fi
+        ;;
+esac
+
+if is_yes "$TEST_CHOICE"; then
     if bash "$BESTAI_DIR/tests/test-hooks.sh"; then
         echo -e "  ${GREEN}Hook tests passed${NC}"
     else
         echo -e "  ${RED}Hook tests failed${NC} — review output above"
+        if [ "$FAIL_ON_TEST_FAILURE" -eq 1 ] || [ "$NON_INTERACTIVE" -eq 1 ]; then
+            echo -e "  ${RED}Aborting setup due to failing tests.${NC}"
+            exit 1
+        fi
     fi
 else
     echo "  Skipped tests"
+    if [ "$SECURE_DEFAULTS" -eq 1 ]; then
+        echo -e "  ${RED}Aborting setup: --secure-defaults requires test execution.${NC}"
+        exit 1
+    fi
 fi
 
 # Summary

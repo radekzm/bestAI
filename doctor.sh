@@ -1,6 +1,6 @@
 #!/bin/bash
 # doctor.sh — bestAI Health Check & Diagnostics
-# Usage: bash doctor.sh [project-dir]
+# Usage: bash doctor.sh [--strict] [project-dir]
 
 set -euo pipefail
 
@@ -10,13 +10,43 @@ RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-TARGET="${1:-.}"
+STRICT=0
+TARGET="."
+
+usage() {
+    cat <<USAGE
+Usage:
+  bash doctor.sh [--strict] [project-dir]
+
+Options:
+  --strict   Exit non-zero when warnings are present.
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --strict)
+            STRICT=1
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            TARGET="$1"
+            shift
+            ;;
+    esac
+done
+
 TARGET_ABS="$(cd "$TARGET" && pwd)"
 ISSUES=0
 WARNINGS=0
 
 echo -e "${BOLD}bestAI Doctor — AI Agent Health Check${NC}"
 echo "Project: $TARGET_ABS"
+echo "Strict mode: $STRICT"
 echo ""
 
 check() {
@@ -129,6 +159,47 @@ else
     check "WARN" "No .claude/settings.json" "Run: bash setup.sh $TARGET_ABS"
 fi
 
+# === GPS ===
+echo ""
+echo -e "${BOLD}Global Project State (GPS)${NC}"
+GPS_FILE="$TARGET_ABS/.bestai/GPS.json"
+if [ -f "$GPS_FILE" ]; then
+    if command -v jq &>/dev/null && jq empty "$GPS_FILE" 2>/dev/null; then
+        check "OK" "GPS.json valid JSON"
+
+        if jq -e '
+          (.project | type == "object")
+          and (.project.name | type == "string")
+          and (.project.main_objective | type == "string")
+          and (.project.owner | type == "string")
+          and ((.project.target_date == null) or (.project.target_date | type == "string"))
+          and (.project.success_metric | type == "string")
+          and (.project.status_updated_at | type == "string")
+          and (.milestones | type == "array")
+          and (.active_tasks | type == "array")
+          and (.blockers | type == "array")
+          and (.shared_context | type == "object")
+        ' "$GPS_FILE" >/dev/null 2>&1; then
+            check "OK" "GPS schema fields present (owner/target_date/success_metric/status_updated_at)"
+        else
+            check "FAIL" "GPS schema is incomplete" "Regenerate from templates/gps-template.json and update required fields"
+        fi
+
+        GPS_OWNER=$(jq -r '.project.owner // empty' "$GPS_FILE")
+        GPS_METRIC=$(jq -r '.project.success_metric // empty' "$GPS_FILE")
+        if [ "$GPS_OWNER" = "unassigned" ] || [ "$GPS_OWNER" = "" ]; then
+            check "WARN" "GPS owner is not assigned" "Set .project.owner to accountable person/team"
+        fi
+        if [ "$GPS_METRIC" = "not defined" ] || [ "$GPS_METRIC" = "" ]; then
+            check "WARN" "GPS success_metric is not defined" "Set measurable KPI in .project.success_metric"
+        fi
+    else
+        check "FAIL" "GPS.json invalid JSON" "Validate with: jq . $GPS_FILE"
+    fi
+else
+    check "WARN" "No .bestai/GPS.json" "Create from templates/gps-template.json if using multi-agent orchestration"
+fi
+
 # === Dependencies ===
 echo ""
 echo -e "${BOLD}Dependencies${NC}"
@@ -146,6 +217,23 @@ for dep in realpath python3; do
         check "WARN" "$dep missing (path normalization degraded)" "Install $dep for better matching"
     fi
 done
+
+# === Tools (Python) ===
+echo ""
+echo -e "${BOLD}Tools (Python)${NC}"
+if [ -d "$(dirname "$0")/tools" ] && ls "$(dirname "$0")/tools/"*.py >/dev/null 2>&1; then
+    if command -v python3 &>/dev/null; then
+        if python3 -m py_compile "$(dirname "$0")"/tools/*.py 2>/dev/null; then
+            check "OK" "Python tools compile successfully"
+        else
+            check "FAIL" "Python tool compile failed" "Run: python3 -m py_compile tools/*.py"
+        fi
+    else
+        check "WARN" "python3 missing — cannot validate tools/*.py" "Install python3"
+    fi
+else
+    check "WARN" "No Python tools found in tools/" "Skip"
+fi
 
 # === Memory ===
 echo ""
@@ -319,7 +407,7 @@ echo -e "${BOLD}Hook Activity${NC}"
 METRICS_FILE="$HOME/.claude/projects/$(echo "$TARGET_ABS" | tr '/' '-')/hook-metrics.log"
 if [ -f "$METRICS_FILE" ]; then
     check "OK" "Hook metrics file exists"
-    for hook in check-frozen circuit-breaker backup-enforcement wal-logger; do
+    for hook in check-frozen check-user-tags secret-guard confidence-gate circuit-breaker backup-enforcement wal-logger sync-state sync-gps; do
         COUNT=$(grep -c "$hook" "$METRICS_FILE" 2>/dev/null || echo 0)
         echo "  $hook: $COUNT events"
     done
@@ -385,3 +473,13 @@ echo "Quick commands:"
 echo "  Setup:   bash $(dirname "$0")/setup.sh $TARGET_ABS"
 echo "  Test:    bash $(dirname "$0")/tests/test-hooks.sh"
 echo "  Modules: $(dirname "$0")/modules/"
+
+if [ "$ISSUES" -gt 0 ]; then
+    exit 2
+fi
+
+if [ "$STRICT" -eq 1 ] && [ "$WARNINGS" -gt 0 ]; then
+    exit 1
+fi
+
+exit 0

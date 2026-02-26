@@ -76,6 +76,17 @@ portable_hash() {
     fi
 }
 
+portable_sha256() {
+    local file="$1"
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$file" | awk '{print $1}'
+    elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "$file" | awk '{print $1}'
+    else
+        echo ""
+    fi
+}
+
 # ============================================================
 echo "=== check-frozen.sh ==="
 # ============================================================
@@ -123,7 +134,7 @@ echo ""
 echo "=== backup-enforcement.sh ==="
 # ============================================================
 
-rm -f /tmp/claude-backup-done-* 2>/dev/null
+rm -f /tmp/claude-backup-manifest-* 2>/dev/null
 
 # Test 6: Deploy without backup -> block (exit 2)
 OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"deploy production"}}' | CLAUDE_PROJECT_DIR=/tmp/test-project bash "$HOOKS_DIR/backup-enforcement.sh" 2>&1)
@@ -140,16 +151,42 @@ OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"cat deployment-notes
 CODE=$?
 assert_exit "Safe command with deployment substring -> allow" "0" "$CODE"
 
-# Test 9: Deploy with backup flag -> allow (exit 0)
+# Test 9: Deploy with valid backup manifest -> allow (exit 0)
 PROJECT_HASH=$(portable_hash "/tmp/test-project")
-FLAG_FILE="/tmp/claude-backup-done-${PROJECT_HASH}"
-touch "$FLAG_FILE"
-OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"deploy production"}}' | CLAUDE_PROJECT_DIR=/tmp/test-project bash "$HOOKS_DIR/backup-enforcement.sh" 2>&1)
+MANIFEST_FILE="/tmp/claude-backup-manifest-${PROJECT_HASH}.json"
+BACKUP_FILE=$(mktemp /tmp/bestai-backup.XXXXXX)
+echo "backup payload for tests" > "$BACKUP_FILE"
+BACKUP_SHA=$(portable_sha256 "$BACKUP_FILE")
+BACKUP_SIZE=$(wc -c < "$BACKUP_FILE" | tr -d ' ')
+NOW_TS=$(date +%s)
+cat > "$MANIFEST_FILE" <<EOF
+{
+  "backup_path": "$BACKUP_FILE",
+  "created_at_unix": $NOW_TS,
+  "sha256": "$BACKUP_SHA",
+  "size_bytes": $BACKUP_SIZE
+}
+EOF
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"deploy production"}}' | CLAUDE_PROJECT_DIR=/tmp/test-project BACKUP_MANIFEST_DIR=/tmp bash "$HOOKS_DIR/backup-enforcement.sh" 2>&1)
 CODE=$?
-assert_exit "Deploy with backup -> allow" "0" "$CODE"
-rm -f "$FLAG_FILE" 2>/dev/null
+assert_exit "Deploy with valid backup manifest -> allow" "0" "$CODE"
 
-# Test 10: Empty command -> allow (exit 0)
+# Test 10: Deploy with stale manifest timestamp -> block
+OLD_TS=$((NOW_TS - 999999))
+cat > "$MANIFEST_FILE" <<EOF
+{
+  "backup_path": "$BACKUP_FILE",
+  "created_at_unix": $OLD_TS,
+  "sha256": "$BACKUP_SHA",
+  "size_bytes": $BACKUP_SIZE
+}
+EOF
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"deploy production"}}' | CLAUDE_PROJECT_DIR=/tmp/test-project BACKUP_MANIFEST_DIR=/tmp BACKUP_FRESHNESS_HOURS=1 bash "$HOOKS_DIR/backup-enforcement.sh" 2>&1)
+CODE=$?
+assert_exit "Deploy with stale backup manifest -> block" "2" "$CODE"
+rm -f "$MANIFEST_FILE" "$BACKUP_FILE" 2>/dev/null
+
+# Test 11: Empty command -> allow (exit 0)
 OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":""}}' | bash "$HOOKS_DIR/backup-enforcement.sh" 2>&1)
 CODE=$?
 assert_exit "Empty command -> allow" "0" "$CODE"
@@ -163,13 +200,13 @@ WAL_TEST_DIR=$(mktemp -d)
 WAL_PROJECT="$WAL_TEST_DIR/test-wal"
 mkdir -p "$WAL_PROJECT"
 
-# Test 11: Destructive command -> logged
+# Test 12: Destructive command -> logged
 echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /tmp/old"}}' | CLAUDE_PROJECT_DIR="$WAL_PROJECT" HOME="$WAL_TEST_DIR" CLAUDE_SESSION_ID="session-1" bash "$HOOKS_DIR/wal-logger.sh" 2>/dev/null
 WAL_FILE=$(find "$WAL_TEST_DIR" -name 'wal.log' 2>/dev/null | head -1)
 assert_file_contains "Destructive -> logged" "$WAL_FILE" "DESTRUCTIVE"
 assert_file_contains "WAL includes session id" "$WAL_FILE" "SESSION:session-1"
 
-# Test 12: Non-destructive bash -> not logged
+# Test 13: Non-destructive bash -> not logged
 LINES_BEFORE=$(wc -l < "$WAL_FILE" 2>/dev/null || echo 0)
 echo '{"tool_name":"Bash","tool_input":{"command":"echo hello"}}' | CLAUDE_PROJECT_DIR="$WAL_PROJECT" HOME="$WAL_TEST_DIR" bash "$HOOKS_DIR/wal-logger.sh" 2>/dev/null
 LINES_AFTER=$(wc -l < "$WAL_FILE" 2>/dev/null || echo 0)
@@ -179,7 +216,7 @@ else
     assert_exit "Non-destructive -> not logged" "0" "1"
 fi
 
-# Test 13: Write tool -> logged
+# Test 14: Write tool -> logged
 echo '{"tool_name":"Write","tool_input":{"file_path":"/tmp/test.ts"}}' | CLAUDE_PROJECT_DIR="$WAL_PROJECT" HOME="$WAL_TEST_DIR" bash "$HOOKS_DIR/wal-logger.sh" 2>/dev/null
 assert_file_contains "Write tool -> logged" "$WAL_FILE" "WRITE"
 
@@ -197,7 +234,7 @@ CB_PROJECT_B="$CB_RUNTIME/project-b"
 mkdir -p "$CB_PROJECT_A" "$CB_PROJECT_B"
 rm -rf "$CB_DIR" 2>/dev/null
 
-# Test 14: Success -> allow
+# Test 15: Success -> allow
 OUTPUT=$(echo '{"tool_name":"Bash","exit_code":"0","tool_output":{"stderr":""}}' | XDG_RUNTIME_DIR="$CB_RUNTIME" CLAUDE_PROJECT_DIR="$CB_PROJECT_A" bash "$HOOKS_DIR/circuit-breaker.sh" 2>&1)
 CODE=$?
 assert_exit "Circuit success -> allow" "0" "$CODE"
@@ -1235,6 +1272,53 @@ CODE=$?
 assert_exit "[USER] tag: file with no [USER] -> allow any edit" "0" "$CODE"
 
 rm -rf "$UT_HOME"
+
+# ============================================================
+echo ""
+echo "=== sync-gps.sh ==="
+# ============================================================
+
+GPS_HOME=$(mktemp -d)
+GPS_PROJECT="$GPS_HOME/project"
+mkdir -p "$GPS_PROJECT/.claude"
+
+OUTPUT=$(echo '{"response":{"output_text":"Implemented auth flow improvements\nBLOCKER: waiting for OAuth callback URL"}}' | HOME="$GPS_HOME" CLAUDE_PROJECT_DIR="$GPS_PROJECT" CLAUDE_SESSION_ID="agent-1" bash "$HOOKS_DIR/sync-gps.sh" 2>&1)
+CODE=$?
+assert_exit "GPS sync: update succeeds" "0" "$CODE"
+assert_file_contains "GPS sync: file created" "$GPS_PROJECT/.bestai/GPS.json" "\"owner\""
+assert_file_contains "GPS sync: task summary stored" "$GPS_PROJECT/.bestai/GPS.json" "Implemented auth flow improvements"
+assert_file_contains "GPS sync: blocker extracted" "$GPS_PROJECT/.bestai/GPS.json" "BLOCKER"
+
+rm -rf "$GPS_HOME"
+
+# ============================================================
+echo ""
+echo "=== secret-guard.sh ==="
+# ============================================================
+
+SG_TMP=$(mktemp -d)
+
+# Test: Bash command with obvious token -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"export GITHUB_TOKEN=ghp_abcdefghijklmnopqrstuvwxyz1234567890"}}' | bash "$HOOKS_DIR/secret-guard.sh" 2>&1)
+CODE=$?
+assert_exit "Secret guard: token in Bash -> block" "2" "$CODE"
+
+# Test: Git add secret-like file -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"git add .env.production"}}' | bash "$HOOKS_DIR/secret-guard.sh" 2>&1)
+CODE=$?
+assert_exit "Secret guard: git add .env -> block" "2" "$CODE"
+
+# Test: Write content with secret pattern -> block
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"config.txt","content":"api_key=supersecretvalue12345"}}' | bash "$HOOKS_DIR/secret-guard.sh" 2>&1)
+CODE=$?
+assert_exit "Secret guard: secret in Write content -> block" "2" "$CODE"
+
+# Test: Safe content -> allow
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"notes.md","content":"Document architecture decisions."}}' | bash "$HOOKS_DIR/secret-guard.sh" 2>&1)
+CODE=$?
+assert_exit "Secret guard: safe Write -> allow" "0" "$CODE"
+
+rm -rf "$SG_TMP"
 
 # ============================================================
 echo ""

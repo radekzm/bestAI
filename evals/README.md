@@ -38,12 +38,16 @@ Opcje:
 bash evals/run.sh \
   --tasks evals/tasks/benchmark_tasks.jsonl \
   --input-dir evals/data \
-  --output evals/results/2026-02-24.md
+  --output evals/results/2026-02-24.md \
+  --enforce-gates
 ```
 
 Artefakty:
 - `evals/results/YYYY-MM-DD.md`
 - `evals/results/YYYY-MM-DD.json`
+
+`--enforce-gates` zwraca kod wyjścia `2`, gdy profile regresują względem baseline
+(success rate i/lub budżet tokenów).
 
 ## 2) Prompt cache usage trend
 

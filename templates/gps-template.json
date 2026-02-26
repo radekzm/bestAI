@@ -1,7 +1,11 @@
 {
   "project": {
     "name": "Project Name",
-    "main_objective": "Describe the ultimate goal of the project here."
+    "main_objective": "Describe the ultimate goal of the project here.",
+    "owner": "team-or-person-responsible",
+    "target_date": "2026-12-31",
+    "success_metric": "Define a measurable KPI for project success.",
+    "status_updated_at": "2026-01-01T00:00:00Z"
   },
   "milestones": [
     {

@@ -7,11 +7,12 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TASKS_FILE="$ROOT_DIR/evals/tasks/benchmark_tasks.jsonl"
 INPUT_DIR="$ROOT_DIR/evals/data"
 OUTPUT_FILE="$ROOT_DIR/evals/results/$(date -u +%Y-%m-%d).md"
+ENFORCE_GATES=0
 
 usage() {
     cat <<USAGE
 Usage:
-  bash evals/run.sh [--tasks FILE] [--input-dir DIR] [--output FILE]
+  bash evals/run.sh [--tasks FILE] [--input-dir DIR] [--output FILE] [--enforce-gates]
 
 Defaults:
   --tasks     evals/tasks/benchmark_tasks.jsonl
@@ -33,6 +34,10 @@ while [ "$#" -gt 0 ]; do
         --output)
             OUTPUT_FILE="$2"
             shift 2
+            ;;
+        --enforce-gates)
+            ENFORCE_GATES=1
+            shift
             ;;
         -h|--help)
             usage
@@ -135,6 +140,56 @@ if [ "$profile_exists" -eq 0 ]; then
 fi
 
 BASELINE_METRICS="$METRICS_DIR/baseline.json"
+HOOKS_METRICS="$METRICS_DIR/hooks-only.json"
+SMART_METRICS="$METRICS_DIR/smart-context.json"
+
+GATE_FAIL=0
+GATE_REPORT=""
+if [ "$ENFORCE_GATES" -eq 1 ]; then
+    GATE_REPORT="## Quality Gates"$'\n'
+    GATE_REPORT+="Policy: hooks-only and smart-context must not regress vs baseline"$'\n'
+
+    if [ ! -f "$BASELINE_METRICS" ] || [ ! -f "$HOOKS_METRICS" ] || [ ! -f "$SMART_METRICS" ]; then
+        GATE_REPORT+="- FAIL: Missing one or more required profiles (baseline/hooks-only/smart-context)."$'\n'
+        GATE_FAIL=1
+    else
+        base_success=$(jq -r '.success_rate' "$BASELINE_METRICS")
+        hooks_success=$(jq -r '.success_rate' "$HOOKS_METRICS")
+        smart_success=$(jq -r '.success_rate' "$SMART_METRICS")
+        base_tokens=$(jq -r '.avg_total_tokens' "$BASELINE_METRICS")
+        hooks_tokens=$(jq -r '.avg_total_tokens' "$HOOKS_METRICS")
+        smart_tokens=$(jq -r '.avg_total_tokens' "$SMART_METRICS")
+
+        if awk -v h="$hooks_success" -v b="$base_success" 'BEGIN { exit !(h < b) }'; then
+            GATE_REPORT+="- FAIL: hooks-only success rate (${hooks_success}%) < baseline (${base_success}%)."$'\n'
+            GATE_FAIL=1
+        else
+            GATE_REPORT+="- PASS: hooks-only success rate (${hooks_success}%) >= baseline (${base_success}%)."$'\n'
+        fi
+
+        if awk -v s="$smart_success" -v h="$hooks_success" 'BEGIN { exit !(s < h) }'; then
+            GATE_REPORT+="- FAIL: smart-context success rate (${smart_success}%) < hooks-only (${hooks_success}%)."$'\n'
+            GATE_FAIL=1
+        else
+            GATE_REPORT+="- PASS: smart-context success rate (${smart_success}%) >= hooks-only (${hooks_success}%)."$'\n'
+        fi
+
+        if awk -v h="$hooks_tokens" -v b="$base_tokens" 'BEGIN { exit !(h > b*1.05) }'; then
+            GATE_REPORT+="- FAIL: hooks-only avg tokens (${hooks_tokens}) > baseline +5% (${base_tokens})."$'\n'
+            GATE_FAIL=1
+        else
+            GATE_REPORT+="- PASS: hooks-only avg tokens (${hooks_tokens}) within +5% budget vs baseline (${base_tokens})."$'\n'
+        fi
+
+        if awk -v s="$smart_tokens" -v h="$hooks_tokens" 'BEGIN { exit !(s > h*1.05) }'; then
+            GATE_REPORT+="- FAIL: smart-context avg tokens (${smart_tokens}) > hooks-only +5% (${hooks_tokens})."$'\n'
+            GATE_FAIL=1
+        else
+            GATE_REPORT+="- PASS: smart-context avg tokens (${smart_tokens}) within +5% budget vs hooks-only (${hooks_tokens})."$'\n'
+        fi
+    fi
+    GATE_REPORT+=$'\n'
+fi
 
 {
     echo "# Evals Report — $(date -u +%Y-%m-%d)"
@@ -240,6 +295,9 @@ BASELINE_METRICS="$METRICS_DIR/baseline.json"
     echo "- Token reduction with stable success => context efficiency gain"
     echo "- Success down with token down => over-compression/routing miss"
     echo ""
+    if [ "$ENFORCE_GATES" -eq 1 ]; then
+        echo "$GATE_REPORT"
+    fi
     echo "## Schema Reminder"
     echo "Each JSONL row should include: \`task_id, success, input_tokens, output_tokens, latency_ms, retries\`."
 } > "$OUTPUT_FILE"
@@ -251,6 +309,8 @@ jq -n \
   --arg input_dir "$INPUT_DIR" \
   --arg output_file "$OUTPUT_FILE" \
   --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --argjson enforce_gates "$ENFORCE_GATES" \
+  --argjson gate_failed "$GATE_FAIL" \
   --argjson expected_tasks "$EXPECTED_COUNT" \
   --slurpfile baseline "$METRICS_DIR/baseline.json" \
   --slurpfile hooks "$METRICS_DIR/hooks-only.json" \
@@ -260,6 +320,8 @@ jq -n \
     tasks_file: $tasks_file,
     input_dir: $input_dir,
     output_file: $output_file,
+    enforce_gates: $enforce_gates,
+    gate_failed: $gate_failed,
     expected_tasks: $expected_tasks,
     metrics: {
       baseline: ($baseline[0] // null),
@@ -271,3 +333,8 @@ jq -n \
 
 echo "Report written: $OUTPUT_FILE"
 echo "Summary written: $SUMMARY_JSON"
+
+if [ "$ENFORCE_GATES" -eq 1 ] && [ "$GATE_FAIL" -eq 1 ]; then
+    echo "Quality gates failed." >&2
+    exit 2
+fi
