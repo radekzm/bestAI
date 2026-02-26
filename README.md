@@ -1,10 +1,10 @@
-# bestAI — Guidelines for AI Coding Agents v3.0
+# bestAI — Guidelines for AI Coding Agents v4.0
 
 Evidence-based, modular guidelines for AI coding agents (Claude Code, Codex, Cursor, Windsurf, Amp).
 
 ## Why bestAI?
 
-AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced deterministic compliance** alongside advisory guidelines.
+AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced deterministic compliance** alongside advisory guidelines. v4.0 introduces **Distributed Agent Orchestration** and **Global Project State (GPS)** for multi-agent collaboration.
 
 ```
 CLAUDE.md = guidance (advisory, model may ignore)
@@ -132,15 +132,15 @@ Failure → HARD STOP → ROOT_CAUSE_TABLE → ask user
 
 ## Evolution
 
-v3.0 consolidates legacy guidelines into a modular architecture (currently 12 modules). Key changes:
+v4.0 introduces distributed agent orchestration and a global state layer (GPS). Key changes:
 
-- Removed unvalidated metrics; retained sourced data (Nuconic, Lindquist)
-- Added 10 CS algorithms mapped to AI agent patterns
-- Added operational patterns from AION-NEOVERSE project
-- Fixed hook implementations (path normalization, error handling)
-- Marked experimental features clearly (modules 07-08)
-- Added prompt caching playbook module (11) with usage metrics playbook
-- Preserved Nuconic case study as sole validated evidence
+- **Global Project State (GPS)**: Centralized coordination via `.bestai/GPS.json`.
+- **Agent Orchestration**: Specialized roles (Developer, Reviewer, Tester) working in parallel.
+- **RAG-Native Context**: Integration with vector databases (sqlite-vec) for semantic memory.
+- **Invisible Limit**: Hierarchical summarization for managing massive T3 (Cold) context tiers.
+- **Project Blueprints**: Ready-to-use scaffolding for complex stacks.
+
+v3.0 consolidated legacy guidelines into a modular architecture. Key changes:
 
 ## Sources & Inspiration
 
