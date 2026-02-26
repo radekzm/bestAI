@@ -9,9 +9,9 @@ Structured as independent modules that can be loaded on demand.
 
 ## Guidelines
 
-- Read `modules/` for detailed guidelines (00-11)
-- Core modules (00-04): context engineering, file architecture, sessions, persistence, enforcement
-- Advanced modules (05-11): CS algorithms, operational patterns, smart context, context OS, prompt caching
+- Read `modules/` for detailed guidelines (00-15)
+- Core modules (00-04, 12, 15): context engineering, file architecture, sessions, persistence, enforcement, GPS
+- Advanced modules (05-11, 13, 14): CS algorithms, operational patterns, smart context, context OS, prompt caching, RAG, agent orchestration
 
 ## Key Rules
 

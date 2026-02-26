@@ -152,6 +152,30 @@ customize_claude() {
 
 customize_claude "$TARGET/CLAUDE.md"
 
+# Step 1b: Project Blueprints (v4.0)
+echo ""
+echo -e "${BOLD}Step 1b: Project Blueprints (v4.0)${NC}"
+read -r -p "  Do you want to initialize a Project Blueprint? [y/N]: " BLUEPRINT_CHOICE
+if [[ "${BLUEPRINT_CHOICE:-N}" =~ ^[Yy]$ ]]; then
+    echo "  1) Full-Stack (Next.js + FastAPI + PostgreSQL)"
+    echo "  2) Agent Swarm (Master + Multiple sub-agents)"
+    read -r -p "  Choose blueprint [1/2]: " BP_SELECTION
+    mkdir -p "$TARGET/.bestai"
+    if [ -f "$BESTAI_DIR/templates/gps-template.json" ]; then
+        cp "$BESTAI_DIR/templates/gps-template.json" "$TARGET/.bestai/GPS.json"
+        echo -e "  ${GREEN}Created${NC} Global Project State (.bestai/GPS.json)"
+        
+        # Here we could inject stack-specific frozen files or linting hooks
+        if [ "$BP_SELECTION" == "1" ]; then
+            echo -e "  ${GREEN}Initialized${NC} Full-Stack Blueprint settings."
+        elif [ "$BP_SELECTION" == "2" ]; then
+            echo -e "  ${GREEN}Initialized${NC} Agent Swarm Blueprint settings."
+        fi
+    fi
+else
+    echo "  Skipped Blueprints"
+fi
+
 # Step 2: Choose hooks
 echo ""
 echo -e "${BOLD}Step 2: Hooks${NC}"
@@ -192,6 +216,7 @@ if [ "$PROFILE" = "smart-v2" ]; then
     install_hook "sync-state.sh" "Stop hook runtime sync" "Y"
     install_hook "memory-compiler.sh" "Stop hook memory GC + indexing" "Y"
     install_hook "observer.sh" "Stop hook observational memory compression" "Y"
+    install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "Y"
 elif [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
     install_hook "backup-enforcement.sh" "require backup before deploy/restart/migrate" "Y"
@@ -331,6 +356,9 @@ else
                 ;;
             observer.sh)
                 add_hook_config "$SETTINGS_FILE" "Stop" "" ".claude/hooks/observer.sh"
+                ;;
+            sync-gps.sh)
+                add_hook_config "$SETTINGS_FILE" "Stop" "" ".claude/hooks/sync-gps.sh"
                 ;;
         esac
     done

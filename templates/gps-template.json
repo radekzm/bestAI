@@ -1,0 +1,25 @@
+{
+  "project": {
+    "name": "Project Name",
+    "main_objective": "Describe the ultimate goal of the project here."
+  },
+  "milestones": [
+    {
+      "id": "m1",
+      "name": "Initial Setup",
+      "status": "in_progress"
+    }
+  ],
+  "active_tasks": [
+    {
+      "agent_id": "Agent-A",
+      "task": "Implement API endpoints",
+      "status": "working"
+    }
+  ],
+  "blockers": [],
+  "shared_context": {
+    "architecture_decisions": [],
+    "environment_variables_needed": []
+  }
+}

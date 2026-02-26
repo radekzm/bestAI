@@ -53,6 +53,10 @@ bash evals/run.sh
 | [09-memory-compiler](modules/09-memory-compiler.md) | Memory GC, scoring, context index | ~170 | Recommended |
 | [10-context-os](modules/10-context-os.md) | 5-tier context architecture | ~200 | Recommended |
 | [11-prompt-caching](modules/11-prompt-caching.md) | Stable prefix + cached token metrics | ~130 | Recommended |
+| [12-global-project-state](modules/12-global-project-state.md) | Multi-agent coordination and GPS | ~60 | v4.0 Core |
+| [13-agent-orchestration](modules/13-agent-orchestration.md) | Parallel spawning, code reviews | ~50 | v4.0 Advanced |
+| [14-rag-context-router](modules/14-rag-context-router.md) | Vector DB context injection | ~50 | v4.0 Advanced |
+| [15-invisible-limit](modules/15-invisible-limit.md) | Dynamic summary indexes (T3 tier) | ~50 | v4.0 Core |
 
 ### Reading Order
 
@@ -75,6 +79,7 @@ bash evals/run.sh
 | [circuit-breaker-gate.sh](hooks/circuit-breaker-gate.sh) | PreToolUse | Strict anti-loop block when OPEN |
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require backup before deploy/migrate |
+| [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State (v4.0) |
 
 ## Tooling
 
