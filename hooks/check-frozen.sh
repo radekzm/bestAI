@@ -182,7 +182,7 @@ check_direct_file_edit() {
 
         if [ "$normalized_file" = "$frozen_norm" ] ||
            { [ -n "$canonical_file" ] && [ -n "$frozen_canonical" ] && [ "$canonical_file" = "$frozen_canonical" ]; }; then
-            block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md)"
+            block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md). To allow edits, remove the entry from frozen-fragments.md."
         fi
     done < "$FROZEN_PATHS_FILE"
 }
@@ -201,7 +201,7 @@ check_bash_bypass() {
 
     while IFS=$'\t' read -r raw frozen_norm; do
         if echo "$command" | grep -Fq "$raw" || echo "$command" | grep -Fq "$frozen_norm"; then
-            block_or_dryrun "Bash command modifies FROZEN file: $raw"
+            block_or_dryrun "Bash command modifies FROZEN file: $raw. To allow, remove from frozen-fragments.md."
         fi
     done < "$FROZEN_PATHS_FILE"
 
@@ -214,7 +214,7 @@ check_bash_bypass() {
 
     while IFS=$'\t' read -r raw frozen_norm; do
         if grep -Fq "$raw" "$normalized_script" 2>/dev/null || grep -Fq "$frozen_norm" "$normalized_script" 2>/dev/null; then
-            block_or_dryrun "Interpreter script references FROZEN file path: $raw"
+            block_or_dryrun "Interpreter script references FROZEN file path: $raw. To allow, remove from frozen-fragments.md."
         fi
     done < "$FROZEN_PATHS_FILE"
 }
