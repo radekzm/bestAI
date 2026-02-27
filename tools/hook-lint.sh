@@ -184,7 +184,7 @@ for hook_file in "$HOOKS_DIR"/*.sh; do
     [ -f "$hook_file" ] || continue
     basename=$(basename "$hook_file")
     case "$basename" in
-        hook-event.sh|lib-logging.sh|reflector.sh)
+        hook-event.sh|reflector.sh)
             continue
             ;;
     esac
