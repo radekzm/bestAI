@@ -127,7 +127,7 @@ Two sessions with separate contexts:
 
 ---
 
-*See [03-persistence](03-persistence.md) for memory systems, [05-cs-algorithms](05-cs-algorithms.md) for circuit breaker patterns.*
+*See [01-core](01-core.md) (Module 01-C) for memory systems, [03-advanced](03-advanced.md) (Module 03-A) for circuit breaker patterns.*
 # Module 02-B: Operational Patterns — Discipline & Anti-Loop
 
 > Use this module when you need structured operational discipline for AI agents.
@@ -306,7 +306,7 @@ This prevents confirmation bias and groupthink in agent teams.
 
 ---
 
-*See [04-enforcement](04-enforcement.md) for hook implementations, [05-cs-algorithms](05-cs-algorithms.md) for formal algorithms.*
+*See [01-core](01-core.md) (Module 01-D) for hook implementations, [03-advanced](03-advanced.md) (Module 03-A) for formal algorithms.*
 # Module 02-C: Prompt Caching Playbook
 
 > Use this module to optimize Claude API costs through prompt caching.
