@@ -1,90 +1,22 @@
 #!/bin/bash
-# hooks/circuit-breaker-gate.sh — PreToolUse strict gate for circuit breaker
-# Blocks new Bash actions while circuit is OPEN and cooldown is active.
+# hooks/circuit-breaker-gate.sh — PreToolUse hook (Bash matcher)
+# Blocks tools when the circuit is OPEN (too many consecutive failures).
 
 set -euo pipefail
 
-# Dry-run mode: log what would be blocked but don't actually block
-BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
+STATE_FILE="$PROJECT_DIR/.claude/circuit-breaker-state.json"
 
-if [ "${CIRCUIT_BREAKER_STRICT:-1}" != "1" ]; then
+if [ ! -f "$STATE_FILE" ]; then
     exit 0
 fi
 
-INPUT=$(cat)
-if command -v jq >/dev/null 2>&1; then
-    TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
-    [ -n "$TOOL_NAME" ] && [ "$TOOL_NAME" != "Bash" ] && exit 0
-fi
+STATE=$(jq -r '.state // "CLOSED"' "$STATE_FILE")
+FAIL_COUNT=$(jq -r '.consecutive_failures // 0' "$STATE_FILE")
 
-BASE_STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker"
-COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN_SECS:-${CIRCUIT_BREAKER_COOLDOWN:-300}}
-NOW=$(date +%s)
-
-project_hash() {
-    local src="$1"
-    if command -v md5sum >/dev/null 2>&1; then
-        echo "$src" | md5sum | awk '{print substr($1,1,16)}'
-    elif command -v md5 >/dev/null 2>&1; then
-        echo -n "$src" | md5 -q | cut -c1-16
-    elif command -v shasum >/dev/null 2>&1; then
-        echo "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
-    else
-        echo "$src" | cksum | awk '{print $1}'
-    fi
-}
-
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
-PROJECT_HASH=$(project_hash "$PROJECT_DIR")
-# Project-scoped breaker state prevents cross-repo strict-gate blocking.
-STATE_DIR="$BASE_STATE_DIR/$PROJECT_HASH"
-
-# Unified JSONL event logging
-_BESTAI_TOOL_NAME="Bash"
-# shellcheck source=hook-event.sh
-source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
-
-[ -d "$STATE_DIR" ] || exit 0
-
-BLOCKED=0
-MIN_REMAINING=999999
-BLOCK_FILE=""
-
-for state_file in "$STATE_DIR"/*; do
-    [ -f "$state_file" ] || continue
-    [[ "$state_file" == *.lock ]] && continue
-
-    STATE=$(sed -n '1p' "$state_file" 2>/dev/null || echo "")
-    COUNT=$(sed -n '2p' "$state_file" 2>/dev/null || echo "0")
-    LAST_FAIL=$(sed -n '3p' "$state_file" 2>/dev/null || echo "0")
-
-    [[ "$COUNT" =~ ^[0-9]+$ ]] || COUNT=0
-    [[ "$LAST_FAIL" =~ ^[0-9]+$ ]] || LAST_FAIL=0
-
-    if [ "$STATE" = "OPEN" ]; then
-        ELAPSED=$((NOW - LAST_FAIL))
-        if [ "$ELAPSED" -lt "$COOLDOWN" ]; then
-            REMAINING=$((COOLDOWN - ELAPSED))
-            if [ "$REMAINING" -lt "$MIN_REMAINING" ]; then
-                MIN_REMAINING=$REMAINING
-                BLOCK_FILE=$(basename "$state_file")
-            fi
-            BLOCKED=1
-        else
-            printf "HALF-OPEN\n%s\n%s\n" "$COUNT" "$NOW" > "$state_file"
-        fi
-    fi
-done
-
-if [ "$BLOCKED" -eq 1 ]; then
-    emit_event "circuit-breaker-gate" "BLOCK" "{\"pattern\":\"$BLOCK_FILE\",\"remaining_s\":$MIN_REMAINING}" 2>/dev/null || true
-    if [ "$BESTAI_DRY_RUN" = "1" ]; then
-        echo "[DRY-RUN] WOULD BLOCK: Circuit Breaker OPEN. Pattern: $BLOCK_FILE. Retry in ${MIN_REMAINING}s." >&2
-        exit 0
-    fi
-    echo "BLOCKED: Circuit Breaker OPEN (strict mode)." >&2
-    echo "Pattern: $BLOCK_FILE" >&2
-    echo "Retry allowed in ${MIN_REMAINING}s or use a fundamentally different approach." >&2
+if [ "$STATE" = "OPEN" ]; then
+    echo "BLOCKED: Circuit Breaker is OPEN due to $FAIL_COUNT consecutive failures." >&2
+    echo "Root Cause Table must be updated or project state re-evaluated before proceeding." >&2
     exit 2
 fi
 
