@@ -510,6 +510,27 @@ When multiple hooks are attached to the same event:
 - Hooks are independent; no hook can override another hook's block
 - Place the most restrictive hooks first (`check-frozen`, security guards)
 
+## Hook Execution Latency Budget
+
+Hooks run on every tool call. Excessive latency degrades the agent experience.
+
+| Category | Target | Example |
+|----------|--------|---------|
+| Fast path (ALLOW) | < 50ms | `check-frozen.sh` file-not-listed path |
+| Enforcement (BLOCK) | < 100ms | `check-frozen.sh` matching a frozen file |
+| Circuit breaker check | < 100ms | `circuit-breaker-gate.sh` state file read |
+| Post-tool analysis | < 200ms | `circuit-breaker.sh` pattern scan |
+
+**Measuring latency**: All hooks using `hook-event.sh` automatically record `elapsed_ms` in each event. View aggregated latency stats with `bash stats.sh <project>` (Hook latency section) or query `events.jsonl` directly:
+
+```bash
+# Per-hook avg/max latency
+jq -r 'select(.elapsed_ms != null) | "\(.hook) \(.elapsed_ms)"' events.jsonl \
+  | awk '{s[$1]+=$2; c[$1]++; if($2>m[$1])m[$1]=$2} END {for(h in s) printf "%s: avg=%dms max=%dms (n=%d)\n", h, s[h]/c[h], m[h], c[h]}'
+```
+
+**Guidelines**: Keep total hook latency per tool call under 200ms. If a hook exceeds budget, consider caching (e.g., parsed frozen paths) or deferring work to `PostToolUse`/`Stop` hooks.
+
 ## Known Limitations (and mitigations)
 
 - `PostToolUse` hooks are advisory by default (cannot block the current call)

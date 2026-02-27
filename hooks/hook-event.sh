@@ -31,6 +31,28 @@ _bestai_project_hash() {
 
 _BESTAI_PROJECT_HASH=$(_bestai_project_hash)
 
+# Timestamp at source-time for latency measurement (nanoseconds if available, seconds otherwise)
+if date +%s%N >/dev/null 2>&1 && [ "$(date +%s%N)" != "%N" ]; then
+    _BESTAI_START_NS=$(date +%s%N)
+    _BESTAI_HAS_NS=1
+else
+    _BESTAI_START_NS=$(date +%s)
+    _BESTAI_HAS_NS=0
+fi
+
+# Returns elapsed milliseconds since hook-event.sh was sourced.
+_bestai_elapsed_ms() {
+    if [ "$_BESTAI_HAS_NS" = "1" ]; then
+        local now_ns
+        now_ns=$(date +%s%N)
+        echo $(( (now_ns - _BESTAI_START_NS) / 1000000 ))
+    else
+        local now_s
+        now_s=$(date +%s)
+        echo $(( (now_s - _BESTAI_START_NS) * 1000 ))
+    fi
+}
+
 if [ -z "${BESTAI_EVENT_LOG:-}" ]; then
     _BESTAI_EVENT_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/bestai"
     BESTAI_EVENT_LOG="$_BESTAI_EVENT_DIR/events.jsonl"
@@ -54,28 +76,28 @@ emit_event() {
     local hook="${1:?emit_event requires hook name}"
     local action="${2:?emit_event requires action}"
     local detail="${3:-{\}}"
-    local ts tool
+    local ts tool elapsed_ms
 
     ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     tool=$(_bestai_resolve_tool)
+    elapsed_ms=$(_bestai_elapsed_ms)
 
     mkdir -p "$_BESTAI_EVENT_DIR" 2>/dev/null || return 0
 
     if command -v jq >/dev/null 2>&1; then
-        # Build proper JSON via jq for correctness
         jq -cn \
             --arg ts "$ts" \
             --arg hook "$hook" \
             --arg action "$action" \
             --arg tool "$tool" \
             --arg project "$_BESTAI_PROJECT_HASH" \
+            --argjson elapsed_ms "$elapsed_ms" \
             --argjson detail "$detail" \
-            '{ts:$ts,hook:$hook,action:$action,tool:$tool,project:$project,detail:$detail}' \
+            '{ts:$ts,hook:$hook,action:$action,tool:$tool,project:$project,elapsed_ms:$elapsed_ms,detail:$detail}' \
             >> "$BESTAI_EVENT_LOG" 2>/dev/null || true
     else
-        # Fallback: manual JSON (no jq). detail must be valid JSON already.
-        printf '{"ts":"%s","hook":"%s","action":"%s","tool":"%s","project":"%s","detail":%s}\n' \
-            "$ts" "$hook" "$action" "$tool" "$_BESTAI_PROJECT_HASH" "$detail" \
+        printf '{"ts":"%s","hook":"%s","action":"%s","tool":"%s","project":"%s","elapsed_ms":%s,"detail":%s}\n' \
+            "$ts" "$hook" "$action" "$tool" "$_BESTAI_PROJECT_HASH" "$elapsed_ms" "$detail" \
             >> "$BESTAI_EVENT_LOG" 2>/dev/null || true
     fi
 }
