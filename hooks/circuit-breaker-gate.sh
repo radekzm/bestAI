@@ -31,7 +31,7 @@ is_numeric() {
 }
 
 check_line_state_files() {
-    [ -d "$STATE_DIR" ] || return 1
+    [ -d "$STATE_DIR" ] || return 0
 
     local blocked=0
     local state_file state count last_fail elapsed remaining
