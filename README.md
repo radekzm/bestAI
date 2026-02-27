@@ -80,9 +80,9 @@ We solve the **"Context Overload"** problem by segmenting information into disti
 
 ### 1. Global Installation
 ```bash
-npm install -g bestai
+npm install -g @radekzm/bestai
 # or use npx instantly:
-npx bestai init .
+npx @radekzm/bestai@latest init .
 ```
 
 ### 2. Dispatch Tasks to the Syndicate

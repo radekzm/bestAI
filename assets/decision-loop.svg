@@ -1,64 +1,36 @@
-<svg width="1000" height="600" viewBox="0 0 1000 600" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1000" height="600" rx="20" fill="#1e1e2e"/>
-  
-  <!-- Header -->
-  <text x="500" y="40" font-family="Arial, sans-serif" font-size="24" fill="#61afef" text-anchor="middle" font-weight="bold">THE SYNDICATE DECISION LOOP v7.6</text>
-  <path d="M100 60 L900 60" stroke="#44475a" stroke-width="2"/>
-
-  <!-- User Input -->
-  <rect x="50" y="100" width="180" height="60" rx="10" fill="#61afef" fill-opacity="0.1" stroke="#61afef" stroke-width="2"/>
-  <text x="140" y="135" font-family="Arial, sans-serif" font-size="14" fill="#61afef" text-anchor="middle" font-weight="bold">USER INTENT</text>
-
-  <!-- Pre-Tool Force Field -->
-  <rect x="300" y="100" width="400" height="60" rx="10" fill="#e06c75" fill-opacity="0.1" stroke="#e06c75" stroke-width="2"/>
-  <text x="500" y="135" font-family="Arial, sans-serif" font-size="14" fill="#e06c75" text-anchor="middle" font-weight="bold">DETERMINISTIC FORCE-FIELD (HOOKS)</text>
-  <path d="M230 130 L300 130" stroke="#abb2bf" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <!-- Logic Branch -->
-  <path d="M500 160 L500 220" stroke="#abb2bf" stroke-width="2" marker-end="url(#arrowhead)"/>
-  <circle cx="500" cy="250" r="30" fill="#44475a" stroke="#abb2bf" stroke-width="2"/>
-  <text x="500" y="255" font-family="Arial, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle">ROUTER</text>
-
-  <!-- Decision Paths -->
-  <path d="M470 250 L250 320" stroke="#abb2bf" stroke-width="2" stroke-dasharray="4 4"/>
-  <path d="M500 280 L500 320" stroke="#abb2bf" stroke-width="2" stroke-dasharray="4 4"/>
-  <path d="M530 250 L750 320" stroke="#abb2bf" stroke-width="2" stroke-dasharray="4 4"/>
-
-  <!-- Agents -->
-  <g>
-    <rect x="150" y="320" width="200" height="100" rx="10" fill="#e06c75" fill-opacity="0.05" stroke="#e06c75" stroke-width="2"/>
-    <text x="250" y="350" font-family="Arial, sans-serif" font-size="16" fill="#e06c75" text-anchor="middle" font-weight="bold">CLAUDE (Architect)</text>
-    <text x="250" y="375" font-family="Arial, sans-serif" font-size="10" fill="#abb2bf" text-anchor="middle">Heavy Refactoring</text>
-    <text x="250" y="390" font-family="Arial, sans-serif" font-size="10" fill="#abb2bf" text-anchor="middle">Core API & Logic</text>
-  </g>
-
-  <g>
-    <rect x="400" y="320" width="200" height="100" rx="10" fill="#98c379" fill-opacity="0.05" stroke="#98c379" stroke-width="2"/>
-    <text x="500" y="350" font-family="Arial, sans-serif" font-size="16" fill="#98c379" text-anchor="middle" font-weight="bold">GEMINI (Investigator)</text>
-    <text x="500" y="375" font-family="Arial, sans-serif" font-size="10" fill="#abb2bf" text-anchor="middle">2M+ Context Search</text>
-    <text x="500" y="390" font-family="Arial, sans-serif" font-size="10" fill="#abb2bf" text-anchor="middle">Legacy Code Mapping</text>
-  </g>
-
-  <g>
-    <rect x="650" y="320" width="200" height="100" rx="10" fill="#d19a66" fill-opacity="0.05" stroke="#d19a66" stroke-width="2"/>
-    <text x="750" y="350" font-family="Arial, sans-serif" font-size="16" fill="#d19a66" text-anchor="middle" font-weight="bold">CODEX (Builder)</text>
-    <text x="750" y="375" font-family="Arial, sans-serif" font-size="10" fill="#abb2bf" text-anchor="middle">Unit Tests & Boilerplate</text>
-    <text x="750" y="390" font-family="Arial, sans-serif" font-size="10" fill="#abb2bf" text-anchor="middle">Fast UI Components</text>
-  </g>
-
-  <!-- Shared State Hub -->
-  <rect x="300" y="480" width="400" height="80" rx="15" fill="#61afef" fill-opacity="0.05" stroke="#61afef" stroke-width="3"/>
-  <text x="500" y="515" font-family="Arial, sans-serif" font-size="18" fill="#61afef" text-anchor="middle" font-weight="bold">OMNI-GPS (.bestai/GPS.json)</text>
-  <text x="500" y="540" font-family="Arial, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle">Milestones • Blocker State • Shared Architecture</text>
-
-  <!-- Feedbacks -->
-  <path d="M250 420 L350 480" stroke="#e06c75" stroke-width="2" marker-end="url(#arrowhead)"/>
-  <path d="M500 420 L500 480" stroke="#98c379" stroke-width="2" marker-end="url(#arrowhead)"/>
-  <path d="M750 420 L650 480" stroke="#d19a66" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <defs>
-    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#abb2bf" />
-    </marker>
-  </defs>
+<svg width="1000" height="650" viewBox="0 0 1000 650" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="650" rx="20" fill="#1e1e2e"/>
+  <circle cx="500" cy="530" r="100" fill="#61afef" fill-opacity="0.05"/>
+  <text x="500" y="45" font-family="Arial, sans-serif" font-size="28" fill="#61afef" text-anchor="middle" font-weight="bold">THE SYNDICATE DECISION LOOP</text>
+  <text x="500" y="70" font-family="Arial, sans-serif" font-size="14" fill="#abb2bf" text-anchor="middle">Multi-Vendor Orchestration &amp; Deterministic Compliance</text>
+  <path d="M150 85 L850 85" stroke="#44475a" stroke-width="1" stroke-dasharray="5 5"/>
+  <rect x="400" y="110" width="200" height="50" rx="25" fill="#61afef" fill-opacity="0.1" stroke="#61afef" stroke-width="2"/>
+  <text x="500" y="140" font-family="Arial, sans-serif" font-size="16" fill="#61afef" text-anchor="middle" font-weight="bold">USER PROMPT</text>
+  <path d="M500 160 L500 195" stroke="#abb2bf" stroke-width="2"/>
+  <path d="M495 195 L500 200 L505 195" stroke="#abb2bf" stroke-width="2"/>
+  <rect x="350" y="200" width="300" height="60" rx="10" fill="#e06c75" fill-opacity="0.1" stroke="#e06c75" stroke-width="2"/>
+  <text x="500" y="225" font-family="Arial, sans-serif" font-size="14" fill="#e06c75" text-anchor="middle" font-weight="bold">DETERMINISTIC FORCE-FIELD</text>
+  <text x="500" y="245" font-family="Arial, sans-serif" font-size="11" fill="#abb2bf" text-anchor="middle">Bash Hooks • Fail-Closed Enforcement</text>
+  <path d="M500 260 L500 295" stroke="#abb2bf" stroke-width="2"/>
+  <path d="M495 295 L500 300 L505 295" stroke="#abb2bf" stroke-width="2"/>
+  <rect x="420" y="300" width="160" height="40" rx="5" fill="#44475a" stroke="#abb2bf" stroke-width="1"/>
+  <text x="500" y="325" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">TASK ROUTER</text>
+  <path d="M420 320 L250 380" stroke="#abb2bf" stroke-width="2" stroke-dasharray="4 4"/>
+  <path d="M500 340 L500 380" stroke="#abb2bf" stroke-width="2" stroke-dasharray="4 4"/>
+  <path d="M580 320 L750 380" stroke="#abb2bf" stroke-width="2" stroke-dasharray="4 4"/>
+  <rect x="150" y="380" width="200" height="100" rx="12" fill="#e06c75" fill-opacity="0.08" stroke="#e06c75" stroke-width="2"/>
+  <text x="250" y="415" font-family="Arial, sans-serif" font-size="18" fill="#e06c75" text-anchor="middle" font-weight="bold">CLAUDE</text>
+  <text x="250" y="440" font-family="Arial, sans-serif" font-size="11" fill="#abb2bf" text-anchor="middle">Lead Architect</text>
+  <rect x="400" y="380" width="200" height="100" rx="12" fill="#98c379" fill-opacity="0.08" stroke="#98c379" stroke-width="2"/>
+  <text x="500" y="415" font-family="Arial, sans-serif" font-size="18" fill="#98c379" text-anchor="middle" font-weight="bold">GEMINI</text>
+  <text x="500" y="440" font-family="Arial, sans-serif" font-size="11" fill="#abb2bf" text-anchor="middle">Investigator</text>
+  <rect x="650" y="380" width="200" height="100" rx="12" fill="#d19a66" fill-opacity="0.08" stroke="#d19a66" stroke-width="2"/>
+  <text x="750" y="415" font-family="Arial, sans-serif" font-size="18" fill="#d19a66" text-anchor="middle" font-weight="bold">CODEX</text>
+  <text x="750" y="440" font-family="Arial, sans-serif" font-size="11" fill="#abb2bf" text-anchor="middle">Sprint Dev</text>
+  <path d="M250 480 L395 530" stroke="#e06c75" stroke-width="2"/>
+  <path d="M500 480 L500 525" stroke="#98c379" stroke-width="2"/>
+  <path d="M750 480 L605 530" stroke="#d19a66" stroke-width="2"/>
+  <rect x="300" y="530" width="400" height="80" rx="15" fill="#61afef" fill-opacity="0.1" stroke="#61afef" stroke-width="3"/>
+  <text x="500" y="565" font-family="Arial, sans-serif" font-size="20" fill="#61afef" text-anchor="middle" font-weight="bold">OMNI-GPS (.bestai/GPS.json)</text>
+  <text x="500" y="590" font-family="Arial, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle">Unified Project State • Locked Sync • Multi-Vendor Brain</text>
 </svg>
