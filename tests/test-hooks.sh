@@ -65,14 +65,15 @@ assert_file_contains() {
 
 portable_hash() {
     local input="$1"
+    # Must match _bestai_project_hash() in hooks/hook-event.sh exactly
     if command -v md5sum >/dev/null 2>&1; then
-        echo "$input" | md5sum | awk '{print substr($1,1,16)}'
+        printf '%s' "$input" | md5sum | awk '{print substr($1,1,16)}'
     elif command -v md5 >/dev/null 2>&1; then
-        echo -n "$input" | md5 -q | cut -c1-16
+        printf '%s' "$input" | md5 -q | cut -c1-16
     elif command -v shasum >/dev/null 2>&1; then
-        echo "$input" | shasum -a 256 | awk '{print substr($1,1,16)}'
+        printf '%s' "$input" | shasum -a 256 | awk '{print substr($1,1,16)}'
     else
-        echo "$input" | cksum | awk '{print $1}'
+        printf '%s' "$input" | cksum | awk '{print $1}'
     fi
 }
 

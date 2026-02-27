@@ -19,13 +19,15 @@
 _BESTAI_HOOK_EVENT_LOADED=1
 
 _bestai_project_hash() {
-    local src="${CLAUDE_PROJECT_DIR:-.}"
+    local src="${1:-${CLAUDE_PROJECT_DIR:-.}}"
     if command -v md5sum >/dev/null 2>&1; then
-        echo "$src" | md5sum | awk '{print substr($1,1,16)}'
+        printf '%s' "$src" | md5sum | awk '{print substr($1,1,16)}'
+    elif command -v md5 >/dev/null 2>&1; then
+        printf '%s' "$src" | md5 -q | cut -c1-16
     elif command -v shasum >/dev/null 2>&1; then
-        echo "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
+        printf '%s' "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
     else
-        echo "$src" | cksum | awk '{print $1}'
+        printf '%s' "$src" | cksum | awk '{print $1}'
     fi
 }
 

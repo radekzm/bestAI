@@ -30,20 +30,18 @@ EVENT_LOG="${BESTAI_EVENT_LOG:-${XDG_CACHE_HOME:-$HOME/.cache}/bestai/events.jso
 HOOKS_DIR="$PROJECT_DIR/.claude/hooks"
 SETTINGS_FILE="$PROJECT_DIR/.claude/settings.json"
 
-project_hash() {
-    local src="$1"
-    if command -v md5sum >/dev/null 2>&1; then
-        echo "$src" | md5sum | awk '{print substr($1,1,16)}'
-    elif command -v md5 >/dev/null 2>&1; then
-        echo -n "$src" | md5 -q | cut -c1-16
-    elif command -v shasum >/dev/null 2>&1; then
-        echo "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
-    else
-        echo "$src" | cksum | awk '{print $1}'
-    fi
+# Source shared project hash function
+_STATS_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=hooks/hook-event.sh
+source "$_STATS_SCRIPT_DIR/hooks/hook-event.sh" 2>/dev/null || {
+    # Fallback if hook-event.sh unavailable
+    _bestai_project_hash() {
+        local src="${1:-${CLAUDE_PROJECT_DIR:-.}}"
+        printf '%s' "$src" | md5sum 2>/dev/null | awk '{print substr($1,1,16)}' || printf '%s' "$src" | cksum | awk '{print $1}'
+    }
 }
 
-CB_STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker/$(project_hash "$PROJECT_DIR")"
+CB_STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker/$(_bestai_project_hash "$PROJECT_DIR")"
 
 echo -e "${BOLD}bestAI Health Report${NC} — $(basename "$PROJECT_DIR")"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -255,7 +253,7 @@ echo ""
 # ── Event Log (JSONL) ──
 echo -e "${BOLD}Event Log${NC}"
 if [ -f "$EVENT_LOG" ] && command -v jq >/dev/null 2>&1; then
-    PROJ_HASH=$(project_hash "$PROJECT_DIR")
+    PROJ_HASH=$(_bestai_project_hash "$PROJECT_DIR")
     TOTAL_EVENTS=$(wc -l < "$EVENT_LOG" | tr -d ' ')
     PROJ_EVENTS=$(grep -c "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" 2>/dev/null || echo 0)
     PROJ_BLOCKS=$(grep "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" 2>/dev/null | grep -c '"action":"BLOCK"' || echo 0)
