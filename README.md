@@ -4,11 +4,11 @@ Evidence-based, modular guidelines for AI coding agents (Claude Code, Codex, Cur
 
 ## Why bestAI?
 
-AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced deterministic compliance** alongside advisory guidelines. v4.0 introduces **Distributed Agent Orchestration** and **Global Project State (GPS)** for multi-agent collaboration.
+AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced deterministic controls (within configured matchers/events)** alongside advisory guidelines. v4.0 introduces **Distributed Agent Orchestration** and **Global Project State (GPS)** for multi-agent collaboration.
 
 ```
 CLAUDE.md = guidance (advisory, model may ignore)
-Hooks + exit 2 = enforcement (deterministic, cannot be bypassed)
+Hooks + exit 2 = deterministic block for matched tool events/patterns
 ```
 
 ## Quick Start
@@ -39,35 +39,19 @@ bash tests/test-hooks.sh
 bash evals/run.sh --enforce-gates
 ```
 
-## Modules
+## Modules (Consolidated v4.0)
 
-| Module | Topic | Lines | Status |
-|--------|-------|-------|--------|
-| [00-fundamentals](modules/00-fundamentals.md) | Context engineering, token budget | ~85 | Core |
-| [01-file-architecture](modules/01-file-architecture.md) | File hierarchy, progressive disclosure | ~110 | Core |
-| [02-session-management](modules/02-session-management.md) | Sessions, compaction, subagents | ~130 | Core |
-| [03-persistence](modules/03-persistence.md) | Memory layers, Weight & Source | ~130 | Core |
-| [04-enforcement](modules/04-enforcement.md) | Hooks, frozen files, Nuconic data | ~170 | Core |
-| [05-cs-algorithms](modules/05-cs-algorithms.md) | 10 CS algorithms for AI agents | ~140 | Recommended |
-| [06-operational-patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists | ~165 | Recommended |
-| [07-smart-context](modules/07-smart-context.md) | Semantic routing, preprocessing | ~155 | Optional |
-| [08-advanced](modules/08-advanced.md) | Vector DB, agent teams | ~160 | Experimental |
-| [09-memory-compiler](modules/09-memory-compiler.md) | Memory GC, scoring, context index | ~170 | Recommended |
-| [10-context-os](modules/10-context-os.md) | 5-tier context architecture | ~200 | Recommended |
-| [11-prompt-caching](modules/11-prompt-caching.md) | Stable prefix + cached token metrics | ~130 | Recommended |
-| [12-global-project-state](modules/12-global-project-state.md) | Multi-agent coordination and GPS | ~60 | v4.0 Core |
-| [13-agent-orchestration](modules/13-agent-orchestration.md) | Parallel spawning, code reviews | ~50 | v4.0 Advanced |
-| [14-rag-context-router](modules/14-rag-context-router.md) | Vector DB context injection | ~50 | v4.0 Advanced |
-| [15-invisible-limit](modules/15-invisible-limit.md) | Dynamic summary indexes (T3 tier) | ~50 | v4.0 Core |
+| Module | Topic | Content | Status |
+|--------|-------|---------|--------|
+| [01-core](modules/01-core.md) | **CORE** | Fundamentals, Architecture, Persistence, Enforcement, Memory Compiler, Context OS, GPS, Invisible Limit | **Core** |
+| [02-operations](modules/02-operations.md) | **OPERATIONS** | Sessions, Patterns, Prompt Caching | **Recommended** |
+| [03-advanced](modules/03-advanced.md) | **ADVANCED** | CS Algorithms, Smart Context, RAG Router, Agent Orchestration | **Advanced** |
 
 ### Reading Order
 
-- **Most projects**: Start with modules 00-04 (core)
-- **Robust agents**: Add modules 05-06 (CS algorithms + operational patterns)
-- **Large codebases (100+ files)**: Add module 07 (smart context)
-- **Research/enterprise**: Explore module 08 (experimental)
-- **Long-running multi-session work**: Add modules 09-10 (memory compiler + context OS)
-- **Cost/latency optimization**: Add module 11 (prompt caching)
+- **Most projects**: Start with Module 01 (CORE)
+- **Robust agents**: Add Module 02 (OPERATIONS)
+- **Large codebases (100+ files)**: Add Module 03 (ADVANCED)
 
 ## Hooks
 

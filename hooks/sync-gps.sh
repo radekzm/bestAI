@@ -94,8 +94,13 @@ fi
 
 ensure_default_gps "$GPS_FILE"
 
+# Use a lock file to prevent concurrent writes from multiple agents
+LOCKFILE="${GPS_FILE}.lock"
+exec 200>"$LOCKFILE"
+flock -x 200
+
 TMP_FILE="$(mktemp)"
-jq \
+if jq \
   --arg ts "$TIMESTAMP" \
   --arg sid "$SESSION_ID" \
   --arg summary "$SUMMARY" \
@@ -129,9 +134,16 @@ jq \
       "summary": $summary,
       "changed_files": $changed_files
     }
-  ' "$GPS_FILE" > "$TMP_FILE"
+  ' "$GPS_FILE" > "$TMP_FILE"; then
+    mv "$TMP_FILE" "$GPS_FILE"
+else
+    rm -f "$TMP_FILE"
+    echo "[bestAI] ERROR: Failed to update GPS JSON." >&2
+    flock -u 200
+    exit 2
+fi
 
-mv "$TMP_FILE" "$GPS_FILE"
+flock -u 200
 
 if ! validate_gps_schema "$GPS_FILE"; then
     echo "[bestAI] BLOCKED: GPS schema validation failed after update." >&2
