@@ -39,6 +39,11 @@ PROJECT_HASH=$(project_hash "$PROJECT_DIR")
 # Project-scoped breaker state prevents cross-repo strict-gate blocking.
 STATE_DIR="$BASE_STATE_DIR/$PROJECT_HASH"
 
+# Unified JSONL event logging
+_BESTAI_TOOL_NAME="Bash"
+# shellcheck source=hook-event.sh
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 [ -d "$STATE_DIR" ] || exit 0
 
 BLOCKED=0
@@ -72,6 +77,7 @@ for state_file in "$STATE_DIR"/*; do
 done
 
 if [ "$BLOCKED" -eq 1 ]; then
+    emit_event "circuit-breaker-gate" "BLOCK" "{\"pattern\":\"$BLOCK_FILE\",\"remaining_s\":$MIN_REMAINING}" 2>/dev/null || true
     if [ "$BESTAI_DRY_RUN" = "1" ]; then
         echo "[DRY-RUN] WOULD BLOCK: Circuit Breaker OPEN. Pattern: $BLOCK_FILE. Retry in ${MIN_REMAINING}s." >&2
         exit 0

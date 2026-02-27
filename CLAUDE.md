@@ -8,28 +8,21 @@
 2. Apply hooks from `hooks/` for deterministic enforcement
 3. Use templates from `templates/` for new projects
 
-## Module Index
+## Modules (Consolidated v4.0)
 
-| # | Module | Use When |
-|---|--------|----------|
-| 00 | [Fundamentals](modules/00-fundamentals.md) | Context engineering, token budget |
-| 01 | [File Architecture](modules/01-file-architecture.md) | Tool hierarchy, CLAUDE.md structure |
-| 02 | [Session Management](modules/02-session-management.md) | Compaction, subagents, /clear |
-| 03 | [Persistence](modules/03-persistence.md) | Memory system, [USER]/[AUTO] tags |
-| 04 | [Enforcement](modules/04-enforcement.md) | Hooks, frozen files, compliance |
-| 05 | [CS Algorithms](modules/05-cs-algorithms.md) | Circuit Breaker, WAL, ARC |
-| 06 | [Operational Patterns](modules/06-operational-patterns.md) | Anti-loop, REHYDRATE, checklists |
-| 07 | [Smart Context](modules/07-smart-context.md) | Semantic routing (optional) |
-| 08 | [Advanced](modules/08-advanced.md) | Vector DB, agent teams (experimental) |
-| 09 | [Memory Compiler](modules/09-memory-compiler.md) | GC, scoring, context-index |
-| 10 | [Context OS](modules/10-context-os.md) | 5-tier architecture, budget management |
-| 11 | [Prompt Caching](modules/11-prompt-caching.md) | Stable prefix, cached token metrics |
+| Module | Topic | Use When |
+|--------|-------|----------|
+| [01-core](modules/01-core.md) | CORE | Fundamentals, architecture, persistence, enforcement, memory, GPS |
+| [02-operations](modules/02-operations.md) | OPERATIONS | Sessions, patterns, prompt caching |
+| [03-advanced](modules/03-advanced.md) | ADVANCED | CS algorithms, smart context, RAG, agent orchestration |
 
 ## Core Principle
 
 ```
 CLAUDE.md = guidance (advisory — 6% compliance in production)
-Hooks with exit 2 = enforcement (deterministic — cannot be bypassed)
+Hooks with exit 2 = enforcement
+  Edit/Write: deterministic (exact path match, cannot be bypassed)
+  Bash:       best-effort (pattern matching, covers common cases)
 Critical rules → hooks.  Style/preferences → CLAUDE.md.
 ```
 

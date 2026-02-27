@@ -25,12 +25,13 @@ MEMORY_MODE=""
 AGENTS_MODE=""
 TEST_MODE=""
 FAIL_ON_TEST_FAILURE=0
+FORCE_UPDATE_HOOKS=0
 
 usage() {
     cat <<USAGE
 Usage:
   bash setup.sh [target-project-dir] [--profile default|aion-runtime|smart-v2] [--merge-settings|--no-merge-settings]
-                [--non-interactive|--yes] [--secure-defaults]
+                [--non-interactive|--yes] [--secure-defaults] [--force-update-hooks]
                 [--template minimal|standard|skip]
                 [--blueprint none|fullstack|swarm]
                 [--memory yes|no] [--agents yes|no] [--run-tests yes|no]
@@ -95,6 +96,10 @@ while [ "$#" -gt 0 ]; do
             ;;
         --no-merge-settings)
             MERGE_SETTINGS=0
+            shift
+            ;;
+        --force-update-hooks)
+            FORCE_UPDATE_HOOKS=1
             shift
             ;;
         -h|--help)
@@ -337,6 +342,21 @@ mkdir -p "$HOOKS_DIR"
 
 INSTALLED=()
 
+# Always install shared libraries (not hooks themselves, but used by hooks)
+if [ ! -f "$HOOKS_DIR/hook-event.sh" ]; then
+    cp "$BESTAI_DIR/hooks/hook-event.sh" "$HOOKS_DIR/hook-event.sh"
+    chmod +x "$HOOKS_DIR/hook-event.sh"
+    echo -e "  ${GREEN}Installed${NC} hook-event.sh (shared JSONL event library)"
+else
+    # Update if source is newer
+    if [ "$BESTAI_DIR/hooks/hook-event.sh" -nt "$HOOKS_DIR/hook-event.sh" ]; then
+        cp "$BESTAI_DIR/hooks/hook-event.sh" "$HOOKS_DIR/hook-event.sh"
+        echo -e "  ${GREEN}Updated${NC} hook-event.sh (shared JSONL event library)"
+    else
+        echo -e "  ${YELLOW}EXISTS${NC} hook-event.sh — keeping"
+    fi
+fi
+
 secure_default_for_hook() {
     local name="$1" base_default="$2"
     if [ "$SECURE_DEFAULTS" -ne 1 ]; then
@@ -360,8 +380,15 @@ install_hook() {
     effective_default="$(secure_default_for_hook "$name" "$default")"
 
     if [ -f "$HOOKS_DIR/$name" ]; then
-        echo -e "  ${YELLOW}EXISTS${NC} $name — keeping"
-        INSTALLED+=("$name")
+        if [ "$FORCE_UPDATE_HOOKS" -eq 1 ]; then
+            cp "$BESTAI_DIR/hooks/$name" "$HOOKS_DIR/$name"
+            chmod +x "$HOOKS_DIR/$name"
+            INSTALLED+=("$name")
+            echo -e "  ${GREEN}Updated${NC} $name (--force-update-hooks)"
+        else
+            echo -e "  ${YELLOW}EXISTS${NC} $name — keeping (use --force-update-hooks to overwrite)"
+            INSTALLED+=("$name")
+        fi
         return
     fi
 

@@ -26,6 +26,7 @@ METRICS_FILE="$HOME/.claude/projects/$PROJECT_KEY/hook-metrics.log"
 SESSION_COUNTER="$MEMORY_DIR/.session-counter"
 USAGE_LOG="$MEMORY_DIR/.usage-log"
 GPS_FILE="$PROJECT_DIR/.bestai/GPS.json"
+EVENT_LOG="${BESTAI_EVENT_LOG:-${XDG_CACHE_HOME:-$HOME/.cache}/bestai/events.jsonl}"
 HOOKS_DIR="$PROJECT_DIR/.claude/hooks"
 SETTINGS_FILE="$PROJECT_DIR/.claude/settings.json"
 
@@ -248,6 +249,36 @@ if [ -d "$HOOKS_DIR" ]; then
     fi
 else
     echo -e "  ${DIM}No hooks directory${NC}"
+fi
+echo ""
+
+# ── Event Log (JSONL) ──
+echo -e "${BOLD}Event Log${NC}"
+if [ -f "$EVENT_LOG" ] && command -v jq >/dev/null 2>&1; then
+    PROJ_HASH=$(project_hash "$PROJECT_DIR")
+    TOTAL_EVENTS=$(wc -l < "$EVENT_LOG" | tr -d ' ')
+    PROJ_EVENTS=$(grep -c "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" 2>/dev/null || echo 0)
+    PROJ_BLOCKS=$(grep "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" 2>/dev/null | grep -c '"action":"BLOCK"' || echo 0)
+
+    echo "  Event log:          $EVENT_LOG"
+    echo "  Total events:       $TOTAL_EVENTS (all projects)"
+    echo "  This project:       $PROJ_EVENTS events, $PROJ_BLOCKS blocks"
+
+    if [ "$PROJ_EVENTS" -gt 0 ]; then
+        echo ""
+        echo "  Events by hook:"
+        grep "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" 2>/dev/null \
+            | jq -r '.hook' 2>/dev/null \
+            | sort | uniq -c | sort -rn | head -5 \
+            | while read -r count hook; do
+                echo "    $hook: $count"
+            done
+
+        LAST_EVENT_TS=$(grep "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" | tail -1 | jq -r '.ts' 2>/dev/null)
+        [ -n "$LAST_EVENT_TS" ] && echo -e "  Last event:         ${DIM}$LAST_EVENT_TS${NC}"
+    fi
+else
+    echo -e "  ${DIM}No event log (events.jsonl)${NC}"
 fi
 echo ""
 
