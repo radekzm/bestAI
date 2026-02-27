@@ -1,5 +1,4 @@
-<div align="center">
-  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v7.6+ENTERPRISE&font=Montserrat" alt="bestAI Hero" />
+<img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v7.6+ENTERPRISE&font=Montserrat" alt="bestAI Hero" />
 
   <h1>bestAI: Omni-Vendor Convergence</h1>
   
@@ -17,7 +16,6 @@
     <a href="#-architecture">Architecture</a> •
     <a href="#%EF%B8%8F-quick-start">Quick Start</a>
   </p>
-</div>
 
 ---
 
@@ -53,9 +51,7 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 
 ## 🤖 Syndicate Decision & Collaboration Loop
 
-<div align="center">
-  ![Decision Loop](https://raw.githubusercontent.com/radekzm/bestAI/master/assets/decision-loop.svg?sanitize=true)
-</div>
+<img src="https://github.com/radekzm/bestAI/blob/master/assets/decision-loop.svg?raw=true" width="900" />
 
 > [!IMPORTANT]
 > **Deterministic Force-Field:** Unlike standard prompts, bestAI hooks are **Fail-Closed**. If an agent attempts an illegal operation, the session is physically blocked at the shell level.
@@ -64,17 +60,13 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 
 ## 🤖 The Syndicate Model (Agent Roles)
 
-<div align="center">
-  ![Swarm Architecture](https://raw.githubusercontent.com/radekzm/bestAI/master/assets/swarm-architecture.svg?sanitize=true)
-</div>
+<img src="https://github.com/radekzm/bestAI/blob/master/assets/swarm-architecture.svg?raw=true" width="800" />
 
 ## 🏗️ The 5-Tier Context OS (Infinite Scalability)
 
 We solve the **"Context Overload"** problem by segmenting information into distinct tiers, ensuring the agent always knows the most critical state without drowning in data.
 
-<div align="center">
-  ![Context OS Tiers](https://raw.githubusercontent.com/radekzm/bestAI/master/assets/context-os-tiers.svg?sanitize=true)
-</div>
+<img src="https://github.com/radekzm/bestAI/blob/master/assets/context-os-tiers.svg?raw=true" width="800" />
 
 - **T0 (HOT):** The **Global Project State (GPS.json)**. The project's brain. Shared by all swarm agents.
 - **T1 (WARM):** **T3-Summary.md**. The map of the entire codebase. Hierarchical and dense.
@@ -113,6 +105,4 @@ bestai generate-rules --format cursor
 
 ---
 
-<div align="center">
-  <p><br><b>Built for the next generation of autonomous engineering.</b><br>License: MIT | radekzm & the bestAI Swarm</p>
-</div>
+<p><br><b>Built for the next generation of autonomous engineering.</b><br>License: MIT | radekzm & the bestAI Swarm</p>
