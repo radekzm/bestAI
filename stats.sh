@@ -276,6 +276,21 @@ if [ -f "$EVENT_LOG" ] && command -v jq >/dev/null 2>&1; then
 
         LAST_EVENT_TS=$(grep "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" | tail -1 | jq -r '.ts' 2>/dev/null)
         [ -n "$LAST_EVENT_TS" ] && echo -e "  Last event:         ${DIM}$LAST_EVENT_TS${NC}"
+
+        # Latency stats (if elapsed_ms is available in events)
+        LATENCY_DATA=$(grep "\"project\":\"$PROJ_HASH\"" "$EVENT_LOG" 2>/dev/null \
+            | jq -r 'select(.elapsed_ms != null) | "\(.hook) \(.elapsed_ms)"' 2>/dev/null || true)
+        if [ -n "$LATENCY_DATA" ]; then
+            echo ""
+            echo "  Hook latency (ms):"
+            echo "$LATENCY_DATA" | awk '{
+                hook=$1; ms=$2
+                sum[hook]+=ms; count[hook]++
+                if(ms>max[hook]) max[hook]=ms
+            } END {
+                for(h in sum) printf "    %s: avg=%dms max=%dms (n=%d)\n", h, sum[h]/count[h], max[h], count[h]
+            }' | sort
+        fi
     fi
 else
     echo -e "  ${DIM}No event log (events.jsonl)${NC}"
