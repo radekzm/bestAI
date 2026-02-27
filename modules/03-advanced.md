@@ -617,9 +617,17 @@ As projects scale, a single agent attempting to handle all aspects (frontend, ba
 
 ## Core Concepts
 
-### 1. Parallel Spawning
+### 1. Parallel Spawning & Multi-Vendor Swarms
 
 Instead of linear, step-by-step processing, a master agent (or human user via CLI) can spawn multiple sub-agents in parallel Git worktrees.
+
+**The Heterogeneous Swarm Strategy (v6.0)**
+In advanced setups, assign different roles to different AI vendors based on their unique strengths:
+- **Claude Code:** Deep reasoning, refactoring, and strict hook compliance. (Role: Lead Architect)
+- **Gemini CLI:** Massive 1M+ token context window and speed. (Role: Codebase Investigator / Documentarian)
+- **Codex / OpenAI:** Strong at standard syntax and boilerplate. (Role: UI Iteration / Unit Testing)
+
+**Shared Bus:** Despite using different tools, all agents read and write to `.bestai/GPS.json` (protected by file locks) to maintain shared context.
 - **Git Worktrees:** Allows multiple branches to be checked out simultaneously in different directories.
 - **Roles:** For example, Agent A works on `feature-api` in `/worktrees/api`, while Agent B works on `feature-ui` in `/worktrees/ui`.
 - **GPS Integration:** The Global Project State (`.bestai/GPS.json`, see Module 01-G) coordinates these parallel efforts.

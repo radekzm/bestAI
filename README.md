@@ -41,9 +41,9 @@ Agents cannot bypass security rules. PreToolUse and PostToolUse Bash hooks physi
 </details>
 
 <details open>
-<summary><b>🤖 Distributed Agent Swarms (GPS)</b></summary>
+<summary><b>🤖 Distributed Agent Swarms (Multi-Vendor GPS)</b></summary>
 <br>
-Native support for spawning parallel agents (e.g., Frontend Agent, Backend Agent, Devil's Advocate Reviewer). They synchronize via the `.bestai/GPS.json` Global Project State, ensuring zero conflicts.
+Native support for spawning parallel agents across different AI providers. Assign Claude to backend architecture, Gemini to massive context-mining tasks, and Codex to unit testing. They all synchronize via the `.bestai/GPS.json` Global Project State, ensuring zero conflicts while leveraging each model's unique strengths.
 </details>
 
 <details open>
