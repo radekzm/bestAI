@@ -54,7 +54,7 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 ## 🤖 Syndicate Decision & Collaboration Loop
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/radekzm/bestAI/master/assets/decision-loop.svg" alt="Decision Loop" width="900" />
+  ![Decision Loop](https://raw.githubusercontent.com/radekzm/bestAI/master/assets/decision-loop.svg?sanitize=true)
 </div>
 
 > [!IMPORTANT]
@@ -67,7 +67,7 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 We solve the **"Context Overload"** problem by segmenting information into distinct tiers, ensuring the agent always knows the most critical state without drowning in data.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/radekzm/bestAI/master/assets/context-os-tiers.svg" alt="Context OS Tiers" width="800" />
+  ![Context OS Tiers](https://raw.githubusercontent.com/radekzm/bestAI/master/assets/context-os-tiers.svg?sanitize=true)
 </div>
 
 - **T0 (HOT):** The **Global Project State (GPS.json)**. The project's brain. Shared by all swarm agents.
