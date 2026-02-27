@@ -62,6 +62,12 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 
 ---
 
+## 🤖 The Syndicate Model (Agent Roles)
+
+<div align="center">
+  ![Swarm Architecture](https://raw.githubusercontent.com/radekzm/bestAI/master/assets/swarm-architecture.svg?sanitize=true)
+</div>
+
 ## 🏗️ The 5-Tier Context OS (Infinite Scalability)
 
 We solve the **"Context Overload"** problem by segmenting information into distinct tiers, ensuring the agent always knows the most critical state without drowning in data.
