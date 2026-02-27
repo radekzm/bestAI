@@ -11,6 +11,7 @@ set -euo pipefail
 # Dry-run mode: log what would be blocked but don't actually block
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
 block_or_dryrun() {
+    emit_event "backup-enforcement" "BLOCK" "{\"reason\":\"$*\"}" 2>/dev/null || true
     if [ "$BESTAI_DRY_RUN" = "1" ]; then
         echo "[DRY-RUN] WOULD BLOCK: $*" >&2
         exit 0
@@ -31,6 +32,11 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || {
     exit 2
 }
 [ -z "$COMMAND" ] && exit 0
+
+# Unified JSONL event logging
+_BESTAI_TOOL_NAME="Bash"
+# shellcheck source=hook-event.sh
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
 is_destructive() {
     # Match command tokens, not substrings (e.g. "deployment-notes.txt" is safe).
@@ -153,6 +159,7 @@ if is_destructive "$COMMAND"; then
             block_or_dryrun "Backup checksum mismatch (manifest vs actual)."
         fi
     fi
+    emit_event "backup-enforcement" "ALLOW" "{\"command\":\"destructive-passed\"}" 2>/dev/null || true
 fi
 
 exit 0

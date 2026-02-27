@@ -8,7 +8,9 @@ AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic:
 
 ```
 CLAUDE.md = guidance (advisory, model may ignore)
-Hooks + exit 2 = deterministic block for matched tool events/patterns
+Hooks + exit 2 = enforcement for matched tool events/patterns
+  Edit/Write tools:  deterministic (exact path match, cannot be bypassed)
+  Bash tool:         best-effort (pattern matching, covers common cases)
 ```
 
 ## Quick Start
@@ -69,12 +71,14 @@ bash evals/run.sh --enforce-gates
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require validated backup manifest before deploy/migrate |
 | [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State (v4.0) |
+| [hook-event.sh](hooks/hook-event.sh) | Library | Shared JSONL event logging for all hooks |
 
 ## Tooling
 
 | Tool | Purpose | Usage |
 |------|---------|-------|
 | [setup.sh](setup.sh) | Interactive or deterministic project setup | `bash setup.sh /path/to/project --non-interactive --secure-defaults` |
+| [stats.sh](stats.sh) | Observability dashboard (metrics, CB state, GPS, events) | `bash stats.sh /path/to/project` |
 | [doctor.sh](doctor.sh) | Health check & diagnostics (`--strict` for CI) | `bash doctor.sh --strict /path/to/project` |
 | [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (100+ tests) | `bash tests/test-hooks.sh` |
 | [evals/run.sh](evals/run.sh) | Reproducible benchmark report (+ optional quality gates) | `bash evals/run.sh --enforce-gates` |

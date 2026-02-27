@@ -125,7 +125,7 @@ assert_exit "Non-frozen file -> allow" "0" "$CODE"
 OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"sed -i \"s/a/b/\" src/auth/login.ts"}}' | CLAUDE_PROJECT_DIR="$TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
 CODE=$?
 assert_exit "Frozen file Bash bypass -> block" "2" "$CODE"
-assert_contains "Frozen file Bash bypass -> message" "$OUTPUT" "bypass"
+assert_contains "Frozen file Bash bypass -> message" "$OUTPUT" "FROZEN"
 
 rm -rf "$TMPDIR"
 
@@ -1319,6 +1319,82 @@ CODE=$?
 assert_exit "Secret guard: safe Write -> allow" "0" "$CODE"
 
 rm -rf "$SG_TMP"
+
+# ============================================================
+echo "=== hook-event.sh (JSONL event logging) ==="
+
+HE_TMP=$(mktemp -d)
+export BESTAI_EVENT_LOG="$HE_TMP/events.jsonl"
+export CLAUDE_PROJECT_DIR="$HE_TMP/project"
+mkdir -p "$CLAUDE_PROJECT_DIR"
+
+# Test 1: basic emit
+bash -c "source '$HOOKS_DIR/hook-event.sh' && emit_event 'test-hook' 'ALLOW' '{\"x\":1}'" 2>/dev/null
+assert_file_contains "Event emitted to JSONL" "$BESTAI_EVENT_LOG" '"hook":"test-hook"'
+assert_file_contains "Event action is correct" "$BESTAI_EVENT_LOG" '"action":"ALLOW"'
+
+# Test 2: valid JSON
+EXIT_CODE=0
+jq empty "$BESTAI_EVENT_LOG" >/dev/null 2>&1 || EXIT_CODE=$?
+assert_exit "JSONL output is valid JSON" "0" "$EXIT_CODE"
+
+# Test 3: disabled logging
+rm -f "$BESTAI_EVENT_LOG"
+export BESTAI_EVENT_LOG_DISABLED="1"
+bash -c "source '$HOOKS_DIR/hook-event.sh' && emit_event 'test-hook' 'BLOCK' '{\"x\":1}'" 2>/dev/null
+TOTAL=$((TOTAL + 1))
+if [ ! -f "$BESTAI_EVENT_LOG" ]; then
+    echo -e "  ${GREEN}PASS${NC} Disabled logging skips file creation"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} Event logged despite DISABLED=1"
+    FAIL=$((FAIL + 1))
+fi
+unset BESTAI_EVENT_LOG_DISABLED
+
+# Test 4: check-frozen emits events on block
+rm -f "$BESTAI_EVENT_LOG"
+CF_TMP2=$(mktemp -d)
+export CLAUDE_PROJECT_DIR="$CF_TMP2"
+mkdir -p "$CF_TMP2/.claude"
+printf '# Frozen\n- `%s/secret.ts`\n' "$CF_TMP2" > "$CF_TMP2/.claude/frozen-fragments.md"
+echo '{"tool_name":"Edit","tool_input":{"file_path":"'"$CF_TMP2"'/secret.ts"}}' \
+    | bash "$HOOKS_DIR/check-frozen.sh" >/dev/null 2>&1 || true
+assert_file_contains "check-frozen BLOCK event in JSONL" "$BESTAI_EVENT_LOG" '"hook":"check-frozen"'
+assert_file_contains "check-frozen action=BLOCK" "$BESTAI_EVENT_LOG" '"action":"BLOCK"'
+rm -rf "$CF_TMP2"
+
+# Test 5: check-frozen emits ALLOW on non-frozen
+rm -f "$BESTAI_EVENT_LOG"
+CF_TMP3=$(mktemp -d)
+export CLAUDE_PROJECT_DIR="$CF_TMP3"
+mkdir -p "$CF_TMP3/.claude"
+# Must have a frozen list so the hook reaches the ALLOW emit at the end
+printf '# Frozen\n- `%s/other-file.ts`\n' "$CF_TMP3" > "$CF_TMP3/.claude/frozen-fragments.md"
+echo '{"tool_name":"Edit","tool_input":{"file_path":"/some/safe/file.ts"}}' \
+    | bash "$HOOKS_DIR/check-frozen.sh" >/dev/null 2>&1 || true
+assert_file_contains "check-frozen ALLOW event in JSONL" "$BESTAI_EVENT_LOG" '"action":"ALLOW"'
+rm -rf "$CF_TMP3"
+
+# Test 6: rotation
+rm -f "$BESTAI_EVENT_LOG"
+for i in $(seq 1 20); do
+    bash -c "source '$HOOKS_DIR/hook-event.sh' && emit_event 'test' 'ALLOW' '{\"i\":$i}'" 2>/dev/null
+done
+BEFORE=$(wc -l < "$BESTAI_EVENT_LOG" | tr -d ' ')
+bash -c "source '$HOOKS_DIR/hook-event.sh' && rotate_event_log 10" 2>/dev/null
+AFTER=$(wc -l < "$BESTAI_EVENT_LOG" | tr -d ' ')
+TOTAL=$((TOTAL + 1))
+if [ "$AFTER" -lt "$BEFORE" ]; then
+    echo -e "  ${GREEN}PASS${NC} Event log rotated ($BEFORE -> $AFTER lines)"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} Event log not rotated ($BEFORE -> $AFTER lines)"
+    FAIL=$((FAIL + 1))
+fi
+
+rm -rf "$HE_TMP"
+unset BESTAI_EVENT_LOG BESTAI_EVENT_LOG_DISABLED
 
 # ============================================================
 echo ""

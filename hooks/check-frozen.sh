@@ -9,6 +9,7 @@ set -euo pipefail
 # Dry-run mode: log what would be blocked but don't actually block
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
 block_or_dryrun() {
+    emit_event "check-frozen" "BLOCK" "{\"reason\":\"$*\"}" 2>/dev/null || true
     if [ "$BESTAI_DRY_RUN" = "1" ]; then
         echo "[DRY-RUN] WOULD BLOCK: $*" >&2
         exit 0
@@ -41,12 +42,6 @@ PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 _BESTAI_TOOL_NAME="$TOOL_NAME"
 # shellcheck source=hook-event.sh
 source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
-
-log_metric() {
-    local action="$1"
-    local details="$2"
-    emit_event "check-frozen" "$action" "{\"detail\":\"$details\"}" 2>/dev/null || true
-}
 
 # Normalize path: remove ./ and .. components, convert to absolute.
 # Pure-bash implementation — no external dependencies (realpath, python3).
@@ -138,7 +133,6 @@ check_direct_file_edit() {
 
     while IFS=$'\t' read -r raw frozen_norm; do
         if [ "$normalized_file" = "$frozen_norm" ]; then
-            log_metric "BLOCK" "mode=direct file=$file_path"
             block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md)"
         fi
     done < "$FROZEN_PATHS_FILE"
@@ -157,7 +151,6 @@ check_bash_bypass() {
 
     while IFS=$'\t' read -r raw frozen_norm; do
         if echo "$command" | grep -Fq "$raw" || echo "$command" | grep -Fq "$frozen_norm"; then
-            log_metric "BLOCK" "mode=bash file=$raw"
             block_or_dryrun "Bash command modifies FROZEN file: $raw (command: $command)"
         fi
     done < "$FROZEN_PATHS_FILE"
@@ -177,5 +170,5 @@ case "$TOOL_NAME" in
         ;;
 esac
 
-log_metric "ALLOW" "mode=${TOOL_NAME:-unknown}"
+emit_event "check-frozen" "ALLOW" "{\"tool\":\"${TOOL_NAME:-unknown}\"}" 2>/dev/null || true
 exit 0
