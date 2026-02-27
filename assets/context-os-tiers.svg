@@ -4,34 +4,34 @@
   <!-- Tiers -->
   <g transform="translate(50, 50)">
     <rect x="0" y="0" width="120" height="300" rx="8" fill="#e06c75" fill-opacity="0.1" stroke="#e06c75" stroke-width="2"/>
-    <text x="60" y="30" font-family="Montserrat, sans-serif" font-size="14" fill="#e06c75" text-anchor="middle" font-weight="bold">T0 (HOT)</text>
-    <text x="60" y="55" font-family="Montserrat, sans-serif" font-size="10" fill="#e06c75" text-anchor="middle">GPS.json</text>
+    <text x="60" y="30" font-family="Arial, sans-serif" font-size="14" fill="#e06c75" text-anchor="middle" font-weight="bold">T0 (HOT)</text>
+    <text x="60" y="55" font-family="Arial, sans-serif" font-size="10" fill="#e06c75" text-anchor="middle">GPS.json</text>
   </g>
 
   <g transform="translate(190, 50)">
     <rect x="0" y="0" width="120" height="300" rx="8" fill="#98c379" fill-opacity="0.1" stroke="#98c379" stroke-width="2"/>
-    <text x="60" y="30" font-family="Montserrat, sans-serif" font-size="14" fill="#98c379" text-anchor="middle" font-weight="bold">T1 (WARM)</text>
-    <text x="60" y="55" font-family="Montserrat, sans-serif" font-size="10" fill="#98c379" text-anchor="middle">T3-Summary.md</text>
+    <text x="60" y="30" font-family="Arial, sans-serif" font-size="14" fill="#98c379" text-anchor="middle" font-weight="bold">T1 (WARM)</text>
+    <text x="60" y="55" font-family="Arial, sans-serif" font-size="10" fill="#98c379" text-anchor="middle">T3-Summary.md</text>
   </g>
 
   <g transform="translate(330, 50)">
     <rect x="0" y="0" width="120" height="300" rx="8" fill="#61afef" fill-opacity="0.1" stroke="#61afef" stroke-width="2"/>
-    <text x="60" y="30" font-family="Montserrat, sans-serif" font-size="14" fill="#61afef" text-anchor="middle" font-weight="bold">T2 (COOL)</text>
-    <text x="60" y="55" font-family="Montserrat, sans-serif" font-size="10" fill="#61afef" text-anchor="middle">Current Module</text>
+    <text x="60" y="30" font-family="Arial, sans-serif" font-size="14" fill="#61afef" text-anchor="middle" font-weight="bold">T2 (COOL)</text>
+    <text x="60" y="55" font-family="Arial, sans-serif" font-size="10" fill="#61afef" text-anchor="middle">Current Module</text>
   </g>
 
   <g transform="translate(470, 50)">
     <rect x="0" y="0" width="120" height="300" rx="8" fill="#d19a66" fill-opacity="0.1" stroke="#d19a66" stroke-width="2"/>
-    <text x="60" y="30" font-family="Montserrat, sans-serif" font-size="14" fill="#d19a66" text-anchor="middle" font-weight="bold">T3 (COLD)</text>
-    <text x="60" y="55" font-family="Montserrat, sans-serif" font-size="10" fill="#d19a66" text-anchor="middle">Codebase (RAG)</text>
+    <text x="60" y="30" font-family="Arial, sans-serif" font-size="14" fill="#d19a66" text-anchor="middle" font-weight="bold">T3 (COLD)</text>
+    <text x="60" y="55" font-family="Arial, sans-serif" font-size="10" fill="#d19a66" text-anchor="middle">Codebase (RAG)</text>
   </g>
 
   <g transform="translate(610, 50)">
     <rect x="0" y="0" width="120" height="300" rx="8" fill="#c678dd" fill-opacity="0.1" stroke="#c678dd" stroke-width="2"/>
-    <text x="60" y="30" font-family="Montserrat, sans-serif" font-size="14" fill="#c678dd" text-anchor="middle" font-weight="bold">T4 (FROZEN)</text>
-    <text x="60" y="55" font-family="Montserrat, sans-serif" font-size="10" fill="#c678dd" text-anchor="middle">Config & .env</text>
+    <text x="60" y="30" font-family="Arial, sans-serif" font-size="14" fill="#c678dd" text-anchor="middle" font-weight="bold">T4 (FROZEN)</text>
+    <text x="60" y="55" font-family="Arial, sans-serif" font-size="10" fill="#c678dd" text-anchor="middle">Config & .env</text>
   </g>
 
   <path d="M110 200 L690 200" stroke="#abb2bf" stroke-width="1" stroke-dasharray="4 4"/>
-  <text x="400" y="375" font-family="Montserrat, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle">Tiered Context Flow ensures infinite scalability</text>
+  <text x="400" y="375" font-family="Arial, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle">Tiered Context Flow ensures infinite scalability</text>
 </svg>

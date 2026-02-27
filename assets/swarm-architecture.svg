@@ -2,29 +2,29 @@
   <rect width="800" height="400" rx="16" fill="#1e1e2e"/>
   <!-- Central Hub -->
   <circle cx="400" cy="200" r="60" fill="#61afef" fill-opacity="0.2" stroke="#61afef" stroke-width="2"/>
-  <text x="400" y="205" font-family="Montserrat, sans-serif" font-size="18" fill="#61afef" text-anchor="middle" font-weight="bold">OMNI-GPS</text>
+  <text x="400" y="205" font-family="Arial, sans-serif" font-size="18" fill="#61afef" text-anchor="middle" font-weight="bold">OMNI-GPS</text>
   
   <!-- Agents -->
   <g>
     <rect x="100" y="150" width="160" height="100" rx="8" stroke="#e06c75" stroke-width="2" fill="#e06c75" fill-opacity="0.1"/>
-    <text x="180" y="195" font-family="Montserrat, sans-serif" font-size="14" fill="#e06c75" text-anchor="middle" font-weight="bold">CLAUDE CODE</text>
-    <text x="180" y="215" font-family="Montserrat, sans-serif" font-size="10" fill="#e06c75" text-anchor="middle">LEAD ARCHITECT</text>
+    <text x="180" y="195" font-family="Arial, sans-serif" font-size="14" fill="#e06c75" text-anchor="middle" font-weight="bold">CLAUDE CODE</text>
+    <text x="180" y="215" font-family="Arial, sans-serif" font-size="10" fill="#e06c75" text-anchor="middle">LEAD ARCHITECT</text>
     <path d="M260 200 L340 200" stroke="#e06c75" stroke-width="2" stroke-dasharray="4 4"/>
   </g>
   
   <g>
     <rect x="540" y="80" width="160" height="100" rx="8" stroke="#98c379" stroke-width="2" fill="#98c379" fill-opacity="0.1"/>
-    <text x="620" y="125" font-family="Montserrat, sans-serif" font-size="14" fill="#98c379" text-anchor="middle" font-weight="bold">GEMINI CLI</text>
-    <text x="620" y="145" font-family="Montserrat, sans-serif" font-size="10" fill="#98c379" text-anchor="middle">2M CONTEXT MINER</text>
+    <text x="620" y="125" font-family="Arial, sans-serif" font-size="14" fill="#98c379" text-anchor="middle" font-weight="bold">GEMINI CLI</text>
+    <text x="620" y="145" font-family="Arial, sans-serif" font-size="10" fill="#98c379" text-anchor="middle">2M CONTEXT MINER</text>
     <path d="M540 130 L430 170" stroke="#98c379" stroke-width="2" stroke-dasharray="4 4"/>
   </g>
 
   <g>
     <rect x="540" y="220" width="160" height="100" rx="8" stroke="#d19a66" stroke-width="2" fill="#d19a66" fill-opacity="0.1"/>
-    <text x="620" y="265" font-family="Montserrat, sans-serif" font-size="14" fill="#d19a66" text-anchor="middle" font-weight="bold">CODEX / OPENAI</text>
-    <text x="620" y="285" font-family="Montserrat, sans-serif" font-size="10" fill="#d19a66" text-anchor="middle">SPRINT DEVELOPER</text>
+    <text x="620" y="265" font-family="Arial, sans-serif" font-size="14" fill="#d19a66" text-anchor="middle" font-weight="bold">CODEX / OPENAI</text>
+    <text x="620" y="285" font-family="Arial, sans-serif" font-size="10" fill="#d19a66" text-anchor="middle">SPRINT DEVELOPER</text>
     <path d="M540 270 L430 230" stroke="#d19a66" stroke-width="2" stroke-dasharray="4 4"/>
   </g>
 
-  <text x="400" y="360" font-family="Montserrat, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle" font-style="italic">Shared Context Bus protected by flock-locking</text>
+  <text x="400" y="360" font-family="Arial, sans-serif" font-size="12" fill="#abb2bf" text-anchor="middle" font-style="italic">Shared Context Bus protected by flock-locking</text>
 </svg>
