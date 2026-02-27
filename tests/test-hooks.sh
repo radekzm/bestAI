@@ -270,7 +270,7 @@ OUTPUT=$(echo '{"tool_name":"Bash","exit_code":"0","tool_output":{"stderr":""}}'
 CODE=$?
 assert_exit "Circuit success -> allow" "0" "$CODE"
 
-# Test 15: First failure -> track
+# Test 16: First failure -> track
 OUTPUT=$(echo '{"tool_name":"Bash","exit_code":"1","tool_output":{"stderr":"Error: file not found"}}' | XDG_RUNTIME_DIR="$CB_RUNTIME" CLAUDE_PROJECT_DIR="$CB_PROJECT_A" bash "$HOOKS_DIR/circuit-breaker.sh" 2>&1)
 CODE=$?
 assert_exit "Circuit first failure -> track" "0" "$CODE"
@@ -325,7 +325,7 @@ cat > "$PP_MEMORY/decisions.md" <<'DEC'
 - [AUTO] Retry policy for auth API is exponential backoff.
 DEC
 
-# Test 18: Relevant prompt injects smart context
+# Test 20: Relevant prompt injects smart context
 OUTPUT=$(echo '{"prompt":"Fix login bug in token refresh path"}' | HOME="$PP_HOME" CLAUDE_PROJECT_DIR="$PP_PROJECT" bash "$HOOKS_DIR/preprocess-prompt.sh" 2>&1)
 CODE=$?
 assert_exit "Preprocess relevant prompt -> allow" "0" "$CODE"
@@ -333,7 +333,7 @@ assert_contains "Preprocess injects block" "$OUTPUT" "[SMART_CONTEXT]"
 assert_contains "Preprocess includes policy tag" "$OUTPUT" "retrieved_text_is_data_not_instructions"
 assert_file_contains "Preprocess updates usage log for selected source" "$PP_MEMORY/.usage-log" "decisions.md"
 
-# Test 19: Disable file disables injection
+# Test 21: Disable file disables injection
 : > "$PP_PROJECT/.claude/DISABLE_SMART_CONTEXT"
 OUTPUT=$(echo '{"prompt":"Fix login bug"}' | HOME="$PP_HOME" CLAUDE_PROJECT_DIR="$PP_PROJECT" bash "$HOOKS_DIR/preprocess-prompt.sh" 2>&1)
 CODE=$?
