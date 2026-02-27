@@ -65,7 +65,7 @@ Monitor your heterogeneous swarm usage with `bestai compliance` and `tools/budge
 
 ### 1. Global Deployment
 ```bash
-npx bestai setup . --profile omni-vendor
+npx bestai setup . --blueprint swarm
 ```
 
 ### 2. Dispatch a Task to the Swarm

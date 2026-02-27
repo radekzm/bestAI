@@ -10,7 +10,10 @@
     "init": "bash setup.sh",
     "test": "bash tests/test-hooks.sh",
     "doctor": "bash doctor.sh",
-    "stats": "bash stats.sh"
+    "stats": "bash stats.sh",
+    "compliance": "bash compliance.sh",
+    "lint": "bash tools/hook-lint.sh .",
+    "swarm": "bash tools/swarm-dispatch.sh"
   },
   "repository": {
     "type": "git",

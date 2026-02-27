@@ -9,7 +9,7 @@ const command = args[0];
 if (!command) {
     console.log("bestAI CLI v7.0");
     console.log("Usage: bestai <command> [options]");
-    console.log("Commands: init, setup, doctor, stats, test, compliance, lint");
+    console.log("Commands: init, setup, doctor, stats, test, compliance, lint, swarm");
     process.exit(0);
 }
 
@@ -21,6 +21,7 @@ const commands = {
     'test':       path.join(__dirname, '..', 'tests', 'test-hooks.sh'),
     'compliance': path.join(__dirname, '..', 'compliance.sh'),
     'lint':       path.join(__dirname, '..', 'tools', 'hook-lint.sh'),
+    'swarm':      path.join(__dirname, '..', 'tools', 'swarm-dispatch.sh'),
 };
 
 const scriptPath = commands[command];
