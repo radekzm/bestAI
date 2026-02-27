@@ -53,17 +53,33 @@
 | Hooks silently fail | Missing `jq` dependency | Run `bash doctor.sh` → checks all deps |
 | Frozen file check doesn't work | Hook not executable, hook not attached in `settings.json`, missing `jq`, or malformed `frozen-fragments.md` | Run `bash doctor.sh` then `bash tests/test-hooks.sh` |
 
+## Hook Debugging
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Hook blocks unexpectedly | Pattern matches unintended commands | Check `TOOL_INPUT` in event log: `npx bestai compliance --json` |
+| Hook doesn't block when it should | Bash command evades pattern | Known limitation for Bash hooks — see [architecture](docs/architecture.md#determinism-spectrum) |
+| Hook latency too high | Smart Context v2 LLM call | Switch to v1 or disable: `touch .claude/DISABLE_SMART_CONTEXT` |
+| Compliance report shows 0 events | Wrong log path or project hash | Verify: `cat ~/.cache/bestai/events.jsonl \| head -1` |
+| Circuit breaker won't reset | Stale state files | Clear: `rm -rf ~/.cache/claude-circuit-breaker/` |
+
 ## Quick Commands
 
 ```bash
 # Diagnose your setup
-bash doctor.sh /path/to/your/project
+npx bestai doctor
 
 # Install bestAI into your project
-bash setup.sh /path/to/your/project
+npx bestai setup /path/to/your/project
 
 # Test hooks work correctly
-bash tests/test-hooks.sh
+npx bestai test
+
+# Check compliance
+npx bestai compliance
+
+# Validate hook manifest
+npx bestai lint
 
 # Emergency: agent stuck in loop
 # Type in Claude Code:
