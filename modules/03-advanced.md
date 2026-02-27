@@ -600,8 +600,10 @@ grep -c 'stale\|missing' /tmp/etag-debug.log  # misses
 
 *This module is experimental. Validate everything against your specific use case.*
 *See [modules 00-06](../modules/) for production-ready guidelines.*
-# Module 13: Agent Orchestration (Team Lead)
+# Module 13: Agent Orchestration (Team Lead) [PREVIEW]
 
+> **Maturity: Preview** — documented with code examples, limited production validation.
+>
 > Use this module for complex multi-agent setups where different agents take on specific roles
 > such as Developer, Reviewer, and Tester, working in parallel.
 

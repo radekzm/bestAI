@@ -10,11 +10,13 @@
 
 ## Modules (Consolidated v4.0)
 
-| Module | Topic | Use When |
-|--------|-------|----------|
-| [01-core](modules/01-core.md) | CORE | Fundamentals, architecture, persistence, enforcement, memory, GPS |
-| [02-operations](modules/02-operations.md) | OPERATIONS | Sessions, patterns, prompt caching |
-| [03-advanced](modules/03-advanced.md) | ADVANCED | CS algorithms, smart context, RAG, agent orchestration |
+| Module | Topic | Maturity | Use When |
+|--------|-------|----------|----------|
+| [01-core](modules/01-core.md) | CORE | Stable | Fundamentals, architecture, persistence, enforcement, memory |
+| [02-operations](modules/02-operations.md) | OPERATIONS | Stable | Sessions, patterns, prompt caching |
+| [03-advanced](modules/03-advanced.md) | ADVANCED | Mixed | Smart context (stable), RAG/orchestration (preview) |
+
+Maturity: **Stable** = tested in production, has hooks + tests. **Preview** = documented, partial implementation.
 
 ## Core Principle
 

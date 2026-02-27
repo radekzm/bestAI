@@ -1,6 +1,6 @@
 # bestAI — Guidelines for AI Coding Agents v4.0
 
-Evidence-based, modular guidelines for AI coding agents (Claude Code, Codex, Cursor, Windsurf, Amp).
+Evidence-based, modular guidelines for AI coding agents. Full enforcement via hooks on **Claude Code**; advisory guidelines via AGENTS.md for Codex, Cursor, Windsurf, and Amp. Use `tools/generate-rules.sh` to export rules to other tools.
 
 ## Why bestAI?
 
@@ -83,6 +83,9 @@ bash evals/run.sh --enforce-gates
 | [tests/test-hooks.sh](tests/test-hooks.sh) | Automated hook tests (100+ tests) | `bash tests/test-hooks.sh` |
 | [evals/run.sh](evals/run.sh) | Reproducible benchmark report (+ optional quality gates) | `bash evals/run.sh --enforce-gates` |
 | [evals/cache-usage-report.sh](evals/cache-usage-report.sh) | Prompt cache usage trend report | `bash evals/cache-usage-report.sh --input evals/data/cache-usage-sample.jsonl` |
+| [tools/hook-lint.sh](tools/hook-lint.sh) | Hook composition validator (deps, conflicts, latency) | `bash tools/hook-lint.sh /path/to/project` |
+| [tools/generate-rules.sh](tools/generate-rules.sh) | Export rules for Cursor/Windsurf/Codex | `bash tools/generate-rules.sh . --format cursor > .cursorrules` |
+| [compliance.sh](compliance.sh) | Automated compliance reporting from events.jsonl | `bash compliance.sh /path/to/project --json` |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem → Solution lookup | Read when agent misbehaves |
 | [docs/migration-guide.md](docs/migration-guide.md) | Existing project migration playbook | Follow checklist step-by-step |
 
