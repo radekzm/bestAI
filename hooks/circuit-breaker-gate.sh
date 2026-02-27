@@ -14,15 +14,8 @@ COOLDOWN="${CIRCUIT_BREAKER_COOLDOWN_SECS:-${CIRCUIT_BREAKER_COOLDOWN:-300}}"
 # shellcheck source=hook-event.sh
 source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
-project_hash() {
-    if command -v _bestai_project_hash >/dev/null 2>&1; then
-        _bestai_project_hash "$PROJECT_DIR"
-    else
-        echo "$PROJECT_DIR" | tr '/' '-'
-    fi
-}
-
-PROJECT_HASH="$(project_hash)"
+# Use canonical hash from hook-event.sh (must match circuit-breaker.sh)
+PROJECT_HASH="$(_bestai_project_hash "$PROJECT_DIR" 2>/dev/null || printf '%s' "$PROJECT_DIR" | md5sum 2>/dev/null | awk '{print substr($1,1,16)}' || printf '%s' "$PROJECT_DIR" | cksum | awk '{print $1}')"
 STATE_DIR="$BASE_STATE_DIR/$PROJECT_HASH"
 NOW="$(date +%s)"
 

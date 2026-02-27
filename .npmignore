@@ -1,12 +1,13 @@
-# Test & eval artifacts
-tests/
+# Eval artifacts (tests needed for `bestai test`)
 evals/
-*.test.*
 
 # Development files
 .github/
 .bestai/
 .claude/
+
+# Legacy archive
+archive/
 
 # Documentation (keep README only)
 docs/
