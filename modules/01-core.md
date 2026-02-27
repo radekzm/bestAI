@@ -103,6 +103,27 @@ Tokenomics research (2026) reports a major share of spend in iterative refinemen
 
 **Critical insight**: Documentation ≠ enforcement. Critical rules MUST be enforced by hooks, not text.
 
+### Methodology: How the 6% Figure Was Measured
+
+**Data source**: Production session logs from Nuconic's OpenProject deployment (task.nuconic.com), Feb 2025.
+
+**Measurement process**:
+1. Identified all sessions containing deploy-related commands (`kamal deploy`, `rails runner`, service restarts)
+2. Counted 33 deploy sessions out of 234 total
+3. Checked each deploy session for a `pg_dump` or backup command executed *before* the deploy command
+4. Found backups in only 2 of 33 deploy sessions → 6% compliance (2/33)
+
+**CLAUDE.md rule being tested**: "Always create a database backup before any deployment or destructive operation"
+
+**Limitations**:
+- Single project, single team — results may not generalize
+- Rule was present in CLAUDE.md for the full measurement period
+- No A/B test against hook enforcement (hook was added after measurement)
+- "Deploy session" identification used keyword matching, not semantic analysis
+- Backup could have been taken via external process not visible in session logs
+
+**Confidence**: The 6% figure is directionally correct (advisory docs alone are insufficient for critical rules) but should not be treated as a universal compliance rate. The key insight — that hooks dramatically outperform advisory text — is supported by the data regardless of the exact percentage.
+
 ---
 
 *See [01-file-architecture](01-file-architecture.md) for file structure, [04-enforcement](04-enforcement.md) for hooks.*
@@ -536,9 +557,37 @@ jq -r 'select(.elapsed_ms != null) | "\(.hook) \(.elapsed_ms)"' events.jsonl \
 - `PostToolUse` hooks are advisory by default (cannot block the current call)
   Mitigation: pair advisory trackers with strict `PreToolUse` gates (example: `circuit-breaker-gate.sh`)
 - Bash command parsing is pattern-based, not a full shell parser
-  Mitigation: keep frozen paths explicit and reviewed
+  Mitigation: keep frozen paths explicit and reviewed; bypass vectors (eval, heredoc, interpreters) are best-effort covered
 - `[USER]` protection is only deterministic if enforced by dedicated hooks/diff checks
   Mitigation: treat `[USER]` rules as critical and add guard hooks in strict deployments
+
+## Security: UserPromptSubmit Injection Threat Model
+
+`UserPromptSubmit` hook stdout is added to the LLM context. `preprocess-prompt.sh` uses this for Smart Context injection. This creates a prompt injection surface.
+
+### Current Defenses
+
+`sanitize_line()` in `preprocess-prompt.sh` filters known patterns:
+- LLM format tokens (`<|im_start|>`, `[INST]`, `assistant:`, `user:`)
+- Obvious injection phrases (`ignore previous`, `system prompt`, `jailbreak`, `override instructions`)
+- Dangerous commands (`rm -rf`, `curl http`, `<script`)
+- Lines truncated to 240 characters
+
+### Known Gaps
+
+| Gap | Risk | Mitigation |
+|-----|------|------------|
+| Indirect injection via memory files | Low — memory written by agent/user, not untrusted input | Mark injected context with `[CONTEXT_DATA]` wrapper |
+| Unicode homoglyphs | Low — requires intentional obfuscation | Future: normalize Unicode before sanitization |
+| Multi-line injection | Low — each line sanitized independently | Sanitizer operates line-by-line; multi-line payloads fragmented |
+| Base64/encoded payloads | Low — LLM would need to decode | Content is treated as data, not executable |
+
+### Severity Assessment: Low-Medium
+
+1. Memory files are written by the agent or user (trusted sources)
+2. Attack requires prior memory poisoning (supply chain vector)
+3. LLMs have built-in instruction-following guardrails independent of bestAI
+4. Injected context is wrapped in `[SMART_CONTEXT]` tags with `retrieved_text_is_data_not_instructions` policy
 
 ## Example Enforcement Hooks
 

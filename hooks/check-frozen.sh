@@ -143,9 +143,10 @@ check_bash_bypass() {
     command=$(echo "$TOOL_INPUT" | jq -r '.command // empty' 2>/dev/null)
     [ -z "$command" ] && return 0
 
-    # Extended pattern covers: direct editors, redirect operators, file manipulation,
-    # git file-level commands, pipe-to-file patterns, and shell bypass vectors (eval, xargs, etc.)
-    if ! echo "$command" | grep -Eqi '(eval|xargs|sh\s+-c|bash\s+-c|\$\(|[`]|sed\s+-i|perl\s+-i|awk.*inplace|echo\s+.*>|printf\s+.*>|cat\s+.*>|>\s*[^&]|tee\s+|rm\s+|mv\s+|cp\s+|truncate\s+|dd\s+|install\s+|patch\s+|git\s+(checkout|restore|mv|rm)|chmod\s+|chown\s+|ln\s+|rsync\s+|sponge\s+)'; then
+    # Extended pattern: direct editors, redirects, file manipulation, git commands,
+    # shell bypass vectors (eval, xargs, bash -c, subshells, heredocs, exec),
+    # and scripting interpreters. Best-effort — not a full shell parser.
+    if ! echo "$command" | grep -Eqi '(eval|xargs|sh\s+-c|bash\s+-c|exec\s+|source\s+|\.\s+/|\$\(|[`]|<<|sed\s+-i|perl\s+(-i|-e)|awk.*inplace|echo\s+.*>|printf\s+.*>|cat\s+.*>|>\s*[^&]|tee\s+|rm\s+|mv\s+|cp\s+|truncate\s+|dd\s+|install\s+|patch\s+|git\s+(checkout|restore|mv|rm)|chmod\s+|chown\s+|ln\s+|rsync\s+|sponge\s+|python[23]?\s+-c|ruby\s+-e|node\s+-e)'; then
         return 0
     fi
 

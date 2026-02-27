@@ -563,6 +563,36 @@ OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"cp /tmp/a.ts src/uti
 CODE=$?
 assert_exit "Frozen: cp non-frozen -> allow" "0" "$CODE"
 
+# Test: eval bypass -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"eval \"sed -i s/foo/bar/ src/auth/login.ts\""}}' | CLAUDE_PROJECT_DIR="$BF_TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
+CODE=$?
+assert_exit "Frozen: eval bypass -> block" "2" "$CODE"
+
+# Test: bash -c bypass -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"bash -c \"echo modified > src/auth/login.ts\""}}' | CLAUDE_PROJECT_DIR="$BF_TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
+CODE=$?
+assert_exit "Frozen: bash -c bypass -> block" "2" "$CODE"
+
+# Test: heredoc redirect -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"cat << EOF > src/auth/login.ts\nmodified\nEOF"}}' | CLAUDE_PROJECT_DIR="$BF_TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
+CODE=$?
+assert_exit "Frozen: heredoc bypass -> block" "2" "$CODE"
+
+# Test: python -c bypass -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"python3 -c \"open(\\\"src/auth/login.ts\\\",\\\"w\\\").write(\\\"hacked\\\")\""}}' | CLAUDE_PROJECT_DIR="$BF_TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
+CODE=$?
+assert_exit "Frozen: python -c bypass -> block" "2" "$CODE"
+
+# Test: xargs bypass -> block
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"echo src/auth/login.ts | xargs rm"}}' | CLAUDE_PROJECT_DIR="$BF_TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
+CODE=$?
+assert_exit "Frozen: xargs bypass -> block" "2" "$CODE"
+
+# Test: safe read command with frozen path -> allow
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"cat src/auth/login.ts"}}' | CLAUDE_PROJECT_DIR="$BF_TMPDIR" bash "$HOOKS_DIR/check-frozen.sh" 2>&1)
+CODE=$?
+assert_exit "Frozen: safe read cmd -> allow" "0" "$CODE"
+
 rm -rf "$BF_TMPDIR"
 
 # ============================================================
