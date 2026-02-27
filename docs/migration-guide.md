@@ -1,45 +1,43 @@
-# Migration Guide — Existing Project -> bestAI
+# bestAI v4.0 Migration & Onboarding Guide
 
-## Goal
-Move from a monolithic prompt file to a deterministic context system with hooks, memory, and runtime discipline.
+Welcome to the **bestAI v4.0** migration guide! If you have an existing project and want to onboard it into the deterministic, multi-agent ecosystem without breaking your current workflow, follow these steps.
 
-## Checklist
-1. Backup current `CLAUDE.md`.
-2. Measure size: `wc -l CLAUDE.md`.
-3. Extract critical rules (`MUST`, `NEVER`, `ALWAYS`) and map to hooks.
-4. Split non-critical content into topic docs/skills.
-5. Keep `CLAUDE.md` as trigger index (target <= 120 lines).
-6. Build memory files (`MEMORY.md`, `decisions.md`, `preferences.md`, `pitfalls.md`, `frozen-fragments.md`).
-7. Install hooks with setup:
-   - default: `bash setup.sh /path/to/project`
-   - runtime: `bash setup.sh /path/to/project --profile aion-runtime`
-8. Merge hook config into existing `.claude/settings.json` (default behavior).
-9. Run diagnostics: `bash doctor.sh /path/to/project`.
-10. Validate behavior on 3 representative tasks.
+## Step 1: Baseline Assessment
 
-## Decision Extraction Sources
-- Git log (`git log --oneline --since="90 days ago"`)
-- Code comments with rationale
-- Issue/PR descriptions
-- Existing runbooks and README
+Before adding bestAI, analyze your current setup:
+- Do you already have a `CLAUDE.md`, `.cursorrules`, or `windsurf.json`? 
+- Is your agent frequently hitting the context limit or getting stuck in loops?
+- **Action:** Run the interactive setup script. It will **not** overwrite your existing instructions unless you tell it to.
 
-Use tags:
-- `[USER]` for explicit user decisions (never auto-overwrite)
-- `[AUTO]` for agent observations (revisable with evidence)
+```bash
+bash setup.sh /path/to/your/project
+```
 
-## Hook Selection Quick Map
-| Need | Hook |
-|------|------|
-| Protect critical files | `check-frozen.sh` |
-| Enforce backup before destructive ops | `backup-enforcement.sh` |
-| Anti-loop detection (advisory) | `circuit-breaker.sh` |
-| Anti-loop strict blocking | `circuit-breaker-gate.sh` |
-| Smart context injection | `preprocess-prompt.sh` |
-| Session bootstrap | `rehydrate.sh` |
-| Session state sync | `sync-state.sh` |
+## Step 2: Consolidating Legacy Instructions
 
-## Success Checks
-- `doctor.sh`: no FAIL items
-- `tests/test-hooks.sh`: all tests pass
-- Always-loaded docs <= 10-15% of context window (heuristic)
-- No repeated failure loops beyond 3 attempts
+If you have a massive `CLAUDE.md` (e.g., >150 lines), bestAI v4.0 requires you to embrace **Progressive Disclosure**:
+1. Move specific architectural rules to `.bestai/blueprint.md` or topic files in `/memory`.
+2. Keep your `CLAUDE.md` under 100 lines. Focus on "What this project is" and "How to run tests".
+3. The newly installed hook `preprocess-prompt.sh` will dynamically load your detailed rules only when the agent asks relevant questions.
+
+## Step 3: Enabling Deterministic Hooks (The "Force Field")
+
+The biggest change in v4.0 is the **Fail-Closed Hook System**.
+1. Look in `.claude/hooks/`. You will see files like `check-frozen.sh` and `backup-enforcement.sh`.
+2. **Crucial:** You must define your "frozen" files. Open `memory/frozen-fragments.md` and list files that the agent should **never** edit directly (like core config files or `.env` templates).
+3. Try asking your agent to edit a frozen file. You should see it get blocked (`Exit 2`). This means the force field is working!
+
+## Step 4: Upgrading to v4.0 Multi-Agent Orchestration (Optional)
+
+If your project is large enough to require multiple agents (e.g., Frontend Agent + Backend Agent):
+1. Run `bash setup.sh` again and choose the **Agent Swarm Blueprint**.
+2. This creates `.bestai/GPS.json` (Global Project State).
+3. The `sync-gps.sh` hook will now trigger at the end of every session, ensuring all agents share the same "brain" regarding milestones and blockers.
+
+## Step 5: Validating the Migration
+
+Run the diagnostic doctor to ensure your migration is 100% compliant:
+```bash
+bash doctor.sh --strict .
+```
+If you see all green `OK` messages, your project is officially running bestAI v4.0!
