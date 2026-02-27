@@ -439,6 +439,38 @@ else
     check "WARN" "No AGENTS.md" "Copy from templates/agents-md-template.md"
 fi
 
+# === Template Version Checks ===
+echo ""
+echo -e "${BOLD}Template Versions${NC}"
+BESTAI_DIR="$(cd "$(dirname "$0")" && pwd)"
+for tmpl_file in "$TARGET_ABS/CLAUDE.md" "$TARGET_ABS/AGENTS.md"; do
+    [ -f "$tmpl_file" ] || continue
+    tmpl_name=$(basename "$tmpl_file")
+    installed_ver=$(grep -oP '(?<=bestai-template: )\S+ v\S+' "$tmpl_file" 2>/dev/null | head -1)
+    if [ -z "$installed_ver" ]; then
+        check "INFO" "$tmpl_name has no bestai-template version tag"
+    else
+        # Find matching source template
+        latest_ver=""
+        for src in "$BESTAI_DIR"/templates/*.md; do
+            [ -f "$src" ] || continue
+            src_ver=$(grep -oP '(?<=bestai-template: )\S+ v\S+' "$src" 2>/dev/null | head -1)
+            [ -z "$src_ver" ] && continue
+            src_name=$(echo "$src_ver" | awk '{print $1}')
+            inst_name=$(echo "$installed_ver" | awk '{print $1}')
+            if [ "$src_name" = "$inst_name" ]; then
+                latest_ver="$src_ver"
+                break
+            fi
+        done
+        if [ -n "$latest_ver" ] && [ "$installed_ver" != "$latest_ver" ]; then
+            check "WARN" "$tmpl_name is $installed_ver, latest is $latest_ver" "Update from templates/"
+        elif [ -n "$latest_ver" ]; then
+            check "OK" "$tmpl_name template version: $installed_ver (current)"
+        fi
+    fi
+done
+
 # === Common security checks ===
 echo ""
 echo -e "${BOLD}Common Problem Diagnosis${NC}"
