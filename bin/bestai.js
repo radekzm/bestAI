@@ -9,21 +9,24 @@ const command = args[0];
 if (!command) {
     console.log("bestAI CLI v6.0");
     console.log("Usage: bestai <command> [options]");
-    console.log("Commands: init, setup, doctor, stats, test");
+    console.log("Commands: init, setup, doctor, stats, test, compliance, lint");
     process.exit(0);
 }
 
-let scriptPath = '';
-if (command === 'init' || command === 'setup') {
-    scriptPath = path.join(__dirname, '..', 'setup.sh');
-} else if (command === 'doctor') {
-    scriptPath = path.join(__dirname, '..', 'doctor.sh');
-} else if (command === 'stats') {
-    scriptPath = path.join(__dirname, '..', 'stats.sh');
-} else if (command === 'test') {
-    scriptPath = path.join(__dirname, '..', 'tests', 'test-hooks.sh');
-} else {
+const commands = {
+    'init':       path.join(__dirname, '..', 'setup.sh'),
+    'setup':      path.join(__dirname, '..', 'setup.sh'),
+    'doctor':     path.join(__dirname, '..', 'doctor.sh'),
+    'stats':      path.join(__dirname, '..', 'stats.sh'),
+    'test':       path.join(__dirname, '..', 'tests', 'test-hooks.sh'),
+    'compliance': path.join(__dirname, '..', 'compliance.sh'),
+    'lint':       path.join(__dirname, '..', 'tools', 'hook-lint.sh'),
+};
+
+const scriptPath = commands[command];
+if (!scriptPath) {
     console.error(`Unknown command: ${command}`);
+    console.error(`Available: ${Object.keys(commands).join(', ')}`);
     process.exit(1);
 }
 
