@@ -1,6 +1,6 @@
-# bestAI v6.0 Migration & Onboarding Guide
+# bestAI v7.0 Migration & Onboarding Guide
 
-Welcome to the **bestAI v6.0** migration guide! If you have an existing project and want to onboard it into the deterministic, hook-enforced ecosystem without breaking your current workflow, follow these steps.
+Welcome to the **bestAI v7.0 (Omni-Vendor)** migration guide! If you have an existing project and want to onboard it into the deterministic, multi-vendor ecosystem, follow these steps.
 
 ## Step 1: Baseline Assessment
 

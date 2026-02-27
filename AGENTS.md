@@ -1,10 +1,11 @@
-# AGENTS.md — bestAI Guidelines for AI Agents v6.0
+# AGENTS.md — bestAI Guidelines for AI Agents v7.0
 
-<!-- Compatible with: Claude Code, OpenAI Codex, Sourcegraph Amp, Cursor, Windsurf -->
+<!-- Compatible with: Claude Code, OpenAI Codex, Sourcegraph Amp, Cursor, Windsurf, Gemini CLI -->
 
 ## Overview
 
-bestAI v6.0 provides modular, evidence-based guidelines for AI coding agents.
+bestAI v7.0 (Omni-Vendor Convergence) provides modular, evidence-based guidelines for heterogeneous AI coding agent swarms.
+It leverages the unique strengths of different LLM providers (Anthropic, Google, OpenAI) while maintaining a unified project state.
 Structured as independent modules that can be loaded on demand. Includes compliance measurement, hook composition, cross-tool rule generation, and observability.
 
 ## Guidelines

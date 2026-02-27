@@ -1,143 +1,101 @@
 <div align="center">
-  <img src="https://placehold.co/800x200/1e1e2e/61afef?text=bestAI+v6.0&font=Montserrat" alt="bestAI Logo" />
+  <img src="https://placehold.co/800x200/1e1e2e/61afef?text=bestAI+v7.0+OMNI-VENDOR&font=Montserrat" alt="bestAI Logo" />
 
-  <h1>bestAI v6.0</h1>
+  <h1>bestAI v7.0: Omni-Vendor Convergence</h1>
   
-  <p><strong>The Enterprise-Grade Architecture & Deterministic Force Field for AI Coding Agents.</strong></p>
+  <p><strong>The industry's first Multi-LLM Orchestration Layer for Autonomous Engineering Swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v6.0.0-blue?logo=npm)](https://www.npmjs.com/)
-  [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-  [![Security](https://img.shields.io/badge/security-Fail--Closed-red)]()
-  [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen)]()
-  [![Compatibility](https://img.shields.io/badge/support-Claude%20%7C%20Cursor%20%7C%20Windsurf-orange)]()
+  [![NPM Version](https://img.shields.io/badge/npm-v7.0.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![Omni-Agent](https://img.shields.io/badge/swarm-Claude_%7C_Gemini_%7C_Codex-purple)]()
+  [![Enforcement](https://img.shields.io/badge/security-Deterministic_Hooks-red)]()
+  [![Compliance](https://img.shields.io/badge/observability-Real--time-brightgreen)]()
   
   <p>
-    <a href="#-why-bestai">Why bestAI?</a> •
-    <a href="#-core-features">Core Features</a> •
+    <a href="#-the-v7-vision">The v7 Vision</a> •
+    <a href="#-agent-synergy">Agent Synergy</a> •
     <a href="#%EF%B8%8F-quick-start">Quick Start</a> •
-    <a href="#-the-architecture">Architecture</a> •
-    <a href="#-migration--docs">Documentation</a>
+    <a href="#-omni-vendor-gps">Omni-GPS</a> •
+    <a href="#-architecture">Architecture</a>
   </p>
 </div>
 
 ---
 
-## 🛑 Why bestAI?
+## 🌌 The v7 Vision
 
-AI coding agents (like Claude Code, Cursor, or Windsurf) are incredibly powerful, but in production environments, they suffer from **goal amnesia**, **context overflow**, and **hallucination loops**.
-
-> **The Hard Truth:** AI agents follow generic `CLAUDE.md` rules only **6% of the time** during complex sessions (Nuconic Case Study: 234 sessions over 29 days).
-
-**bestAI v6.0** solves this. It replaces advisory guidelines with a **Deterministic Force Field (Bash Hooks)**, wraps the project in a **Global Project State (GPS)** for multi-agent coordination, and scales infinitely using a **RAG-Native Context OS**.
+**bestAI v7.0** marks the end of vendor lock-in. Instead of relying on a single AI provider, v7.0 orchestrates a **Heterogeneous Swarm** of specialized agents. Each task is routed to the model with the best architectural fit, while a shared "Project Brain" (GPS) ensures total coherence.
 
 ---
 
-## ✨ Core Features (v6.0)
+## 🤖 Agent Synergy (The Dream Team)
+
+In v7.0, you don't just use an agent; you deploy a **Syndicate**:
+
+| Agent Type | Provider | Unique Edge | Core Task |
+|------------|----------|-------------|-----------|
+| **Lead Architect** | **Claude Code** | Deep Reasoning & Hooks | Schema, Refactoring, Security |
+| **Investigator** | **Gemini CLI** | **2M+ Context Window** | Codebase Mining, T3 Summaries, Docs |
+| **Sprint Developer** | **Codex/OpenAI** | High Speed & Boilerplate | Unit Tests, UI Components, Prototypes |
+
+---
+
+## ✨ Omni-Vendor Features
 
 <details open>
-<summary><b>🛡️ Deterministic Hook Enforcement (Fail-Closed)</b></summary>
+<summary><b>🛰️ Global Project State (Omni-GPS)</b></summary>
 <br>
-Agents cannot bypass security rules. PreToolUse and PostToolUse Bash hooks physically block the agent (`Exit 2`) if it tries to edit frozen files (`check-frozen.sh`), skips backups (`backup-enforcement.sh`), or loops endlessly (`circuit-breaker-gate.sh`).
+A shared context bus protected by `flock` locking. Whether it's Claude writing a module or Gemini analyzing a bug, they all sync milestones, tasks, and blockers into `.bestai/GPS.json`.
 </details>
 
 <details open>
-<summary><b>🤖 Distributed Agent Swarms (Multi-Vendor GPS)</b></summary>
+<summary><b>🛠️ Multi-Agent Dispatcher</b></summary>
 <br>
-Native support for spawning parallel agents across different AI providers. Assign Claude to backend architecture, Gemini to massive context-mining tasks, and Codex to unit testing. They all synchronize via the `.bestai/GPS.json` Global Project State, ensuring zero conflicts while leveraging each model's unique strengths.
+New command: `bestai swarm --task "Refactor API" --vendor claude`. Automatically routes complex prompts to the correct CLI tools with pre-loaded shared context.
 </details>
 
 <details open>
-<summary><b>🧠 RAG-Native Semantic Memory & "Invisible Limit"</b></summary>
+<summary><b>📈 Real-time Compliance & FinOps</b></summary>
 <br>
-Eliminates context window bloat. T3 (Cold Storage) files are dynamically summarized. Vector DB integration (`sqlite-vec`) ensures long-term memory retrieval without exhausting token budgets.
-</details>
-
-<details open>
-<summary><b>📊 Enterprise Observability & CI Testing</b></summary>
-<br>
-Includes `tools/budget-monitor.sh` for FinOps, `tools/session-replay.py` for debugging agent thoughts in real-time, and a comprehensive BATS-style testing framework for CI/CD pipelines.
+Monitor your heterogeneous swarm usage with `bestai compliance` and `tools/budget-monitor.sh`. Track spend and compliance across different API providers in a single view.
 </details>
 
 ---
 
 ## ⚡ Quick Start
 
-With v6.0, bestAI is now globally distributed via NPM.
-
-### 1. Install Globally
+### 1. Global Deployment
 ```bash
-npm install -g bestai
-# or use npx without installing:
-npx bestai setup .
+npx bestai setup . --profile omni-vendor
 ```
 
-### 2. Initialize in your Project
-Navigate to your repository and run the setup wizard.
+### 2. Dispatch a Task to the Swarm
+Assign a research task to Gemini (utilizing its 2M context) and a coding task to Claude:
 ```bash
-cd my-project
-bestai setup
-```
-*(The wizard will idempotently merge rules, set up `.claude/settings.json`, and offer v6.0 Scaffolding Blueprints).*
+# Agent 1 (Gemini): Summarize the legacy project
+bestai swarm --task "Map the entire src/legacy folder" --vendor gemini
 
-### 3. Check System Health
-Validate your v6.0 architecture (Worktrees, RAG Indexes, Hook Latency) instantly:
-```bash
-bestai doctor --strict
+# Agent 2 (Claude): Refactor based on Gemini's findings
+bestai swarm --task "Implement new auth based on legacy findings in GPS.json" --vendor claude
 ```
-
-<img src="https://placehold.co/800x300/282c34/98c379?text=%5B+%E2%9C%94+%5D+bestAI+Health+Check%5Cn%5B+%E2%9C%94+%5D+Hooks+Configured%5Cn%5B+%E2%9C%94+%5D+v6.0+GPS+Found%5CnAll+Systems+Operational&font=Source+Code+Pro" alt="Doctor Output Example" />
 
 ---
 
-## 🏗️ The Architecture (The 3 Pillars)
+## 🏗️ The Pillars of v7.0
 
-The bestAI knowledge base has been drastically consolidated to save token context. 
-
-| Pillar | Focus | Link |
-|--------|-------|------|
-| **01: CORE** | Context OS, Enforcements, GPS | [Read 01-core](modules/01-core.md) |
-| **02: OPERATIONS** | Checklists, Caching, Session Mgmt | [Read 02-operations](modules/02-operations.md) |
-| **03: ADVANCED** | Vector DB, Agent Teams, RAG | [Read 03-advanced](modules/03-advanced.md) |
-
-### Context OS Flow
-```mermaid
-graph TD;
-    A[User Request] --> B{PreToolUse Hook};
-    B -- Block --> C[Error / Auto-Fix Suggestion];
-    B -- Allow --> D[Agent Execution];
-    D --> E{PostToolUse Hook};
-    E -- Circuit Open --> F[Stop Session];
-    E -- Success --> G[Sync GPS & Update Vector DB];
-```
-*(Rendered using Mermaid.js)*
+| Module | Purpose |
+|--------|---------|
+| **[01-CORE](modules/01-core.md)** | **The Force Field**: Deterministic hooks & GPS state management. |
+| **[02-OPERATIONS](modules/02-operations.md)** | **The Engine**: Session replay, caching, and budget tracking. |
+| **[03-ADVANCED](modules/03-advanced.md)** | **The Swarm**: Multi-vendor orchestration, RAG, and worktrees. |
 
 ---
 
-## 🔄 Cross-Tool Compatibility
+## 🔄 Tools & Automation
 
-Not using Claude Code? No problem. bestAI v6.0 ships with a translator.
-```bash
-bash tools/generate-rules.sh . --format cursor
-```
-This automatically builds robust `.cursorrules` or `.windsurfrules` files based on your bestAI configurations.
-
----
-
-## 📚 Migration & Docs
-
-Upgrading from an older AI setup or a bloated `CLAUDE.md`? 
-Read our **[v6.0 Migration Guide](docs/migration-guide.md)** for a zero-downtime transition path.
-
----
-
-## 🤝 Contributing
-
-We welcome pull requests! Please ensure you run the testing framework before submitting:
-```bash
-bestai test
-```
-All new hooks must pass the latency budget (`<200ms`) validated by `tools/hook-lint.sh`.
+- `tools/swarm-dispatch.sh`: The master conductor for multi-vendor tasks.
+- `tools/session-replay.py`: Debug any agent's thoughts across providers.
+- `tools/generate-rules.sh`: Export bestAI v7.0 rules to Cursor or Windsurf.
 
 <div align="center">
-  <p><br>Built for the next generation of autonomous engineering.<br><b>License: MIT</b></p>
+  <p><br><b>bestAI v7.0: One Context, Every Agent.</b><br>License: MIT</p>
 </div>
