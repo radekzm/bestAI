@@ -4,7 +4,10 @@ Evidence-based, modular guidelines for AI coding agents. Full enforcement via ho
 
 ## Why bestAI?
 
-AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced deterministic controls (within configured matchers/events)** alongside advisory guidelines. v4.0 introduces **Distributed Agent Orchestration** and **Global Project State (GPS)** for multi-agent collaboration.
+AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced constraints (Fail-Closed model via Exit 2)** alongside advisory guidelines. 
+*(Note: While we aim for deterministic enforcement, pure Bash hooks are subject to environmental differences like OS, shell versions, and installed binaries. bestAI mitigates this by failing closed when uncertain).*
+
+v4.0 introduces **Distributed Agent Orchestration** and **Global Project State (GPS)** for multi-agent collaboration.
 
 ```
 CLAUDE.md = guidance (advisory, model may ignore)
