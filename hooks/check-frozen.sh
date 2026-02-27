@@ -146,7 +146,7 @@ check_bash_bypass() {
     # Extended pattern: direct editors, redirects, file manipulation, git commands,
     # shell bypass vectors (eval, xargs, bash -c, subshells, heredocs, exec),
     # and scripting interpreters. Best-effort — not a full shell parser.
-    if ! echo "$command" | grep -Eqi '(eval|xargs|sh\s+-c|bash\s+-c|exec\s+|source\s+|\.\s+/|\$\(|[`]|<<|sed\s+-i|perl\s+(-i|-e)|awk.*inplace|echo\s+.*>|printf\s+.*>|cat\s+.*>|>\s*[^&]|tee\s+|rm\s+|mv\s+|cp\s+|truncate\s+|dd\s+|install\s+|patch\s+|git\s+(checkout|restore|mv|rm)|chmod\s+|chown\s+|ln\s+|rsync\s+|sponge\s+|python[23]?\s+-c|ruby\s+-e|node\s+-e)'; then
+    if ! echo "$command" | grep -Eqi '(eval|xargs|sh\s+-c|bash\s+-c|exec\s+|source\s+|\.\s+/|\$\(|[`]|<<|sed\s+-i|perl\s+(-i|-e)|awk.*inplace|echo\s+.*>|printf\s+.*>|cat\s+.*>|>\s*[^&]|tee\s+|rm\s+|mv\s+|cp\s+|truncate\s+|dd\s+|install\s+|patch\s+|git\s+(checkout|restore|mv|rm)|chmod\s+|chown\s+|ln\s+|rsync\s+|sponge\s+|python[23]?\s+-c|python[23]?\s+[^-][^[:space:]]*|ruby\s+-e|ruby\s+[^-][^[:space:]]*|node\s+-e|node\s+[^-][^[:space:]]*)'; then
         return 0
     fi
 

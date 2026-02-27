@@ -11,6 +11,8 @@
 
 set -euo pipefail
 
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 if ! command -v jq &>/dev/null; then
     exit 0  # Fail open — this is a safety net, not a primary gate
 fi
@@ -75,6 +77,12 @@ if [ "$TOOL_NAME" = "Write" ]; then
     done < "$CURRENT_USER_LINES"
 
     if [ -n "$MISSING" ]; then
+        if [ "$BESTAI_DRY_RUN" = "1" ]; then
+            echo "[DRY-RUN] WOULD BLOCK: Write would remove [USER] entries from $(basename "$TARGET")" >&2
+            echo "Missing [USER] entries:" >&2
+            echo "$MISSING" >&2
+            exit 0
+        fi
         echo "BLOCKED: Write would remove [USER] entries from $(basename "$TARGET")" >&2
         echo "Rule: [USER] entries are NEVER auto-deleted (Module 03, Rule #1)" >&2
         echo "Missing [USER] entries:" >&2
@@ -105,6 +113,12 @@ if [ "$TOOL_NAME" = "Edit" ]; then
     done <<< "$OLD_USER_LINES"
 
     if [ -n "$MISSING" ]; then
+        if [ "$BESTAI_DRY_RUN" = "1" ]; then
+            echo "[DRY-RUN] WOULD BLOCK: Edit would remove [USER] entries from $(basename "$TARGET")" >&2
+            echo "Missing [USER] entries in replacement:" >&2
+            echo "$MISSING" >&2
+            exit 0
+        fi
         echo "BLOCKED: Edit would remove [USER] entries from $(basename "$TARGET")" >&2
         echo "Rule: [USER] entries are NEVER auto-deleted (Module 03, Rule #1)" >&2
         echo "Missing [USER] entries in replacement:" >&2

@@ -1,6 +1,6 @@
 # AGENTS.md — Multi-Tool Compatibility Template
 
-<!-- bestai-template: agents-md v4.0 -->
+<!-- bestai-template: agents-md v5.0 -->
 <!-- Compatible with: Claude Code, OpenAI Codex, Sourcegraph Amp, Cursor, Windsurf -->
 <!-- Spec: https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions -->
 

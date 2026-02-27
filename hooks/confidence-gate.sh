@@ -13,6 +13,8 @@
 
 set -euo pipefail
 
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 if ! command -v jq &>/dev/null; then
     exit 0
 fi
@@ -51,6 +53,11 @@ CONF=$(grep -ioE 'CONFIDENCE:\s*[0-9]+\.[0-9]+' "$STATE_FILE" 2>/dev/null | head
 BLOCKED=$(awk -v conf="$CONF" -v thresh="$THRESHOLD" 'BEGIN { print (conf < thresh) ? "1" : "0" }')
 
 if [ "$BLOCKED" = "1" ]; then
+    if [ "$BESTAI_DRY_RUN" = "1" ]; then
+        echo "[DRY-RUN] WOULD BLOCK: System confidence $CONF < $THRESHOLD threshold." >&2
+        echo "Operation: $COMMAND" >&2
+        exit 0
+    fi
     echo "BLOCKED: System confidence $CONF < $THRESHOLD threshold." >&2
     echo "Operation: $COMMAND" >&2
     echo "Update state-of-system-now.md with higher CONFIDENCE before proceeding." >&2

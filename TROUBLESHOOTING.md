@@ -6,44 +6,44 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Agent doesn't follow CLAUDE.md | CLAUDE.md is advisory (6% compliance) | Use hooks with `exit 2` → [04-enforcement](modules/04-enforcement.md) |
-| Rules work then stop mid-session | Context compaction drops rules | `/clear` after 3 compactions → [02-session](modules/02-session-management.md) |
-| Agent edits files I told it not to | No enforcement on frozen files | Install `check-frozen.sh` hook → [04-enforcement](modules/04-enforcement.md) |
-| CLAUDE.md too long, agent skips parts | >100 lines = noise | Trim to <100, use trigger tables → [01-architecture](modules/01-file-architecture.md) |
+| Agent doesn't follow CLAUDE.md | CLAUDE.md is advisory (6% compliance) | Use hooks with `exit 2` → [01-core](modules/01-core.md) |
+| Rules work then stop mid-session | Context compaction drops rules | `/clear` after 3 compactions → [02-operations](modules/02-operations.md) |
+| Agent edits files I told it not to | No enforcement on frozen files | Install `check-frozen.sh` hook → [01-core](modules/01-core.md) |
+| CLAUDE.md too long, agent skips parts | >100 lines = noise | Trim to <100, use trigger tables → [01-core](modules/01-core.md) |
 
 ## Agent Forgets Things
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| New session = agent forgets everything | No persistent memory | Set up MEMORY.md + [USER]/[AUTO] tags → [03-persistence](modules/03-persistence.md) |
-| Agent forgets mid-session decisions | Compaction erased them | Save AS YOU GO (don't wait for session end) → [03-persistence](modules/03-persistence.md) |
-| Agent doesn't know about frozen files | No REHYDRATE on session start | Add SessionStart hook → [06-patterns](modules/06-operational-patterns.md) |
-| Agent re-discovers the same thing every session | Decisions not persisted | Add "Tell don't hope" CLAUDE.md rule → [03-persistence](modules/03-persistence.md) |
+| New session = agent forgets everything | No persistent memory | Set up MEMORY.md + [USER]/[AUTO] tags → [01-core](modules/01-core.md) |
+| Agent forgets mid-session decisions | Compaction erased them | Save AS YOU GO (don't wait for session end) → [01-core](modules/01-core.md) |
+| Agent doesn't know about frozen files | No REHYDRATE on session start | Add SessionStart hook → [02-operations](modules/02-operations.md) |
+| Agent re-discovers the same thing every session | Decisions not persisted | Add "Tell don't hope" CLAUDE.md rule → [01-core](modules/01-core.md) |
 
 ## Agent Repeats Same Error
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Same error 10+ times in a row | No failure escalation | "3 batches → STOP" + strict gate (`circuit-breaker-gate.sh`) → [06-patterns](modules/06-operational-patterns.md) |
-| Agent tries same approach after failure | No backoff/jitter | Exponential Backoff pattern → [05-cs-algorithms](modules/05-cs-algorithms.md) |
+| Same error 10+ times in a row | No failure escalation | "3 batches → STOP" + strict gate (`circuit-breaker-gate.sh`) → [02-operations](modules/02-operations.md) |
+| Agent tries same approach after failure | No backoff/jitter | Exponential Backoff pattern → [03-advanced](modules/03-advanced.md) |
 | Agent ignores "digital punding" rule | Advisory only | Pair `circuit-breaker.sh` + `circuit-breaker-gate.sh` for strict mode |
 
 ## Session Quality Degrades
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Agent gets confused after long session | Context rot at ~147k tokens | `/clear` at 3+ compactions → [02-session](modules/02-session-management.md) |
-| Agent starts mixing up files/concepts | Overloaded context window | Split into focused sessions → [02-session](modules/02-session-management.md) |
-| Agent slower with many MCP servers | Tool definitions eat context (~55k tokens each) | Max 3-4 MCP servers → [01-architecture](modules/01-file-architecture.md) |
+| Agent gets confused after long session | Context rot at ~147k tokens | `/clear` at 3+ compactions → [02-operations](modules/02-operations.md) |
+| Agent starts mixing up files/concepts | Overloaded context window | Split into focused sessions → [02-operations](modules/02-operations.md) |
+| Agent slower with many MCP servers | Tool definitions eat context (~55k tokens each) | Max 3-4 MCP servers → [01-core](modules/01-core.md) |
 | Smart Context injects noisy snippets | No guardrails / oversized budget | Use `preprocess-prompt.sh` defaults + `.claude/DISABLE_SMART_CONTEXT` escape hatch |
 
 ## Deployment/Safety Issues
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Agent deploys without backup | Backup gate missing/disabled | Install `backup-enforcement.sh` and provide backup manifest (path+timestamp+checksum) → [04-enforcement](modules/04-enforcement.md) |
-| No audit trail of destructive actions | Nothing logs intent | Install `wal-logger.sh` hook → [05-cs-algorithms](modules/05-cs-algorithms.md) |
-| Agent commits secrets to git | Missing/disabled secret guard | Install/enable `secret-guard.sh` hook → [04-enforcement](modules/04-enforcement.md) |
+| Agent deploys without backup | Backup gate missing/disabled | Install `backup-enforcement.sh` and provide backup manifest (path+timestamp+checksum) → [01-core](modules/01-core.md) |
+| No audit trail of destructive actions | Nothing logs intent | Install `wal-logger.sh` hook → [03-advanced](modules/03-advanced.md) |
+| Agent commits secrets to git | Missing/disabled secret guard | Install/enable `secret-guard.sh` hook → [01-core](modules/01-core.md) |
 
 ## Setup Issues
 

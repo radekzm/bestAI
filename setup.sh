@@ -275,9 +275,9 @@ customize_claude() {
 
 customize_claude "$TARGET/CLAUDE.md"
 
-# Step 1b: Project Blueprints (v4.0)
+# Step 1b: Project Blueprints (v5.0)
 echo ""
-echo -e "${BOLD}Step 1b: Project Blueprints (v4.0)${NC}"
+echo -e "${BOLD}Step 1b: Project Blueprints (v5.0)${NC}"
 BP_SELECTION=""
 case "$BLUEPRINT_MODE" in
     fullstack) BP_SELECTION="1" ;;
@@ -365,7 +365,7 @@ secure_default_for_hook() {
     fi
 
     case "$name" in
-        check-frozen.sh|check-user-tags.sh|secret-guard.sh|backup-enforcement.sh|confidence-gate.sh|wal-logger.sh|circuit-breaker.sh|circuit-breaker-gate.sh|preprocess-prompt.sh|smart-preprocess-v2.sh|rehydrate.sh|sync-state.sh|memory-compiler.sh|observer.sh|sync-gps.sh)
+        check-frozen.sh|check-user-tags.sh|secret-guard.sh|backup-enforcement.sh|confidence-gate.sh|wal-logger.sh|circuit-breaker.sh|circuit-breaker-gate.sh|preprocess-prompt.sh|smart-preprocess-v2.sh|ghost-tracker.sh|rehydrate.sh|sync-state.sh|memory-compiler.sh|observer.sh|sync-gps.sh)
             echo "Y"
             ;;
         *)
@@ -421,11 +421,12 @@ if [ "$PROFILE" = "smart-v2" ]; then
     install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
     install_hook "smart-preprocess-v2.sh" "Haiku semantic context routing (UserPromptSubmit)" "Y"
     install_hook "preprocess-prompt.sh" "keyword context compiler (fallback for smart-v2)" "Y"
+    install_hook "ghost-tracker.sh" "PostToolUse tracker for ARC ghost boosts (Read/Grep/Glob)" "Y"
     install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "Y"
     install_hook "sync-state.sh" "Stop hook runtime sync" "Y"
     install_hook "memory-compiler.sh" "Stop hook memory GC + indexing" "Y"
     install_hook "observer.sh" "Stop hook observational memory compression" "Y"
-    install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "Y"
+    install_hook "sync-gps.sh" "Stop hook for Global Project State" "Y"
 elif [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
     install_hook "check-user-tags.sh" "protect [USER] memory entries from accidental removal" "Y"
@@ -436,10 +437,11 @@ elif [ "$PROFILE" = "aion-runtime" ]; then
     install_hook "circuit-breaker.sh" "advisory anti-loop tracker (PostToolUse)" "y"
     install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
     install_hook "preprocess-prompt.sh" "UserPromptSubmit smart context compiler" "Y"
+    install_hook "ghost-tracker.sh" "PostToolUse tracker for ARC ghost boosts (Read/Grep/Glob)" "y"
     install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "Y"
     install_hook "sync-state.sh" "Stop hook runtime sync" "Y"
     install_hook "memory-compiler.sh" "Stop hook memory GC + indexing" "Y"
-    install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "n"
+    install_hook "sync-gps.sh" "Stop hook for Global Project State" "n"
 else
     install_hook "check-frozen.sh" "block edits to frozen files (+ Bash bypass protection)" "Y"
     install_hook "check-user-tags.sh" "protect [USER] memory entries from accidental removal" "y"
@@ -450,9 +452,10 @@ else
     install_hook "circuit-breaker.sh" "advisory anti-loop tracker (PostToolUse)" "y"
     install_hook "circuit-breaker-gate.sh" "strict anti-loop gate (PreToolUse, optional)" "n"
     install_hook "preprocess-prompt.sh" "UserPromptSubmit smart context compiler" "y"
+    install_hook "ghost-tracker.sh" "PostToolUse tracker for ARC ghost boosts (Read/Grep/Glob)" "y"
     install_hook "rehydrate.sh" "SessionStart runtime bootstrap" "n"
     install_hook "sync-state.sh" "Stop hook runtime sync" "n"
-    install_hook "sync-gps.sh" "Stop hook for Global Project State (v4.0)" "n"
+    install_hook "sync-gps.sh" "Stop hook for Global Project State" "n"
 fi
 
 # Step 3: Configure settings.json
@@ -561,6 +564,9 @@ else
                 ;;
             circuit-breaker.sh)
                 add_hook_config "$SETTINGS_FILE" "PostToolUse" "Bash" ".claude/hooks/circuit-breaker.sh"
+                ;;
+            ghost-tracker.sh)
+                add_hook_config "$SETTINGS_FILE" "PostToolUse" "Read|Grep|Glob" ".claude/hooks/ghost-tracker.sh"
                 ;;
             circuit-breaker-gate.sh)
                 add_hook_config "$SETTINGS_FILE" "PreToolUse" "Bash" ".claude/hooks/circuit-breaker-gate.sh"

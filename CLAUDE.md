@@ -1,4 +1,4 @@
-# bestAI — Guidelines for AI Agents v3.0
+# bestAI — Guidelines for AI Agents v5.0
 
 > Modular, evidence-based guidelines. Hooks enforce, CLAUDE.md guides.
 
@@ -8,7 +8,7 @@
 2. Apply hooks from `hooks/` for deterministic enforcement
 3. Use templates from `templates/` for new projects
 
-## Modules (Consolidated v4.0)
+## Modules (Consolidated v5.0)
 
 | Module | Topic | Maturity | Use When |
 |--------|-------|----------|----------|

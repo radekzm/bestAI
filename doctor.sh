@@ -446,7 +446,7 @@ BESTAI_DIR="$(cd "$(dirname "$0")" && pwd)"
 for tmpl_file in "$TARGET_ABS/CLAUDE.md" "$TARGET_ABS/AGENTS.md"; do
     [ -f "$tmpl_file" ] || continue
     tmpl_name=$(basename "$tmpl_file")
-    installed_ver=$(grep -oP '(?<=bestai-template: )\S+ v\S+' "$tmpl_file" 2>/dev/null | head -1)
+    installed_ver=$(grep -oP '(?<=bestai-template: )\S+ v\S+' "$tmpl_file" 2>/dev/null | head -1 || true)
     if [ -z "$installed_ver" ]; then
         check "INFO" "$tmpl_name has no bestai-template version tag"
     else
@@ -454,7 +454,7 @@ for tmpl_file in "$TARGET_ABS/CLAUDE.md" "$TARGET_ABS/AGENTS.md"; do
         latest_ver=""
         for src in "$BESTAI_DIR"/templates/*.md; do
             [ -f "$src" ] || continue
-            src_ver=$(grep -oP '(?<=bestai-template: )\S+ v\S+' "$src" 2>/dev/null | head -1)
+            src_ver=$(grep -oP '(?<=bestai-template: )\S+ v\S+' "$src" 2>/dev/null | head -1 || true)
             [ -z "$src_ver" ] && continue
             src_name=$(echo "$src_ver" | awk '{print $1}')
             inst_name=$(echo "$installed_ver" | awk '{print $1}')
@@ -488,9 +488,9 @@ else
     check "WARN" "No frozen-fragments.md" "Create from templates/frozen-fragments-template.md"
 fi
 
-# === v4.0 Architecture (RAG & Orchestration) ===
+# === v5.0 Architecture (RAG & Orchestration) ===
 echo ""
-echo -e "${BOLD}v4.0 Architecture (RAG & Orchestration)${NC}"
+echo -e "${BOLD}v5.0 Architecture (RAG & Orchestration)${NC}"
 
 if [ -f "$TARGET_ABS/.bestai/T3-summary.md" ]; then
     check "OK" "T3-summary.md (Invisible Limit) present"
