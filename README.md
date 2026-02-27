@@ -1,13 +1,12 @@
-# bestAI — Guidelines for AI Coding Agents v4.0
+# bestAI — Guidelines for AI Coding Agents v5.0
 
 Evidence-based, modular guidelines for AI coding agents. Full enforcement via hooks on **Claude Code**; advisory guidelines via AGENTS.md for Codex, Cursor, Windsurf, and Amp. Use `tools/generate-rules.sh` to export rules to other tools.
 
 ## Why bestAI?
 
-AI agents follow CLAUDE.md rules only **6% of the time** in production (Nuconic: 234 sessions, 29 days). bestAI solves this with **hook-enforced constraints (Fail-Closed model via Exit 2)** alongside advisory guidelines. 
-*(Note: While we aim for deterministic enforcement, pure Bash hooks are subject to environmental differences like OS, shell versions, and installed binaries. bestAI mitigates this by failing closed when uncertain).*
+AI agents follow CLAUDE.md rules only **6% of the time** in production ([methodology](modules/01-core.md#methodology-how-the-6-figure-was-measured): Nuconic, 234 sessions, 29 days). bestAI solves this with **hook-enforced deterministic controls** alongside advisory guidelines.
 
-v4.0 introduces **Distributed Agent Orchestration** and **Global Project State (GPS)** for multi-agent collaboration.
+v5.0 adds **compliance measurement**, **hook composition framework**, **cross-tool rule generation**, **security hardening**, and **observability tooling**.
 
 ```
 CLAUDE.md = guidance (advisory, model may ignore)
@@ -25,12 +24,19 @@ bash setup.sh /path/to/your/project --profile aion-runtime
 bash setup.sh /path/to/your/project --profile smart-v2 --non-interactive --secure-defaults
 ```
 
+**npx (MVP distribution):**
+```bash
+npx bestai init /path/to/your/project
+npx bestai doctor /path/to/your/project
+npx bestai stats /path/to/your/project
+```
+
 Setup installs templates/hooks, merges or creates `settings.json`, and supports deterministic CI mode (`--non-interactive`).
 
 **Manual:**
 1. Copy a template: `cp templates/claude-md-standard.md your-project/CLAUDE.md`
 2. Copy hooks: `cp hooks/*.sh your-project/.claude/hooks/ && chmod +x your-project/.claude/hooks/*.sh`
-3. Configure in `.claude/settings.json` (see [04-enforcement](modules/04-enforcement.md))
+3. Configure in `.claude/settings.json` (see [01-core](modules/01-core.md))
 
 **Diagnose problems:**
 ```bash
@@ -44,7 +50,7 @@ bash tests/test-hooks.sh
 bash evals/run.sh --enforce-gates
 ```
 
-## Modules (Consolidated v4.0)
+## Modules (Consolidated v5.0)
 
 | Module | Topic | Content | Status |
 |--------|-------|---------|--------|
@@ -70,10 +76,11 @@ bash evals/run.sh --enforce-gates
 | [rehydrate.sh](hooks/rehydrate.sh) | SessionStart | Runtime context bootstrap |
 | [sync-state.sh](hooks/sync-state.sh) | Stop | Runtime state sync + session delta |
 | [circuit-breaker.sh](hooks/circuit-breaker.sh) | PostToolUse | Advisory anti-loop tracker |
+| [ghost-tracker.sh](hooks/ghost-tracker.sh) | PostToolUse | ARC ghost-hit tracker for files manually read by agent |
 | [circuit-breaker-gate.sh](hooks/circuit-breaker-gate.sh) | PreToolUse | Strict anti-loop block when OPEN |
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require validated backup manifest before deploy/migrate |
-| [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State (v4.0) |
+| [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State |
 | [hook-event.sh](hooks/hook-event.sh) | Library | Shared JSONL event logging for all hooks |
 
 ## Tooling
@@ -131,15 +138,18 @@ Failure → HARD STOP → ROOT_CAUSE_TABLE → ask user
 
 ## Evolution
 
-v4.0 introduces distributed agent orchestration and a global state layer (GPS). Key changes:
+v5.0 (current) adds compliance measurement, hook composition framework, cross-tool rule generation, security hardening, and observability tooling. Key additions:
 
-- **Global Project State (GPS)**: Centralized coordination via `.bestai/GPS.json`.
-- **Agent Orchestration**: Specialized roles (Developer, Reviewer, Tester) working in parallel.
-- **RAG-Native Context**: Integration with vector databases (sqlite-vec) for semantic memory.
-- **Invisible Limit**: Hierarchical summarization for managing massive T3 (Cold) context tiers.
-- **Project Blueprints**: Ready-to-use scaffolding for complex stacks.
+- **Compliance Measurement**: Automated reporting from hook events (`compliance.sh --json`).
+- **Hook Composition Framework**: `hooks/manifest.json` + `tools/hook-lint.sh` for dependency/conflict/latency validation.
+- **Cross-Tool Rule Generation**: Export bestAI rules to Cursor, Windsurf, Codex (`tools/generate-rules.sh`).
+- **Security Hardening**: Extended Bash bypass detection (heredoc, exec, interpreters), threat model for UserPromptSubmit.
+- **Observability**: Hook latency tracking (`elapsed_ms`), `stats.sh` dashboard, WAL logging.
+- **npm Distribution**: `npx bestai setup`, `npx bestai doctor`.
 
-v3.0 consolidated legacy guidelines into a modular architecture. Key changes:
+v4.0 introduced distributed agent orchestration and Global Project State (GPS).
+
+v3.0 consolidated legacy guidelines into a modular architecture.
 
 ## Sources & Inspiration
 

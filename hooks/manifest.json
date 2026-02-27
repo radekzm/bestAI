@@ -14,13 +14,23 @@
     },
     "secret-guard.sh": {
       "event": "PreToolUse",
-      "matcher": "Bash|Write",
+      "matcher": "Bash|Write|Edit",
       "priority": 5,
       "depends_on": [],
       "conflicts_with": [],
       "requires": ["jq"],
       "estimated_latency_ms": 20,
       "description": "Blocks commands containing secrets or sensitive file operations"
+    },
+    "ghost-tracker.sh": {
+      "event": "PostToolUse",
+      "matcher": "Read|Grep|Glob",
+      "priority": 20,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 10,
+      "description": "Tracks manually-read files to build ARC ghost-hits.log"
     },
     "check-user-tags.sh": {
       "event": "PreToolUse",

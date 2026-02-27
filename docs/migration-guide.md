@@ -1,6 +1,6 @@
-# bestAI v4.0 Migration & Onboarding Guide
+# bestAI v5.0 Migration & Onboarding Guide
 
-Welcome to the **bestAI v4.0** migration guide! If you have an existing project and want to onboard it into the deterministic, multi-agent ecosystem without breaking your current workflow, follow these steps.
+Welcome to the **bestAI v5.0** migration guide! If you have an existing project and want to onboard it into the deterministic, hook-enforced ecosystem without breaking your current workflow, follow these steps.
 
 ## Step 1: Baseline Assessment
 
@@ -15,19 +15,19 @@ bash setup.sh /path/to/your/project
 
 ## Step 2: Consolidating Legacy Instructions
 
-If you have a massive `CLAUDE.md` (e.g., >150 lines), bestAI v4.0 requires you to embrace **Progressive Disclosure**:
+If you have a massive `CLAUDE.md` (e.g., >150 lines), bestAI v5.0 requires you to embrace **Progressive Disclosure**:
 1. Move specific architectural rules to `.bestai/blueprint.md` or topic files in `/memory`.
 2. Keep your `CLAUDE.md` under 100 lines. Focus on "What this project is" and "How to run tests".
 3. The newly installed hook `preprocess-prompt.sh` will dynamically load your detailed rules only when the agent asks relevant questions.
 
 ## Step 3: Enabling Deterministic Hooks (The "Force Field")
 
-The biggest change in v4.0 is the **Fail-Closed Hook System**.
+The biggest change in v5.0 is the **Fail-Closed Hook System** with composition validation.
 1. Look in `.claude/hooks/`. You will see files like `check-frozen.sh` and `backup-enforcement.sh`.
 2. **Crucial:** You must define your "frozen" files. Open `memory/frozen-fragments.md` and list files that the agent should **never** edit directly (like core config files or `.env` templates).
 3. Try asking your agent to edit a frozen file. You should see it get blocked (`Exit 2`). This means the force field is working!
 
-## Step 4: Upgrading to v4.0 Multi-Agent Orchestration (Optional)
+## Step 4: Upgrading to v5.0 Multi-Agent Orchestration (Optional)
 
 If your project is large enough to require multiple agents (e.g., Frontend Agent + Backend Agent):
 1. Run `bash setup.sh` again and choose the **Agent Swarm Blueprint**.
@@ -40,4 +40,4 @@ Run the diagnostic doctor to ensure your migration is 100% compliant:
 ```bash
 bash doctor.sh --strict .
 ```
-If you see all green `OK` messages, your project is officially running bestAI v4.0!
+If you see all green `OK` messages, your project is officially running bestAI v5.0!

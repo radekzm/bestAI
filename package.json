@@ -1,14 +1,16 @@
 {
   "name": "bestai",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Evidence-based, modular guidelines and deterministic enforcement hooks for AI coding agents.",
   "main": "setup.sh",
   "bin": {
     "bestai": "./bin/bestai.js"
   },
   "scripts": {
+    "init": "bash setup.sh",
     "test": "bash tests/test-hooks.sh",
-    "doctor": "bash doctor.sh"
+    "doctor": "bash doctor.sh",
+    "stats": "bash stats.sh"
   },
   "repository": {
     "type": "git",
