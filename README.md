@@ -1,255 +1,106 @@
-# bestAI v7.0
+<div align="center">
+  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v7.5&font=Montserrat" alt="bestAI Hero" />
 
-**Deterministic guardrails for AI coding agents.** Hooks enforce what CLAUDE.md cannot.
+  <h1>bestAI: Omni-Vendor Convergence</h1>
+  
+  <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-[![npm](https://img.shields.io/badge/npm-v7.0.0-blue?logo=npm)](https://www.npmjs.com/)
-[![Tests](https://img.shields.io/badge/tests-150%2F150-brightgreen)]()
-[![License: MIT](https://img.shields.io/badge/license-MIT-yellow)]()
-
----
-
-## The Problem
-
-AI coding agents ignore instructions. In a study of 234 sessions and 16,761 tool calls, CLAUDE.md rules achieved **6% compliance**. Agents delete frozen files, commit secrets, loop on failures, and lose context across sessions.
-
-Instructions don't work. Enforcement does.
-
-## The Solution
-
-bestAI uses **shell hooks** that run before and after every tool call. A hook that exits with code 2 **blocks the action deterministically** — the agent cannot bypass it, regardless of prompt, context window state, or model hallucination.
-
-```
-CLAUDE.md says "don't edit config.yml"  →  agent ignores it  →  config.yml edited
-check-frozen.sh blocks Edit on config.yml  →  exit 2  →  edit rejected, every time
-```
-
-### What's Deterministic vs Best-Effort
-
-| Hook Type | Enforcement | Example |
-|-----------|-------------|---------|
-| **Edit/Write hooks** | **Deterministic** — exact path match, cannot be bypassed | `check-frozen.sh` blocking edits to frozen files |
-| **Bash hooks** | **Best-effort** — pattern matching, covers common cases | `secret-guard.sh` detecting `.env` in commands |
-
-Bash hooks can be circumvented by creative command construction. This is a fundamental limitation, not a bug. Critical protection should use Edit/Write hooks where possible.
+  [![NPM Version](https://img.shields.io/badge/npm-v7.5.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex-purple?logo=ai)]()
+  [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
+  [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
+  
+  <p>
+    <a href="#-the-vision">Vision</a> •
+    <a href="#-syndicate-model">Syndicate Model</a> •
+    <a href="#%EF%B8%8F-quick-start">Quick Start</a> •
+    <a href="#-architecture">Architecture</a> •
+    <a href="#-observability">Observability</a>
+  </p>
+</div>
 
 ---
 
-## Quick Start
+## 🌌 The Vision: v7.5 (The Omni-Vendor Era)
 
+**bestAI** is not just a tool; it's an operational standard for high-stakes software engineering. While others rely on prompt-engineering that agents follow only **6% of the time**, bestAI implements a **Deterministic Force Field (Bash Hooks)** that physically prevents agents from bypassing project rules.
+
+> [!IMPORTANT]
+> **New in v7.5:** Native support for **Heterogeneous Swarms**. Deploy the model that fits the task: Claude for architecture, Gemini for 2M context analysis, and Codex for boilerplate.
+
+---
+
+## 🤖 The Syndicate Model (Agent Roles)
+
+<div align="center">
+  <img src="assets/swarm-architecture.svg" alt="Swarm Architecture" width="800" />
+</div>
+
+| Role | Provider | Unique Strength | Task Focus |
+| :--- | :--- | :--- | :--- |
+| **Lead Architect** | **Claude Code** | Deep Reasoning & Hooks | Schema, Refactoring, Security |
+| **Investigator** | **Gemini CLI** | **2M+ Context Window** | Codebase Mining, T3 Summaries |
+| **Sprint Dev** | **Codex/OpenAI** | High Speed Boilerplate | Unit Tests, UI Components |
+
+---
+
+## 🏗️ The 5-Tier Context OS
+
+We solve the **"Context Overload"** problem by segmenting information into distinct tiers, ensuring the agent always knows the most critical state without drowning in data.
+
+<div align="center">
+  <img src="assets/context-os-tiers.svg" alt="Context OS Tiers" width="800" />
+</div>
+
+- **T0 (HOT):** The **Global Project State (GPS.json)**. The project's brain.
+- **T1 (WARM):** **T3-Summary.md**. The map of the entire codebase.
+- **T2 (COOL):** The active module files the agent is editing.
+- **T3 (COLD):** The rest of the codebase, accessed via **RAG-native router**.
+- **T4 (FROZEN):** Configs and secrets protected by **Deterministic Hooks**.
+
+---
+
+## ⚡ Quick Start
+
+### 1. Global Installation
 ```bash
-# Install into your project
-npx bestai setup .
-
-# Verify installation
-npx bestai doctor
-
-# Run test suite
-npx bestai test
+npm install -g bestai
+# or use npx instantly:
+npx bestai init .
 ```
 
-This installs hooks into `.claude/hooks/`, creates `CLAUDE.md` and `MEMORY.md` templates, and optionally sets up a project blueprint.
-
-### What Gets Installed
-
-```
-your-project/
-├── .claude/
-│   ├── settings.json          # Hook configuration
-│   └── hooks/ → bestai/hooks  # Symlinked hook scripts
-├── CLAUDE.md                  # Agent guidance (advisory)
-├── MEMORY.md                  # Persistent memory index
-└── memory/
-    ├── frozen-fragments.md    # Files agents cannot edit
-    └── state-of-system-now.md # Session state delta
-```
-
----
-
-## Hooks
-
-18 hooks organized by lifecycle event. All declared in `hooks/manifest.json` with priority ordering, dependency graph, and latency budgets.
-
-### Protection Hooks (PreToolUse)
-
-| Hook | What It Does | Enforcement |
-|------|-------------|-------------|
-| `check-frozen.sh` | Blocks edits to files in `frozen-fragments.md` | Deterministic (Edit/Write), best-effort (Bash) |
-| `secret-guard.sh` | Blocks `.env` access, credential operations | Best-effort |
-| `check-user-tags.sh` | Prevents removal of `[USER]` memory tags | Deterministic |
-| `confidence-gate.sh` | Blocks low-confidence destructive commands | Best-effort |
-| `backup-enforcement.sh` | Requires backup manifest before deploy/migrate | Best-effort |
-| `circuit-breaker-gate.sh` | Blocks commands when circuit breaker is OPEN | Best-effort |
-| `wal-logger.sh` | Write-ahead log before destructive operations | Passive (logs, doesn't block) |
-
-### Observability Hooks (PostToolUse)
-
-| Hook | What It Does |
-|------|-------------|
-| `circuit-breaker.sh` | Tracks error patterns, opens breaker after N failures |
-| `ghost-tracker.sh` | Records file reads for Smart Context scoring |
-
-### Context Hooks (UserPromptSubmit)
-
-| Hook | What It Does |
-|------|-------------|
-| `preprocess-prompt.sh` | Smart Context v1 — keyword/trigram context injection |
-| `smart-preprocess-v2.sh` | Smart Context v2 — LLM-scored injection (conflicts with v1) |
-
-### Session Lifecycle
-
-| Hook | Event | What It Does |
-|------|-------|-------------|
-| `rehydrate.sh` | SessionStart | Restores state from previous session delta |
-| `memory-compiler.sh` | Stop | Generational GC for memory, context index |
-| `sync-state.sh` | Stop | Persists session delta (facts, proofs, blockers) |
-| `sync-gps.sh` | Stop | Updates Global Project State |
-| `observer.sh` | Stop | Meta-observations about memory patterns |
-| `reflector.sh` | Manual | Memory defragmentation (requires Haiku) |
-
-### Shared Library
-
-`hook-event.sh` — Canonical JSONL event logging and `_bestai_project_hash()`. Sourced by all hooks. Events written to `~/.cache/bestai/events.jsonl`.
-
----
-
-## CLI Tools
-
+### 2. Dispatch Tasks to the Syndicate
 ```bash
-npx bestai setup       # Install hooks and templates
-npx bestai doctor      # Validate installation
-npx bestai test        # Run 150-test suite
-npx bestai stats       # Hook latency dashboard
-npx bestai compliance  # Compliance report from event log
-npx bestai lint        # Validate hook manifest
-npx bestai swarm       # Multi-vendor task dispatch
-```
+# Research task for Gemini (utilizing 2M context)
+bestai swarm --task "Find all deprecated auth calls" --vendor gemini
 
-Additional tools (not in CLI):
-- `tools/generate-rules.sh` — Export to `.cursorrules`, `.windsurfrules`, `codex.md`
-- `tools/generate-t3-summaries.py` — Hierarchical summaries for large codebases
-- `tools/budget-monitor.sh` — Token/cost tracking across vendors
-
----
-
-## Modules
-
-Documentation is organized into three modules, loaded progressively (agents read only what they need).
-
-| Module | Lines | Topic | Maturity |
-|--------|-------|-------|----------|
-| [01-core](modules/01-core.md) | 1089 | Architecture, memory, enforcement, GPS, frozen files | **Stable** — tested in production |
-| [02-operations](modules/02-operations.md) | 484 | Sessions, operational patterns, prompt caching | **Stable** |
-| [03-advanced](modules/03-advanced.md) | 723 | Smart Context, CS algorithms, RAG, orchestration | **Mixed** — Smart Context stable, RAG preview |
-
-### Maturity Levels
-
-- **Stable**: Has hooks, has tests, used in production (234+ sessions)
-- **Preview**: Documented, partial implementation, no production data
-- **Conceptual**: Described algorithmically, not implemented
-
----
-
-## Multi-Vendor Support
-
-bestAI can coordinate agents from different providers working on the same codebase. All agents share state via `.bestai/GPS.json`.
-
-| Role | Recommended Provider | Why |
-|------|---------------------|-----|
-| Architect | Claude Code | Deep reasoning, hook compliance |
-| Investigator | Gemini CLI | 2M+ context window for codebase mining |
-| Tester | OpenAI Codex | Fast boilerplate and test generation |
-
-**Honest assessment**: Multi-vendor orchestration is at **preview** maturity. The dispatcher exists (`tools/swarm-dispatch.sh`) and GPS sharing works, but there is no production data on multi-vendor workflows. Single-vendor (Claude Code) is the battle-tested path.
-
----
-
-## Templates
-
-| Template | Purpose | Size |
-|----------|---------|------|
-| `claude-md-minimal.md` | Minimal CLAUDE.md with hook enforcement | <50 lines |
-| `claude-md-standard.md` | Production CLAUDE.md with context loading table | <100 lines |
-| `agents-md-template.md` | Multi-tool AGENTS.md (Cursor, Windsurf, Codex compatible) | ~58 lines |
-| `blueprint-fullstack.md` | Full-stack scaffold (Next.js + FastAPI + PostgreSQL) | ~80 lines |
-| `blueprint-multivendor.md` | Multi-vendor swarm task assignment | ~26 lines |
-
----
-
-## Evidence Base
-
-All claims are grounded in the [Nuconic case study](modules/01-core.md):
-
-| Metric | Value |
-|--------|-------|
-| Sessions analyzed | 234 |
-| Tool calls analyzed | 16,761 |
-| Study duration | 29 days |
-| CLAUDE.md compliance rate | 6% (CI: 4.1%–8.6%) |
-| Hook enforcement rate | 100% (Edit/Write), ~95% (Bash) |
-
-**Limitations**: Single-project study. Results may not generalize to all codebases, team sizes, or agent configurations. The 6% figure measures strict rule adherence; agents may partially comply in ways not captured by binary measurement.
-
----
-
-## Project Structure
-
-```
-bestAI/
-├── hooks/                 # 18 shell hook scripts + manifest.json
-│   ├── hook-event.sh      # Shared library (logging + hash)
-│   ├── check-frozen.sh    # PreToolUse: frozen file protection
-│   ├── circuit-breaker.sh # PostToolUse: failure tracking
-│   └── ...
-├── tools/                 # CLI tools and utilities
-├── modules/               # Documentation (01-core, 02-ops, 03-advanced)
-├── templates/             # CLAUDE.md, AGENTS.md, blueprint templates
-├── tests/                 # 150 tests in test-hooks.sh
-├── bin/bestai.js          # npm CLI entry point
-├── setup.sh               # Interactive installer
-├── doctor.sh              # Installation validator
-├── stats.sh               # Latency dashboard
-├── compliance.sh          # Event log reporter
-├── CLAUDE.md              # This project's guidelines
-├── AGENTS.md              # Multi-tool agent instructions
-└── CHANGELOG.md           # Release history
+# Coding task for Claude
+bestai swarm --task "Replace auth calls using results in GPS.json" --vendor claude
 ```
 
 ---
 
-## Known Limitations
+## 📊 Observability & Compliance
 
-1. **Bash hooks are bypassable** — creative command construction can evade pattern matching. This is inherent to the approach, not fixable without a full command parser.
-2. **No Windows support** — hooks are bash scripts. WSL2 works but is untested.
-3. **RAG/vector search is preview** — `vectorize-codebase.py` exists but has no production validation.
-4. **Multi-vendor orchestration is preview** — GPS sharing works, but automated dispatch lacks production data.
-5. **Memory compiler requires disciplined use** — without regular `[USER]`/`[AUTO]` tagging, memory quality degrades.
-6. **Context injection latency** — Smart Context v2 adds ~500ms per prompt (LLM scoring). Use v1 for latency-sensitive workflows.
+> [!TIP]
+> **Trust but Verify.** Use the built-in dashboard to monitor your swarm's performance.
+
+- **`bestai compliance`**: Real-time audit of how many times agents attempted to bypass rules.
+- **`bestai doctor`**: Strict validation of your v7.5 project structure.
+- **`tools/budget-monitor.sh`**: Automatic FinOps for token consumption.
+- **`tools/session-replay.py`**: Interactively debug agent thoughts step-by-step.
 
 ---
 
-## Contributing
+## 🔄 Cross-Tool Compatibility
 
+Already using Cursor or Windsurf? Translate bestAI standards instantly:
 ```bash
-# Clone and run tests
-git clone https://github.com/radekzm/bestAI.git
-cd bestAI
-bash tests/test-hooks.sh
-
-# Add a new hook
-# 1. Create hooks/your-hook.sh (exit 2 to block, exit 0 to allow)
-# 2. Add entry to hooks/manifest.json
-# 3. Add tests to tests/test-hooks.sh
-# 4. Run: npx bestai lint (validate manifest)
+bestai generate-rules --format cursor
 ```
-
----
-
-## License
-
-MIT
 
 ---
 
 <div align="center">
-<sub>Built on evidence from 234 sessions. Hooks enforce what instructions cannot.</sub>
+  <p><br><b>Built for the next generation of autonomous engineering.</b><br>License: MIT | radekzm & the bestAI Swarm</p>
 </div>

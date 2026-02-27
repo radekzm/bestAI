@@ -24,6 +24,11 @@ npx bestai doctor /path/to/your/project
 npx bestai stats /path/to/your/project
 ```
 
+Command context matrix:
+- `npx bestai <cmd>`: run from anywhere (npm/npx workflow).
+- `bash bestAI/<script>.sh`: run from parent directory containing cloned `bestAI/`.
+- `bash <script>.sh`: run from inside repo root (`cd bestAI`).
+
 ## What You Get
 
 | Hook | What it does |

@@ -2,7 +2,7 @@
 
 **Data**: 2026-02-23
 **Status**: Zaimplementowany
-**Pliki docelowe**: `bestSmartContext.md`, `bestUltimateGuide.md`
+**Pliki docelowe**: `archive/bestSmartContext.md`, `archive/bestUltimateGuide.md`
 
 ## Problem
 
@@ -26,7 +26,7 @@ Istniejące wytyczne (bestcontext → preBestCliAI → bestPersistentAI) nie adr
 
 ## Nowe pliki
 
-### bestSmartContext.md (1185 linii)
+### archive/bestSmartContext.md (1185 linii)
 - Semantic Context Router (vector DB + hybrid search)
 - Prompt Preprocessor (3 podejścia: grep/subagent/vectorDB)
 - Observational Memory (Observer+Reflector, L4)
@@ -34,7 +34,7 @@ Istniejące wytyczne (bestcontext → preBestCliAI → bestPersistentAI) nie adr
 - Gotowa implementacja krok po kroku (3 poziomy)
 - Walidacja na realnym projekcie Nuconic
 
-### bestUltimateGuide.md (819 linii)
+### archive/bestUltimateGuide.md (819 linii)
 - Skonsolidowane best-of-all z 4 dokumentów + nowe badania
 - "Skopiuj i wdróż" — 3 tiery (15/30/60 min)
 - 28 zweryfikowanych źródeł
