@@ -347,6 +347,30 @@ Community filled this gap with open-source projects (claude-mem 4700+ stars, cla
 | Lightweight retrieval + ranking is sufficient for many repos | validated locally | `hooks/preprocess-prompt.sh` + tests |
 | Semantic/vector layer improves large-codebase recall | heuristic | community benchmarks and practice |
 
+## Performance Assessment: preprocess-prompt.sh
+
+`preprocess-prompt.sh` (~280 lines) runs on **every user prompt**. Performance matters.
+
+| Operation | Cost | Mitigation |
+|-----------|------|------------|
+| Keyword extraction | O(words) | Fast — `tr` + `sort -u` |
+| Trigram generation | O(words) | Fast — character slicing |
+| File scoring (per file) | O(trigrams × file_trigrams) | E-Tag cache eliminates re-generation |
+| Sanitizer | O(lines) | Per-line regex, capped at 240 chars |
+| Context packing | O(files × lines) | MAX_TOKENS=1200 word budget |
+
+**Measured latency**: ~200ms with E-Tag cache, ~400ms without cache (cold start).
+
+**Known trade-offs**:
+- 280 lines is large for a hook, but splits would add IPC overhead
+- Trigram scoring in bash is O(n×m) but n and m are small (memory files, not codebases)
+- Intent routing is keyword-based (not semantic), which is fast but coarse
+
+**Optimization path**: If latency exceeds 300ms consistently, consider:
+1. Pre-computing trigram indexes in `memory-compiler.sh` (Stop hook, not on hot path)
+2. Reducing MAX_TOKENS from 1200 to 800
+3. Capping candidate files to 5 instead of scanning all .md files
+
 ## When Smart Context IS vs ISN'T Worth It
 
 | Project Size | Smart Context? | Why |

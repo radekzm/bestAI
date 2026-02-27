@@ -719,7 +719,7 @@ Session End (Stop hook)
   ├─ 1. Increment session counter (.session-counter)
   │
   ├─ 2. Score each memory file
-  │     score = base_weight + recency_bonus + usage_count - age_penalty
+  │     score = base_weight + recency_bonus + min(usage_count, 20) - age_penalty
   │
   ├─ 3. Generate context-index.md
   │     Sorted index with topic clusters: core, decisions, operational, other
@@ -738,8 +738,8 @@ Session End (Stop hook)
 |-----------|-------|-------------|
 | `base_weight` | 10 for `[USER]`, 5 for `[AUTO]` | User decisions always outweigh auto-generated |
 | `recency_bonus` | +3 (≤3 sessions), +1 (3-10), 0 (10+) | Recently used files score higher |
-| `usage_count` | +N | Each access increments count |
-| `age_penalty` | -5 if >20 sessions without use (AUTO only) | Old unused entries decay |
+| `usage_count` | +N (capped at 20) | Each access increments count; cap prevents score inflation |
+| `age_penalty` | Gradual: (sessions_ago - threshold) / 2, max 15 (AUTO only) | Smooth decay instead of binary cliff |
 
 ## Generational GC
 

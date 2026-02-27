@@ -129,12 +129,17 @@ score_entry() {
         recency_bonus=1
     fi
 
-    # Age penalty for old entries
+    # Cap usage count to prevent score inflation from stale frequently-accessed files
+    local effective_use=$use_count
+    [ "$effective_use" -gt 20 ] && effective_use=20
+
+    # Gradual age penalty for AUTO entries (0.5 per session beyond threshold, max 15)
     if [ "$sessions_ago" -gt "$GC_AGE_THRESHOLD" ] && [ "$tag" = "AUTO" ]; then
-        age_penalty=5
+        age_penalty=$(( (sessions_ago - GC_AGE_THRESHOLD) / 2 ))
+        [ "$age_penalty" -gt 15 ] && age_penalty=15
     fi
 
-    local score=$((base_weight + recency_bonus + use_count - age_penalty))
+    local score=$((base_weight + recency_bonus + effective_use - age_penalty))
     [ "$score" -lt 0 ] && score=0
     echo "$score"
 }

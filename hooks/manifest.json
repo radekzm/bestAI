@@ -1,0 +1,163 @@
+{
+  "$schema": "Hook composition manifest for bestAI",
+  "version": "1.0",
+  "hooks": {
+    "check-frozen.sh": {
+      "event": "PreToolUse",
+      "matcher": "Edit|Write|Bash",
+      "priority": 1,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 30,
+      "description": "Blocks edits to files listed in frozen-fragments.md"
+    },
+    "secret-guard.sh": {
+      "event": "PreToolUse",
+      "matcher": "Bash|Write",
+      "priority": 5,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 20,
+      "description": "Blocks commands containing secrets or sensitive file operations"
+    },
+    "check-user-tags.sh": {
+      "event": "PreToolUse",
+      "matcher": "Edit|Write",
+      "priority": 10,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 25,
+      "description": "Blocks removal of [USER] tags from memory files"
+    },
+    "confidence-gate.sh": {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "priority": 15,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 15,
+      "description": "Blocks low-confidence destructive commands"
+    },
+    "backup-enforcement.sh": {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "priority": 20,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 25,
+      "description": "Requires backup before destructive operations"
+    },
+    "circuit-breaker-gate.sh": {
+      "event": "PreToolUse",
+      "matcher": "Bash",
+      "priority": 50,
+      "depends_on": ["circuit-breaker.sh"],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 10,
+      "description": "Blocks commands matching OPEN circuit breaker patterns"
+    },
+    "wal-logger.sh": {
+      "event": "PreToolUse",
+      "matcher": "Bash|Write",
+      "priority": 90,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 15,
+      "description": "Write-ahead log for destructive operations"
+    },
+    "circuit-breaker.sh": {
+      "event": "PostToolUse",
+      "matcher": "Bash",
+      "priority": 10,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": [],
+      "estimated_latency_ms": 40,
+      "description": "Tracks error patterns and opens circuit breaker"
+    },
+    "preprocess-prompt.sh": {
+      "event": "UserPromptSubmit",
+      "matcher": "",
+      "priority": 10,
+      "depends_on": [],
+      "conflicts_with": ["smart-preprocess-v2.sh"],
+      "requires": ["jq"],
+      "estimated_latency_ms": 200,
+      "description": "Smart Context v1 — keyword/trigram-based context injection"
+    },
+    "smart-preprocess-v2.sh": {
+      "event": "UserPromptSubmit",
+      "matcher": "",
+      "priority": 10,
+      "depends_on": [],
+      "conflicts_with": ["preprocess-prompt.sh"],
+      "requires": ["jq"],
+      "estimated_latency_ms": 500,
+      "description": "Smart Context v2 — LLM-scored context injection (requires Claude CLI)"
+    },
+    "rehydrate.sh": {
+      "event": "SessionStart",
+      "matcher": "",
+      "priority": 10,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 50,
+      "description": "Restores session state from sync-state delta"
+    },
+    "memory-compiler.sh": {
+      "event": "Stop",
+      "matcher": "",
+      "priority": 10,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": [],
+      "estimated_latency_ms": 100,
+      "description": "Generational GC, context index, session counter"
+    },
+    "sync-state.sh": {
+      "event": "Stop",
+      "matcher": "",
+      "priority": 20,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 50,
+      "description": "Persists session state delta for cross-session continuity"
+    },
+    "sync-gps.sh": {
+      "event": "Stop",
+      "matcher": "",
+      "priority": 30,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": ["jq"],
+      "estimated_latency_ms": 80,
+      "description": "Updates Global Project State (GPS) from session work"
+    },
+    "observer.sh": {
+      "event": "Stop",
+      "matcher": "",
+      "priority": 40,
+      "depends_on": [],
+      "conflicts_with": [],
+      "requires": [],
+      "estimated_latency_ms": 150,
+      "description": "Periodic meta-observations about memory usage patterns"
+    }
+  },
+  "latency_budgets": {
+    "PreToolUse": 200,
+    "PostToolUse": 200,
+    "UserPromptSubmit": 500,
+    "SessionStart": 300,
+    "Stop": 500
+  }
+}
