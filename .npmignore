@@ -1,0 +1,18 @@
+# Test & eval artifacts
+tests/
+evals/
+*.test.*
+
+# Development files
+.github/
+.bestai/
+.claude/
+
+# Documentation (keep README only)
+docs/
+TROUBLESHOOTING.md
+CHANGELOG.md
+
+# Debug artifacts
+*.json.bak
+tools/__pycache__/
