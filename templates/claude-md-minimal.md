@@ -1,5 +1,6 @@
 # CLAUDE.md — Minimal Template (<50 lines)
 
+<!-- bestai-template: claude-md-minimal v4.0 -->
 <!-- Hook-enforced. Keep under 50 lines. This file is ALWAYS loaded. -->
 
 ## Project
