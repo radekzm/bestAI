@@ -1,4 +1,4 @@
-# Multi-Vendor Swarm Blueprint (v6.0)
+# Multi-Vendor Swarm Blueprint (v7.0)
 
 This blueprint assigns tasks to different AI vendors based on their unique architectural strengths. All agents share context via `.bestai/GPS.json`.
 
