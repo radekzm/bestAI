@@ -51,7 +51,7 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 
 ## 🤖 Syndicate Decision & Collaboration Loop
 
-<img src="https://github.com/radekzm/bestAI/blob/master/assets/decision-loop.svg?raw=true" width="900" />
+![Decision Loop](assets/decision-loop.svg)
 
 > [!IMPORTANT]
 > **Deterministic Force-Field:** Unlike standard prompts, bestAI hooks are **Fail-Closed**. If an agent attempts an illegal operation, the session is physically blocked at the shell level.
@@ -60,13 +60,13 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 
 ## 🤖 The Syndicate Model (Agent Roles)
 
-<img src="https://github.com/radekzm/bestAI/blob/master/assets/swarm-architecture.svg?raw=true" width="800" />
+![Swarm Architecture](assets/swarm-architecture.svg)
 
 ## 🏗️ The 5-Tier Context OS (Infinite Scalability)
 
 We solve the **"Context Overload"** problem by segmenting information into distinct tiers, ensuring the agent always knows the most critical state without drowning in data.
 
-<img src="https://github.com/radekzm/bestAI/blob/master/assets/context-os-tiers.svg?raw=true" width="800" />
+![Context OS Tiers](assets/context-os-tiers.svg)
 
 - **T0 (HOT):** The **Global Project State (GPS.json)**. The project's brain. Shared by all swarm agents.
 - **T1 (WARM):** **T3-Summary.md**. The map of the entire codebase. Hierarchical and dense.
