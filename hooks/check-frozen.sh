@@ -33,21 +33,59 @@ log_metric() {
     printf '%s check-frozen %s %s\n' "$(date -u +%FT%TZ)" "$action" "$details" >> "$METRICS_FILE" 2>/dev/null || true
 }
 
-# Normalize path: remove ./ and .. components, convert to absolute
+# Normalize path: remove ./ and .. components, convert to absolute.
+# Pure-bash implementation — no external dependencies (realpath, python3).
+# Handles: relative paths, //, /./, /../, trailing /. sequences.
 normalize_path() {
     local p="$1"
 
+    # Make absolute
     if [[ "$p" != /* ]]; then
         p="$PROJECT_DIR/$p"
     fi
 
-    if command -v realpath &>/dev/null; then
-        realpath -m "$p" 2>/dev/null || echo "$p"
-    elif command -v python3 &>/dev/null; then
-        python3 -c "import os, sys; print(os.path.normpath(sys.argv[1]))" "$p" 2>/dev/null || echo "$p"
-    else
-        echo "$p"
+    # Remove // sequences
+    while [[ "$p" == *//* ]]; do
+        p="${p//\/\//\/}"
+    done
+
+    # Remove /./ sequences
+    while [[ "$p" == */./* ]]; do
+        p="${p//\/.\//\/}"
+    done
+
+    # Remove trailing /.
+    while [[ "$p" == */. ]]; do
+        p="${p%/.}"
+    done
+
+    # Resolve /../ sequences by splitting into components
+    if [[ "$p" == *..* ]]; then
+        local -a parts=()
+        local segment
+        local IFS='/'
+        # shellcheck disable=SC2086
+        for segment in $p; do
+            if [ "$segment" = ".." ]; then
+                # Pop last component (if any beyond root)
+                if [ "${#parts[@]}" -gt 0 ]; then
+                    unset 'parts[${#parts[@]}-1]'
+                fi
+            elif [ -n "$segment" ] && [ "$segment" != "." ]; then
+                parts+=("$segment")
+            fi
+        done
+        p="/"
+        if [ "${#parts[@]}" -gt 0 ]; then
+            p+=$(printf '%s/' "${parts[@]}")
+            p="${p%/}"  # Remove trailing /
+        fi
     fi
+
+    # Ensure no trailing slash (unless root)
+    [[ "$p" != "/" ]] && p="${p%/}"
+
+    echo "$p"
 }
 
 MEMORY_DIR="$HOME/.claude/projects/$PROJECT_KEY/memory"
