@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+# Dry-run mode: log what would be blocked but don't actually block
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 if [ "${CIRCUIT_BREAKER_STRICT:-1}" != "1" ]; then
     exit 0
 fi
@@ -69,6 +72,10 @@ for state_file in "$STATE_DIR"/*; do
 done
 
 if [ "$BLOCKED" -eq 1 ]; then
+    if [ "$BESTAI_DRY_RUN" = "1" ]; then
+        echo "[DRY-RUN] WOULD BLOCK: Circuit Breaker OPEN. Pattern: $BLOCK_FILE. Retry in ${MIN_REMAINING}s." >&2
+        exit 0
+    fi
     echo "BLOCKED: Circuit Breaker OPEN (strict mode)." >&2
     echo "Pattern: $BLOCK_FILE" >&2
     echo "Retry allowed in ${MIN_REMAINING}s or use a fundamentally different approach." >&2

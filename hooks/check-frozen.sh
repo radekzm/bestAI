@@ -6,6 +6,18 @@
 
 set -euo pipefail
 
+# Dry-run mode: log what would be blocked but don't actually block
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+block_or_dryrun() {
+    if [ "$BESTAI_DRY_RUN" = "1" ]; then
+        echo "[DRY-RUN] WOULD BLOCK: $*" >&2
+        exit 0
+    else
+        echo "BLOCKED: $*" >&2
+        exit 2
+    fi
+}
+
 # Fail closed: if jq is missing, block rather than allow
 if ! command -v jq &>/dev/null; then
     echo "BLOCKED: jq is not installed. Cannot validate frozen files." >&2
@@ -124,10 +136,7 @@ check_direct_file_edit() {
     while IFS=$'\t' read -r raw frozen_norm; do
         if [ "$normalized_file" = "$frozen_norm" ]; then
             log_metric "BLOCK" "mode=direct file=$file_path"
-            echo "BLOCKED: File is FROZEN: $file_path" >&2
-            echo "Listed in frozen-fragments.md registry." >&2
-            echo "To unfreeze: remove entry from frozen-fragments.md" >&2
-            exit 2
+            block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md)"
         fi
     done < "$FROZEN_PATHS_FILE"
 }
@@ -146,10 +155,7 @@ check_bash_bypass() {
     while IFS=$'\t' read -r raw frozen_norm; do
         if echo "$command" | grep -Fq "$raw" || echo "$command" | grep -Fq "$frozen_norm"; then
             log_metric "BLOCK" "mode=bash file=$raw"
-            echo "BLOCKED: Bash command attempts to modify FROZEN file: $raw" >&2
-            echo "Command: $command" >&2
-            echo "This is a frozen-file bypass vector; operation blocked." >&2
-            exit 2
+            block_or_dryrun "Bash command modifies FROZEN file: $raw (command: $command)"
         fi
     done < "$FROZEN_PATHS_FILE"
 }

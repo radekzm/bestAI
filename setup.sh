@@ -9,6 +9,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m'
 
 BESTAI_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -188,7 +189,7 @@ for dep in realpath python3; do
     if command -v "$dep" &>/dev/null; then
         echo -e "  ${GREEN}OK${NC} $dep"
     else
-        echo -e "  ${YELLOW}OPTIONAL${NC} $dep (path normalization)"
+        echo -e "  ${DIM}INFO${NC} $dep (not required — hooks use pure-bash path normalization)"
     fi
 done
 
