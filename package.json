@@ -1,0 +1,33 @@
+{
+  "name": "bestai",
+  "version": "4.0.0",
+  "description": "Evidence-based, modular guidelines and deterministic enforcement hooks for AI coding agents.",
+  "main": "setup.sh",
+  "bin": {
+    "bestai": "./bin/bestai.js"
+  },
+  "scripts": {
+    "test": "bash tests/test-hooks.sh",
+    "doctor": "bash doctor.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/radekzm/bestAI.git"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "claude",
+    "cursor",
+    "windsurf",
+    "coding",
+    "cli"
+  ],
+  "author": "radekzm",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/radekzm/bestAI/issues"
+  },
+  "homepage": "https://github.com/radekzm/bestAI#readme",
+  "dependencies": {}
+}
