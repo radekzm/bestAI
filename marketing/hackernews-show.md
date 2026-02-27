@@ -16,7 +16,7 @@ bestAI v7.5 is an Omni-Vendor CLI that replaces "advisory" prompting with determ
 - **Context Tiers:** Infinite scalability via a 5-tier Context OS (Hot, Warm, Cool, Cold, Frozen).
 - **Observability:** Built-in tools for session replay, budget monitoring, and compliance metrics.
 
-You can try it instantly via `npx bestai init .`. 
+You can try it instantly via `npx @radekzm/bestai@latest init .`. 
 
 I'd love to hear your thoughts on managing AI agent compliance in massive codebases!
 

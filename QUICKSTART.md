@@ -19,13 +19,13 @@ bash bestAI/setup.sh /path/to/your/project --non-interactive --secure-defaults
 
 For quick install via npm:
 ```bash
-npx bestai init /path/to/your/project
-npx bestai doctor /path/to/your/project
-npx bestai stats /path/to/your/project
+npx @radekzm/bestai@latest init /path/to/your/project
+npx @radekzm/bestai@latest doctor /path/to/your/project
+npx @radekzm/bestai@latest stats /path/to/your/project
 ```
 
 Command context matrix:
-- `npx bestai <cmd>`: run from anywhere (npm/npx workflow).
+- `npx @radekzm/bestai@latest <cmd>`: run from anywhere (npm/npx workflow).
 - `bash bestAI/<script>.sh`: run from parent directory containing cloned `bestAI/`.
 - `bash <script>.sh`: run from inside repo root (`cd bestAI`).
 

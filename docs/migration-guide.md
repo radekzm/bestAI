@@ -3,9 +3,9 @@
 ## New Project Setup
 
 ```bash
-npx bestai setup /path/to/your/project
-npx bestai doctor                        # verify installation
-npx bestai test                          # run test suite
+npx @radekzm/bestai@latest setup /path/to/your/project
+npx @radekzm/bestai@latest doctor                        # verify installation
+npx @radekzm/bestai@latest test                          # run test suite
 ```
 
 The setup script:
@@ -49,7 +49,7 @@ This creates `.cursorrules`, `.windsurfrules`, and `codex.md` from your CLAUDE.m
 1. Define your frozen files in `memory/frozen-fragments.md` (one path per line)
 2. Hooks are configured in `.claude/settings.json` — setup script handles this
 3. Test enforcement: ask the agent to edit a frozen file → should see `exit 2` block
-4. Validate with `npx bestai lint` to check manifest, dependencies, latency budgets
+4. Validate with `npx @radekzm/bestai@latest lint` to check manifest, dependencies, latency budgets
 
 ## Upgrading Between Versions
 
@@ -57,11 +57,11 @@ This creates `.cursorrules`, `.windsurfrules`, and `codex.md` from your CLAUDE.m
 
 ```bash
 # Re-run setup (preserves your custom files)
-npx bestai setup .
+npx @radekzm/bestai@latest setup .
 
 # Verify
-npx bestai doctor
-npx bestai test
+npx @radekzm/bestai@latest doctor
+npx @radekzm/bestai@latest test
 ```
 
 Key changes:
@@ -73,7 +73,7 @@ Key changes:
 ### Adding Multi-Vendor Support (Optional)
 
 ```bash
-npx bestai setup . --blueprint swarm
+npx @radekzm/bestai@latest setup . --blueprint swarm
 ```
 
 This creates `.bestai/GPS.json` for shared state. The `sync-gps.sh` Stop hook updates GPS at session end. Ensure `sync-gps.sh` is enabled in `.claude/settings.json` (blueprint scaffolding does not force-enable every hook).
@@ -84,7 +84,7 @@ This creates `.bestai/GPS.json` for shared state. The `sync-gps.sh` Stop hook up
 
 ```bash
 # Full diagnostic
-npx bestai doctor --strict .
+npx @radekzm/bestai@latest doctor --strict .
 
 # Expected output:
 # [OK] CLAUDE.md found
@@ -99,7 +99,7 @@ npx bestai doctor --strict .
 
 | Issue | Fix |
 |-------|-----|
-| Hooks don't fire | Check `.claude/settings.json` has hooks configured. Re-run `npx bestai setup .` |
+| Hooks don't fire | Check `.claude/settings.json` has hooks configured. Re-run `npx @radekzm/bestai@latest setup .` |
 | `jq` not found | Install: `apt install jq` / `brew install jq` |
 | Frozen file check passes when it shouldn't | Verify file is listed in `frozen-fragments.md` with exact path |
 | Old compliance data missing | v7 changed the event log path. Old events at `.claude/events.jsonl` won't be read. Start fresh or move the file to `~/.cache/bestai/events.jsonl`. |

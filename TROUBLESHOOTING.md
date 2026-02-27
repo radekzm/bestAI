@@ -57,7 +57,7 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Hook blocks unexpectedly | Pattern matches unintended commands | Check `TOOL_INPUT` in event log: `npx bestai compliance --json` |
+| Hook blocks unexpectedly | Pattern matches unintended commands | Check `TOOL_INPUT` in event log: `npx @radekzm/bestai@latest compliance --json` |
 | Hook doesn't block when it should | Bash command evades pattern | Known limitation for Bash hooks — see [architecture](docs/architecture.md#determinism-spectrum) |
 | Hook latency too high | Smart Context v2 LLM call | Switch to v1 or disable: `touch .claude/DISABLE_SMART_CONTEXT` |
 | Compliance report shows 0 events | Wrong log path or project hash | Verify: `cat ~/.cache/bestai/events.jsonl \| head -1` |
@@ -67,19 +67,19 @@
 
 ```bash
 # Diagnose your setup
-npx bestai doctor
+npx @radekzm/bestai@latest doctor
 
 # Install bestAI into your project
-npx bestai setup /path/to/your/project
+npx @radekzm/bestai@latest setup /path/to/your/project
 
 # Test hooks work correctly
-npx bestai test
+npx @radekzm/bestai@latest test
 
 # Check compliance
-npx bestai compliance
+npx @radekzm/bestai@latest compliance
 
 # Validate hook manifest
-npx bestai lint
+npx @radekzm/bestai@latest lint
 
 # Emergency: agent stuck in loop
 # Type in Claude Code:

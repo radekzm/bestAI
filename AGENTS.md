@@ -103,12 +103,12 @@ All hooks live in `hooks/` and are declared in `hooks/manifest.json` with priori
 
 | Tool | Command | Description |
 |------|---------|-------------|
-| `setup.sh` | `npx bestai setup` | Install hooks, templates, blueprints into a project |
-| `doctor.sh` | `npx bestai doctor` | Validate installation, check versions, verify hooks |
-| `stats.sh` | `npx bestai stats` | Hook latency dashboard (avg/max/count per hook) |
-| `compliance.sh` | `npx bestai compliance` | Compliance report from JSONL event log (`--json`, `--since`) |
-| `hook-lint.sh` | `npx bestai lint` | Validate manifest, check dependencies/conflicts, latency budget |
-| `swarm-dispatch.sh` | `npx bestai swarm` | Multi-vendor task dispatch via GPS roles |
+| `setup.sh` | `npx @radekzm/bestai@latest setup` | Install hooks, templates, blueprints into a project |
+| `doctor.sh` | `npx @radekzm/bestai@latest doctor` | Validate installation, check versions, verify hooks |
+| `stats.sh` | `npx @radekzm/bestai@latest stats` | Hook latency dashboard (avg/max/count per hook) |
+| `compliance.sh` | `npx @radekzm/bestai@latest compliance` | Compliance report from JSONL event log (`--json`, `--since`) |
+| `hook-lint.sh` | `npx @radekzm/bestai@latest lint` | Validate manifest, check dependencies/conflicts, latency budget |
+| `swarm-dispatch.sh` | `npx @radekzm/bestai@latest swarm` | Multi-vendor task dispatch via GPS roles |
 | `generate-rules.sh` | — | Export rules to `.cursorrules`, `.windsurfrules`, `codex.md` |
 | `generate-t3-summaries.py` | — | Build T3 hierarchical summaries for large codebases |
 | `vectorize-codebase.py` | — | Generate embeddings for RAG-native context |

@@ -11,7 +11,7 @@ It's an Omni-Vendor CLI that replaces "prompting" with deterministic **Force Fie
 - **Invisible Limit:** Scale to massive monorepos without token bloat.
 
 Install instantly:
-`npx bestai init .`
+`npx @radekzm/bestai@latest init .`
 
 Repo (Open Source):
 https://github.com/radekzm/bestAI 

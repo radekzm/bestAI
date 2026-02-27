@@ -7,7 +7,7 @@
 - **Swarm dispatch** (`tools/swarm-dispatch.sh`): Role-based task routing to vendor-specific agents (Architect→Claude, Investigator→Gemini, Tester→Codex)
 - **Budget monitor** (`tools/budget-monitor.sh`): Token/cost tracking across multi-vendor swarm sessions
 - **Blueprint template** (`templates/blueprint-multivendor.md`): Multi-vendor task assignment blueprint with context rules
-- **CLI swarm command**: `npx bestai swarm` for orchestrating multi-vendor sessions
+- **CLI swarm command**: `npx @radekzm/bestai@latest swarm` for orchestrating multi-vendor sessions
 
 ### Fixed
 - **CRITICAL: `compliance.sh` completely broken** — was reading `"type":"BLOCK"` but hooks write `"action":"BLOCK"`; was reading wrong log path. Complete rewrite with correct field names and `~/.cache/bestai/events.jsonl` path
@@ -47,7 +47,7 @@
 - **Observability dashboard** (`stats.sh`): Hook latency tracking with `elapsed_ms`, per-hook avg/max/count stats
 - **WAL logging** (`hooks/wal-logger.sh`): Write-ahead log for destructive actions
 - **Backup enforcement** (`hooks/backup-enforcement.sh`): Require validated backup manifest before deploy/migrate
-- **npm distribution**: `npx bestai setup`, `npx bestai doctor`, `npx bestai stats`
+- **npm distribution**: `npx @radekzm/bestai@latest setup`, `npx @radekzm/bestai@latest doctor`, `npx @radekzm/bestai@latest stats`
 - **CI integration**: Hook composition lint step in `.github/workflows/ci.yml`
 - **Template versioning**: `<!-- bestai-template: name v5.0 -->` headers + doctor.sh version checking
 - **Maturity labels**: Stable (tested, has hooks+tests) vs Preview (documented, partial implementation)

@@ -1,5 +1,5 @@
 {
-  "name": "bestai",
+  "name": "@radekzm/bestai",
   "version": "7.0.0",
   "description": "Evidence-based, modular guidelines and deterministic enforcement hooks for AI coding agents.",
   "main": "setup.sh",
@@ -34,5 +34,8 @@
     "url": "https://github.com/radekzm/bestAI/issues"
   },
   "homepage": "https://github.com/radekzm/bestAI#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {}
 }

@@ -12,7 +12,7 @@ Everything is synchronized via a **Global Project State (GPS)** and protected by
 
 The framework is now globally available via NPM and supports seamless migration for existing Claude, Cursor, and Windsurf projects.
 
-👉 **Quick Install:** `npx bestai init .`
+👉 **Quick Install:** `npx @radekzm/bestai@latest init .`
 👉 **Explore the Syndicate:** https://github.com/radekzm/bestAI 
 
 Join the autonomous engineering revolution! 🚀
