@@ -1,4 +1,4 @@
-# Module 02: Session Management & Context Lifecycle
+# Module 02-A: Session Management & Context Lifecycle
 
 > Use this module when managing sessions, dealing with compaction,
 > or deciding when to use subagents and parallel workflows.
@@ -128,7 +128,7 @@ Two sessions with separate contexts:
 ---
 
 *See [03-persistence](03-persistence.md) for memory systems, [05-cs-algorithms](05-cs-algorithms.md) for circuit breaker patterns.*
-# Module 06: Operational Patterns — Discipline & Anti-Loop
+# Module 02-B: Operational Patterns — Discipline & Anti-Loop
 
 > Use this module when you need structured operational discipline for AI agents.
 > Patterns derived from AION-NEOVERSE Constitution v3 and production experience.
@@ -307,7 +307,7 @@ This prevents confirmation bias and groupthink in agent teams.
 ---
 
 *See [04-enforcement](04-enforcement.md) for hook implementations, [05-cs-algorithms](05-cs-algorithms.md) for formal algorithms.*
-# Module 11: Prompt Caching Playbook
+# Module 02-C: Prompt Caching Playbook
 
 > Use this module to optimize Claude API costs through prompt caching.
 > Stable prefixes + predictable structure = lower costs and faster responses.

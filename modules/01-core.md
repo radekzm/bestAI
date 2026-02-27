@@ -1,4 +1,4 @@
-# Module 00: Context Engineering Fundamentals
+# Module 01-A: Context Engineering Fundamentals
 
 > Use this module when you need to understand WHY context management matters
 > and what principles govern effective AI agent behavior.
@@ -127,7 +127,7 @@ Tokenomics research (2026) reports a major share of spend in iterative refinemen
 ---
 
 *See [01-file-architecture](01-file-architecture.md) for file structure, [04-enforcement](04-enforcement.md) for hooks.*
-# Module 01: File Architecture & Progressive Disclosure
+# Module 01-B: File Architecture & Progressive Disclosure
 
 > Use this module when setting up context files for your project
 > or choosing between CLAUDE.md, Skills, Rules, and Hooks.
@@ -236,7 +236,7 @@ OpenAI Codex CLI: project docs limited to **32 KiB** (`project_doc_max_bytes`).
 ---
 
 *See [02-session-management](02-session-management.md) for session workflow, [04-enforcement](04-enforcement.md) for hooks.*
-# Module 03: Persistent Memory — Auto-Persistence & Weight System
+# Module 01-C: Persistent Memory — Auto-Persistence & Weight System
 
 > Use this module when you want the agent to remember decisions across sessions,
 > distinguish user instructions from auto-discoveries, and never lose critical context.
@@ -448,7 +448,7 @@ Store only load-bearing decisions with reason + evidence. Skip obvious facts alr
 ---
 
 *See [04-enforcement](04-enforcement.md) for hooks enforcing these rules, [06-operational-patterns](06-operational-patterns.md) for REHYDRATE pattern.*
-# Module 04: Deterministic Enforcement — Hooks & Frozen Files
+# Module 01-D: Deterministic Enforcement — Hooks & Frozen Files
 
 > Use this module when you need GUARANTEED rule execution.
 > CLAUDE.md is advisory (6% compliance on production). Hooks are deterministic.
@@ -698,7 +698,7 @@ STYLE/PREFERENCES → CLAUDE.md
 ---
 
 *See [05-cs-algorithms](05-cs-algorithms.md) for Circuit Breaker pattern, [03-persistence](03-persistence.md) for memory system.*
-# Module 09: Memory Compiler
+# Module 01-E: Memory Compiler
 
 > Use this module to understand the automatic memory management pipeline:
 > scoring, indexing, garbage collection, and the 200-line MEMORY.md cap.
@@ -806,7 +806,7 @@ The Memory Compiler generates an E-Tag cache to accelerate `preprocess-prompt.sh
 ---
 
 *See [07-smart-context](07-smart-context.md) for the retrieval pipeline, [03-persistence](03-persistence.md) for memory tagging conventions.*
-# Module 10: Context OS — 5-Tier Architecture
+# Module 01-F: Context OS — 5-Tier Architecture
 
 > Use this module to understand the full context management system.
 > The 5 tiers define what is loaded when, and how the context budget is managed.
@@ -954,7 +954,7 @@ bash setup.sh /path/to/project --profile aion-runtime
 ---
 
 *See [07-smart-context](07-smart-context.md) for routing details, [09-memory-compiler](09-memory-compiler.md) for GC pipeline, [04-enforcement](04-enforcement.md) for hook mechanics.*
-# Module 12: Global Project State (GPS)
+# Module 01-G: Global Project State (GPS)
 
 > Use this module to coordinate multiple AI agents working on the same project,
 > ensuring they share a single source of truth and don't overwrite each other's progress.
@@ -985,7 +985,7 @@ To keep the GPS up-to-date, bestAI uses a PostToolUse or Stop hook (`hooks/sync-
 **How it works:**
 1. After significant actions (or at the end of a session), the agent is required to summarize its progress.
 2. The `sync-gps.sh` Stop hook parses session output, changed files, and blocker signals, then performs an atomic `GPS.json` update.
-3. When a new agent (or the next session) starts, the `rehydrate.sh` hook (from Module 10) loads the `GPS.json` into the T0 (HOT) context tier.
+3. When a new agent (or the next session) starts, the `rehydrate.sh` hook (from Module 01-F) loads the `GPS.json` into the T0 (HOT) context tier.
 
 Current schema requires:
 - `project.owner`
@@ -1040,7 +1040,7 @@ Current schema requires:
 ---
 
 *This is a core component of the v4.0 Distributed Agent Orchestration architecture.*
-# Module 15: Invisible Limit Mechanism
+# Module 01-H: Invisible Limit Mechanism
 
 > Use this module to dynamically manage the T3 (Cold) Context Tier,
 > allowing agents to "know about" thousands of files without loading them.
@@ -1051,7 +1051,7 @@ Current schema requires:
 
 ## Overview
 
-The Context OS (Module 10) defines T3 (Cold) as files that are never auto-loaded because they would exceed the context budget. However, if the agent doesn't know they exist, it can't choose to read them.
+The Context OS (Module 01-F) defines T3 (Cold) as files that are never auto-loaded because they would exceed the context budget. However, if the agent doesn't know they exist, it can't choose to read them.
 
 The **Invisible Limit Mechanism** in v4.0 solves this by creating an automated, hierarchical index of summaries.
 

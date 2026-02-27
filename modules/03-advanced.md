@@ -1,4 +1,4 @@
-# Module 05: CS Algorithms for AI Agents
+# Module 03-A: CS Algorithms for AI Agents
 
 > Use this module when implementing robust agent behaviors.
 > P0 algorithms include full implementation details (Problem → CS Origin → Agent Implementation → Hook/Rule).
@@ -141,7 +141,7 @@ Attempt 4: STOP + ROOT_CAUSE_TABLE (what tried | why failed | what to try next)
 ---
 
 *See [hooks/circuit-breaker.sh](../hooks/circuit-breaker.sh) and [hooks/wal-logger.sh](../hooks/wal-logger.sh) for implementations.*
-# Module 07: Smart Context — Semantic Routing & Preprocessing
+# Module 03-B: Smart Context — Semantic Routing & Preprocessing
 
 > Use this module when static CLAUDE.md + MEMORY.md is insufficient
 > and you need intelligent, task-specific context loading.
@@ -210,7 +210,7 @@ Level 3: Subagent (Haiku)   — semantic understanding, handles "different words
 Level 4: Vector DB          — full semantic search, for large codebases (100+ files)
 ```
 
-**This is NOT "semantic > literal"** (Module 00, Principle #5 applies to agent *understanding*, not retrieval). For retrieval, grep is the correct first step — it's fast, deterministic, and sufficient for most queries. Semantic layers add value only when keyword matching fails.
+**This is NOT "semantic > literal"** (Module 01-A, Principle #5 applies to agent *understanding*, not retrieval). For retrieval, grep is the correct first step — it's fast, deterministic, and sufficient for most queries. Semantic layers add value only when keyword matching fails.
 
 The production hook (`hooks/preprocess-prompt.sh`) operates at Level 2: keyword + trigram + intent routing. Level 3 is available via `hooks/smart-preprocess-v2.sh`.
 
@@ -383,7 +383,7 @@ Community filled this gap with open-source projects (claude-mem 4700+ stars, cla
 ---
 
 *See [08-advanced](08-advanced.md) for vector DB details and [11-prompt-caching](11-prompt-caching.md) for cache-aware runtime optimization.*
-# Module 08: Advanced & Experimental
+# Module 03-C: Advanced & Experimental
 
 > Use this module for large-scale projects, multi-agent setups, or research.
 >
@@ -600,7 +600,7 @@ grep -c 'stale\|missing' /tmp/etag-debug.log  # misses
 
 *This module is experimental. Validate everything against your specific use case.*
 *See [modules 00-06](../modules/) for production-ready guidelines.*
-# Module 13: Agent Orchestration (Team Lead) [PREVIEW]
+# Module 03-D: Agent Orchestration (Team Lead) [PREVIEW]
 
 > **Maturity: Preview** — documented with code examples, limited production validation.
 >
@@ -622,7 +622,7 @@ As projects scale, a single agent attempting to handle all aspects (frontend, ba
 Instead of linear, step-by-step processing, a master agent (or human user via CLI) can spawn multiple sub-agents in parallel Git worktrees.
 - **Git Worktrees:** Allows multiple branches to be checked out simultaneously in different directories.
 - **Roles:** For example, Agent A works on `feature-api` in `/worktrees/api`, while Agent B works on `feature-ui` in `/worktrees/ui`.
-- **GPS Integration:** The Global Project State (`.bestai/GPS.json`, see Module 12) coordinates these parallel efforts.
+- **GPS Integration:** The Global Project State (`.bestai/GPS.json`, see Module 01-G) coordinates these parallel efforts.
 
 ### 2. Cross-Agent Review (Devil’s Advocate)
 
@@ -656,7 +656,9 @@ cd "$WORKTREE_DIR" && claude -p "ROLE: $ROLE. Task: $TASK_DESC. Use GPS.json for
 
 ---
 
-*This module builds upon the Experimental Agent Teams introduced in Module 08.*# Module 14: Semantic Context Router v4 (RAG-Native)
+*This module builds upon the Experimental Agent Teams introduced in Module 03-C.*
+
+# Module 03-E: Semantic Context Router (RAG-Native) [PREVIEW]
 
 > Use this module to completely bypass the limitations of keyword-based context
 > search by integrating a true Vector Database (RAG) into the agent's memory.
@@ -667,7 +669,7 @@ cd "$WORKTREE_DIR" && claude -p "ROLE: $ROLE. Task: $TASK_DESC. Use GPS.json for
 
 ## Overview
 
-Previous versions of bestAI relied on keyword matching (`grep`) and trigrams for context injection (Module 07). While fast, this fails on semantic queries (e.g., "how does auth work" vs searching for the literal word "auth").
+Previous versions of bestAI relied on keyword matching (`grep`) and trigrams for context injection (Module 03-B). While fast, this fails on semantic queries (e.g., "how does auth work" vs searching for the literal word "auth").
 
 v4.0 introduces the **Semantic Context Router**, transforming the local workspace into a Retrieval-Augmented Generation (RAG) system.
 
@@ -685,7 +687,7 @@ In massive monorepos, even embedding the whole project is too noisy. **Context S
 - **Backend Shard:** API routes, DB schema, server config.
 - **Frontend Shard:** React components, CSS, UI logic.
 
-When a "Backend Agent" is spawned (Module 13), it is only allowed to query the Backend Shard, drastically improving retrieval precision.
+When a "Backend Agent" is spawned (Module 03-D), it is only allowed to query the Backend Shard, drastically improving retrieval precision.
 
 ## Architecture
 
