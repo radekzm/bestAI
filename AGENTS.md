@@ -1,10 +1,10 @@
-# AGENTS.md — bestAI Guidelines for AI Agents v5.0
+# AGENTS.md — bestAI Guidelines for AI Agents v6.0
 
 <!-- Compatible with: Claude Code, OpenAI Codex, Sourcegraph Amp, Cursor, Windsurf -->
 
 ## Overview
 
-bestAI v5.0 provides modular, evidence-based guidelines for AI coding agents.
+bestAI v6.0 provides modular, evidence-based guidelines for AI coding agents.
 Structured as independent modules that can be loaded on demand. Includes compliance measurement, hook composition, cross-tool rule generation, and observability.
 
 ## Guidelines
