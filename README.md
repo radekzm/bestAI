@@ -84,6 +84,7 @@ bash evals/run.sh --enforce-gates
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require validated backup manifest before deploy/migrate |
 | [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State |
 | [observer.sh](hooks/observer.sh) | Stop | Periodic observational memory compression |
+| [reflector.sh](hooks/reflector.sh) | Maintenance | Memory defragmentation (manual/cron, requires Haiku) |
 | [hook-event.sh](hooks/hook-event.sh) | Library | Shared JSONL event logging library used by selected hooks |
 
 ## Tooling

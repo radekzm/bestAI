@@ -161,6 +161,16 @@
       "requires": [],
       "estimated_latency_ms": 150,
       "description": "Periodic meta-observations about memory usage patterns"
+    },
+    "reflector.sh": {
+      "event": "Maintenance",
+      "matcher": "",
+      "priority": 99,
+      "depends_on": ["memory-compiler.sh"],
+      "conflicts_with": [],
+      "requires": [],
+      "estimated_latency_ms": 5000,
+      "description": "Memory defragmentation (manual/cron, requires Haiku model)"
     }
   },
   "latency_budgets": {
