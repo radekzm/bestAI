@@ -75,7 +75,7 @@ Attempt 3: Delegate to subagent for independent assessment
 Attempt 4: STOP + ROOT_CAUSE_TABLE (what tried | why failed | what to try next)
 ```
 
-## P1: Recommended
+## P1: Recommended [CONCEPTUAL — not yet implemented]
 
 ### 5. Copy-on-Write (CoW)
 
