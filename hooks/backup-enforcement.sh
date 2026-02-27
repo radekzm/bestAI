@@ -41,19 +41,7 @@ is_destructive() {
     echo "$1" | grep -Eqi '(^|[^[:alnum:]_])(restart|migrate|deploy)([^[:alnum:]_]|$)|rsync.*prod|docker.*(push|kill|rm)|systemctl[[:space:]]+(restart|stop)|dropdb|truncate[[:space:]]+'
 }
 
-project_hash() {
-    local src="$1"
-    if command -v md5sum >/dev/null 2>&1; then
-        echo "$src" | md5sum | awk '{print substr($1,1,16)}'
-    elif command -v md5 >/dev/null 2>&1; then
-        echo -n "$src" | md5 -q | cut -c1-16
-    elif command -v shasum >/dev/null 2>&1; then
-        echo "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
-    else
-        # Last-resort portable fallback (still project-specific, never "default")
-        echo "$src" | cksum | awk '{print $1}'
-    fi
-}
+# project_hash delegated to _bestai_project_hash from hook-event.sh (sourced above)
 
 file_sha256() {
     local file="$1"
@@ -68,7 +56,7 @@ file_sha256() {
 
 if is_destructive "$COMMAND"; then
     PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
-    PROJECT_HASH=$(project_hash "$PROJECT_DIR")
+    PROJECT_HASH=$(_bestai_project_hash "$PROJECT_DIR")
 
     BACKUP_MANIFEST_DIR="${BACKUP_MANIFEST_DIR:-/tmp}"
     BACKUP_MANIFEST_FILE="${BACKUP_MANIFEST_FILE:-$BACKUP_MANIFEST_DIR/claude-backup-manifest-${PROJECT_HASH}.json}"
