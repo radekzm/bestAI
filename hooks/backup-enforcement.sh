@@ -22,14 +22,12 @@ block_or_dryrun() {
 }
 
 if ! command -v jq &>/dev/null; then
-    echo "BLOCKED: jq is not installed. Cannot validate backup status." >&2
-    exit 2
+    block_or_dryrun "jq is not installed. Cannot validate backup status."
 fi
 
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || {
-    echo "BLOCKED: Failed to parse hook input." >&2
-    exit 2
+    block_or_dryrun "Failed to parse hook input."
 }
 [ -z "$COMMAND" ] && exit 0
 
@@ -102,7 +100,7 @@ if is_destructive "$COMMAND"; then
 
     if ! jq empty "$BACKUP_MANIFEST_FILE" >/dev/null 2>&1; then
         echo "BLOCKED: Backup manifest is invalid JSON: $BACKUP_MANIFEST_FILE" >&2
-        exit 2
+        block_or_dryrun "Backup manifest is invalid JSON: $BACKUP_MANIFEST_FILE"
     fi
 
     BACKUP_PATH=$(jq -r '.backup_path // empty' "$BACKUP_MANIFEST_FILE")
@@ -152,7 +150,7 @@ if is_destructive "$COMMAND"; then
         ACTUAL_SHA=$(file_sha256 "$BACKUP_PATH")
         if [ -z "$ACTUAL_SHA" ]; then
             echo "BLOCKED: Cannot compute sha256 (install sha256sum or shasum)." >&2
-            exit 2
+            block_or_dryrun "Cannot compute sha256 (install sha256sum or shasum)."
         fi
         if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
             echo "BLOCKED: Backup checksum mismatch (manifest vs actual)." >&2

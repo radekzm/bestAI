@@ -6,6 +6,48 @@ set -euo pipefail
 
 # Dry-run mode: report potential blocks but do not block execution.
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+STAGING_TTL_SECONDS="${BESTAI_SECRET_STAGING_TTL:-600}"
+
+project_key() {
+    local project_dir="${CLAUDE_PROJECT_DIR:-.}"
+    echo "$project_dir" | tr '/' '-'
+}
+
+staging_log_path() {
+    local key
+    key="$(project_key)"
+    echo "$HOME/.claude/projects/$key/secret-staging.log"
+}
+
+record_staging_event() {
+    local command="$1"
+    local log_path
+    log_path="$(staging_log_path)"
+    mkdir -p "$(dirname "$log_path")"
+    printf '%s\t%s\n' "$(date +%s)" "$command" >> "$log_path"
+    tail -n 30 "$log_path" > "${log_path}.tmp" 2>/dev/null || true
+    mv "${log_path}.tmp" "$log_path" 2>/dev/null || true
+}
+
+has_recent_staging_event() {
+    local log_path now ttl
+    log_path="$(staging_log_path)"
+    [ -f "$log_path" ] || return 1
+
+    now="$(date +%s)"
+    ttl="$STAGING_TTL_SECONDS"
+    [[ "$ttl" =~ ^[0-9]+$ ]] || ttl=600
+
+    awk -v now="$now" -v ttl="$ttl" -F '\t' '
+        $1 ~ /^[0-9]+$/ {
+            age = now - $1
+            if (age >= 0 && age <= ttl) {
+                found = 1
+            }
+        }
+        END { exit(found ? 0 : 1) }
+    ' "$log_path"
+}
 
 block_or_dryrun() {
     local reason="$1"
@@ -19,18 +61,15 @@ block_or_dryrun() {
 }
 
 if ! command -v jq >/dev/null 2>&1; then
-    echo "BLOCKED: secret-guard requires jq for safe parsing." >&2
-    exit 2
+    block_or_dryrun "secret-guard requires jq for safe parsing."
 fi
 
 INPUT="$(cat)"
 TOOL_NAME="$(printf '%s\n' "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)" || {
-    echo "BLOCKED: Failed to parse hook input JSON." >&2
-    exit 2
+    block_or_dryrun "Failed to parse hook input JSON."
 }
 TOOL_INPUT="$(printf '%s\n' "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null)" || {
-    echo "BLOCKED: Failed to parse tool_input." >&2
-    exit 2
+    block_or_dryrun "Failed to parse tool_input."
 }
 
 _BESTAI_TOOL_NAME="$TOOL_NAME"
@@ -52,6 +91,16 @@ contains_exfil_channel() {
     echo "$data" | grep -Eqi '([|]|curl[[:space:]]|wget[[:space:]]|scp[[:space:]]|rsync[[:space:]]|sftp[[:space:]]|ftp[[:space:]]|nc[[:space:]]|netcat[[:space:]]|ssh[[:space:]].*[@:]|http[s]?://|mail[[:space:]]|sendmail[[:space:]]|gh[[:space:]]+gist|xclip|pbcopy)'
 }
 
+contains_staging_operation() {
+    local data="$1"
+    echo "$data" | grep -Eqi '(>|>>|\|\s*tee\b|\bcp\b|\bmv\b|\binstall\b|\bdd\b|\bcat\b[[:space:]].*>|\bprintf\b[[:space:]].*>)'
+}
+
+contains_local_payload_reference() {
+    local data="$1"
+    echo "$data" | grep -Eqi '(@[^[:space:]]+|--upload-file[[:space:]]+[^[:space:]]+|--data-binary[[:space:]]+@[^[:space:]]+|--data[[:space:]]+@[^[:space:]]+|<[[:space:]]*[^[:space:]]+)'
+}
+
 case "$TOOL_NAME" in
     Bash)
         COMMAND="$(printf '%s\n' "$TOOL_INPUT" | jq -r '.command // empty' 2>/dev/null)"
@@ -65,8 +114,21 @@ case "$TOOL_NAME" in
             if echo "$COMMAND" | grep -Eqi 'git[[:space:]]+(add|commit|push)'; then
                 block_or_dryrun "Bash command references secret-like file in git operation."
             fi
+            if contains_staging_operation "$COMMAND"; then
+                record_staging_event "$COMMAND"
+                block_or_dryrun "Bash command stages secret-like file content."
+            fi
             if contains_exfil_channel "$COMMAND"; then
                 block_or_dryrun "Bash command references secret-like file with exfiltration-like channel."
+            fi
+        fi
+
+        if contains_exfil_channel "$COMMAND" && contains_local_payload_reference "$COMMAND"; then
+            if contains_secret_file_reference "$COMMAND"; then
+                block_or_dryrun "Bash command exfiltrates secret-like local payload."
+            fi
+            if has_recent_staging_event; then
+                block_or_dryrun "Bash command exfiltrates local payload after recent secret staging."
             fi
         fi
         ;;

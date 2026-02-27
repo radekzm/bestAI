@@ -53,13 +53,21 @@ log_entry() {
     ) 200>"$LSN_FILE.lock"
 }
 
+redact_secrets() {
+    sed -E '
+        s/ghp_[A-Za-z0-9]{30,}/ghp_[REDACTED]/g;
+        s/AKIA[0-9A-Z]{16}/AKIA[REDACTED]/g;
+        s/((api[_-]?key|secret|token|password)[[:space:]]*[:=][[:space:]]*)[^[:space:]]+/\1[REDACTED]/Ig
+    '
+}
+
 case "$TOOL_NAME" in
     Bash)
         COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
         [ -z "$COMMAND" ] && exit 0
 
         # Sanitize command for log (replace newlines with \n literal)
-        SAFE_CMD=$(echo "$COMMAND" | tr '\n' ' ' | head -c "$CMD_MAX_CHARS")
+        SAFE_CMD=$(printf '%s\n' "$COMMAND" | tr '\n' ' ' | redact_secrets | head -c "$CMD_MAX_CHARS")
 
         # Only log potentially destructive commands
         if echo "$COMMAND" | grep -qE '(rm |mv |cp |chmod|chown|deploy|restart|migrate|rsync|docker|git push|git reset|git checkout|kill |drop |truncate )'; then

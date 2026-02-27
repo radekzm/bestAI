@@ -54,13 +54,17 @@ Critical rules go in hooks. Style preferences stay in CLAUDE.md.
 
 | Profile | Use case | Hooks installed |
 |---------|----------|-----------------|
-| `default` | Most projects | Frozen files, backup, circuit breaker |
-| `aion-runtime` | Long-running sessions | + session state, memory compiler |
-| `smart-v2` | Large codebases | + Haiku-powered semantic context |
+| `default` | Most projects | Frozen files, backup, circuit breaker (plus core safety hooks) |
+| `aion-runtime` | Long-running sessions | + session state, memory compiler, GPS |
+| `smart-v2` | Large codebases | + smart context v2 + runtime fallback chain |
 
 ```bash
 bash bestAI/setup.sh /path/to/project --profile aion-runtime
 ```
+
+Notes:
+- Profile tables show baseline intent; final installed hooks can differ with installer selections and `--secure-defaults`.
+- `smart-v2` uses fallback mode by default. LLM-assisted path requires `SMART_CONTEXT_USE_HAIKU=1` and available `claude` CLI.
 
 ## Learn More
 

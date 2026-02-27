@@ -21,18 +21,15 @@ block_or_dryrun() {
 
 # Fail closed: if jq is missing, block rather than allow
 if ! command -v jq &>/dev/null; then
-    echo "BLOCKED: jq is not installed. Cannot validate frozen files." >&2
-    exit 2
+    block_or_dryrun "jq is not installed. Cannot validate frozen files."
 fi
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || {
-    echo "BLOCKED: Failed to parse hook input JSON." >&2
-    exit 2
+    block_or_dryrun "Failed to parse hook input JSON."
 }
 TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null) || {
-    echo "BLOCKED: Failed to parse tool_input from JSON." >&2
-    exit 2
+    block_or_dryrun "Failed to parse tool_input from JSON."
 }
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
@@ -98,6 +95,53 @@ normalize_path() {
     echo "$p"
 }
 
+canonicalize_existing_path() {
+    local p="$1"
+    [ -e "$p" ] || {
+        echo ""
+        return 0
+    }
+
+    if command -v realpath >/dev/null 2>&1; then
+        realpath "$p" 2>/dev/null || true
+        return 0
+    fi
+
+    if command -v readlink >/dev/null 2>&1; then
+        readlink -f "$p" 2>/dev/null || true
+        return 0
+    fi
+
+    if command -v python3 >/dev/null 2>&1; then
+        python3 - "$p" <<'PY' 2>/dev/null || true
+import os, sys
+print(os.path.realpath(sys.argv[1]))
+PY
+        return 0
+    fi
+
+    echo ""
+}
+
+interpreter_script_path_from_command() {
+    local command="$1"
+    printf '%s\n' "$command" | awk '
+        {
+            if ($1 ~ /^(python[0-9.]*|ruby|node|perl)$/) {
+                for (i = 2; i <= NF; i++) {
+                    token = $i
+                    if (token ~ /^-/) {
+                        continue
+                    }
+                    gsub(/^["'\''`]+|["'\''`]+$/, "", token)
+                    print token
+                    exit
+                }
+            }
+        }
+    '
+}
+
 MEMORY_DIR="$HOME/.claude/projects/$PROJECT_KEY/memory"
 CANONICAL_FROZEN="$MEMORY_DIR/frozen-fragments.md"
 LEGACY_FROZEN="$PROJECT_DIR/.claude/frozen-fragments.md"
@@ -124,15 +168,20 @@ collect_frozen_paths "$LEGACY_FROZEN"
 [ ! -s "$FROZEN_PATHS_FILE" ] && exit 0
 
 check_direct_file_edit() {
-    local file_path normalized_file
+    local file_path normalized_file canonical_file
 
     file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // empty' 2>/dev/null)
     [ -z "$file_path" ] && return 0
 
     normalized_file=$(normalize_path "$file_path")
+    canonical_file=$(canonicalize_existing_path "$normalized_file")
 
     while IFS=$'\t' read -r raw frozen_norm; do
-        if [ "$normalized_file" = "$frozen_norm" ]; then
+        local frozen_canonical=""
+        frozen_canonical=$(canonicalize_existing_path "$frozen_norm")
+
+        if [ "$normalized_file" = "$frozen_norm" ] ||
+           { [ -n "$canonical_file" ] && [ -n "$frozen_canonical" ] && [ "$canonical_file" = "$frozen_canonical" ]; }; then
             block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md)"
         fi
     done < "$FROZEN_PATHS_FILE"
@@ -152,7 +201,20 @@ check_bash_bypass() {
 
     while IFS=$'\t' read -r raw frozen_norm; do
         if echo "$command" | grep -Fq "$raw" || echo "$command" | grep -Fq "$frozen_norm"; then
-            block_or_dryrun "Bash command modifies FROZEN file: $raw (command: $command)"
+            block_or_dryrun "Bash command modifies FROZEN file: $raw"
+        fi
+    done < "$FROZEN_PATHS_FILE"
+
+    local script_path normalized_script
+    script_path="$(interpreter_script_path_from_command "$command")"
+    [ -z "$script_path" ] && return 0
+
+    normalized_script="$(normalize_path "$script_path")"
+    [ -f "$normalized_script" ] || return 0
+
+    while IFS=$'\t' read -r raw frozen_norm; do
+        if grep -Fq "$raw" "$normalized_script" 2>/dev/null || grep -Fq "$frozen_norm" "$normalized_script" 2>/dev/null; then
+            block_or_dryrun "Interpreter script references FROZEN file path: $raw"
         fi
     done < "$FROZEN_PATHS_FILE"
 }

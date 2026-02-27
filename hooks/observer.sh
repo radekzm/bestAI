@@ -66,7 +66,7 @@ fi
 # Fallback: extract key lines from raw log
 if [ -z "$COMPRESSED" ]; then
     COMPRESSED=$(echo "$RECENT_LOG" \
-        | grep -iE '(decision|error|changed|created|updated|preference|blocked|deployed|fixed|refactored)' \
+        | { grep -iE '(decision|error|changed|created|updated|preference|blocked|deployed|fixed|refactored)' || true; } \
         | head -5 \
         | sed 's/^/- /')
 fi

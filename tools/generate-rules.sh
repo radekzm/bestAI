@@ -1,7 +1,7 @@
 #!/bin/bash
 # tools/generate-rules.sh
-# Generates cross-tool compatibility rules (Cursor, Windsurf, Copilot)
-# Usage: bash tools/generate-rules.sh [project-dir] --format [cursor|windsurf|copilot]
+# Generates cross-tool compatibility rules (Cursor, Windsurf, Copilot, Codex)
+# Usage: bash tools/generate-rules.sh [project-dir] --format [cursor|windsurf|copilot|codex]
 
 set -euo pipefail
 
@@ -20,6 +20,14 @@ while [ "$#" -gt 0 ]; do
             ;;
     esac
 done
+
+case "$FORMAT" in
+    cursor|windsurf|copilot|codex) ;;
+    *)
+        echo "Error: unsupported --format '$FORMAT' (supported: cursor|windsurf|copilot|codex)." >&2
+        exit 1
+        ;;
+esac
 
 if [ ! -f "$TARGET/AGENTS.md" ]; then
     echo "Error: AGENTS.md not found in $TARGET. Cannot generate cross-tool rules." >&2
@@ -57,4 +65,15 @@ elif [ "$FORMAT" = "windsurf" ]; then
     echo "--- WINDSURF SPECIFIC DIRECTIVES ---"
     echo "- Execute bash hooks located in .claude/hooks/ manually if the environment does not auto-trigger them."
     echo "- Consult T3-summary.md for a map of the codebase to prevent context overflow."
+elif [ "$FORMAT" = "copilot" ]; then
+    echo ""
+    echo "--- COPILOT SPECIFIC DIRECTIVES ---"
+    echo "- Treat AGENTS.md and CLAUDE.md as authoritative policy documents."
+    echo "- Respect frozen files and [USER] decisions before code edits."
+elif [ "$FORMAT" = "codex" ]; then
+    echo ""
+    echo "--- CODEX SPECIFIC DIRECTIVES ---"
+    echo "- Treat AGENTS.md and CLAUDE.md as highest-priority project constraints."
+    echo "- Enforce frozen files and [USER] memory entries before any write or edit."
+    echo "- Use project-local scripts for validation (tests, lint, doctor) before finalizing changes."
 fi

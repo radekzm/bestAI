@@ -73,15 +73,18 @@ bash evals/run.sh --enforce-gates
 | [secret-guard.sh](hooks/secret-guard.sh) | PreToolUse | Block obvious secret leakage patterns and secret-file git ops |
 | [confidence-gate.sh](hooks/confidence-gate.sh) | PreToolUse | Block dangerous operations below confidence threshold |
 | [preprocess-prompt.sh](hooks/preprocess-prompt.sh) | UserPromptSubmit | Smart Context compiler with guardrails |
+| [smart-preprocess-v2.sh](hooks/smart-preprocess-v2.sh) | UserPromptSubmit | Smart Context v2 with LLM-assisted selection and safe fallback |
 | [rehydrate.sh](hooks/rehydrate.sh) | SessionStart | Runtime context bootstrap |
 | [sync-state.sh](hooks/sync-state.sh) | Stop | Runtime state sync + session delta |
+| [memory-compiler.sh](hooks/memory-compiler.sh) | Stop | Session counter, GC, and context index maintenance |
 | [circuit-breaker.sh](hooks/circuit-breaker.sh) | PostToolUse | Advisory anti-loop tracker |
 | [ghost-tracker.sh](hooks/ghost-tracker.sh) | PostToolUse | ARC ghost-hit tracker for files manually read by agent |
 | [circuit-breaker-gate.sh](hooks/circuit-breaker-gate.sh) | PreToolUse | Strict anti-loop block when OPEN |
 | [wal-logger.sh](hooks/wal-logger.sh) | PreToolUse | Log intent before destructive actions |
 | [backup-enforcement.sh](hooks/backup-enforcement.sh) | PreToolUse | Require validated backup manifest before deploy/migrate |
 | [sync-gps.sh](hooks/sync-gps.sh) | Stop | Update Global Project State |
-| [hook-event.sh](hooks/hook-event.sh) | Library | Shared JSONL event logging for all hooks |
+| [observer.sh](hooks/observer.sh) | Stop | Periodic observational memory compression |
+| [hook-event.sh](hooks/hook-event.sh) | Library | Shared JSONL event logging library used by selected hooks |
 
 ## Tooling
 

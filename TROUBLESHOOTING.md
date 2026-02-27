@@ -51,7 +51,7 @@
 |---------|-------|-----|
 | Hooks don't fire | Not configured in settings.json | Run `bash setup.sh` → auto-generates config |
 | Hooks silently fail | Missing `jq` dependency | Run `bash doctor.sh` → checks all deps |
-| Frozen file check doesn't work | Hook not executable or `grep -oP` on macOS | Run `bash tests/test-hooks.sh` → finds bugs |
+| Frozen file check doesn't work | Hook not executable, hook not attached in `settings.json`, missing `jq`, or malformed `frozen-fragments.md` | Run `bash doctor.sh` then `bash tests/test-hooks.sh` |
 
 ## Quick Commands
 

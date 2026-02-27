@@ -21,9 +21,19 @@ if [ ! -d "$TARGET" ]; then
 fi
 
 PROJECT_DIR="$(cd "$TARGET" && pwd)"
-MANIFEST="$PROJECT_DIR/hooks/manifest.json"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BESTAI_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Mode A (repo): target contains hooks/manifest.json
+# Mode B (installed project): use manifest from bestAI repo and inspect target/.claude/hooks
+if [ -f "$PROJECT_DIR/hooks/manifest.json" ]; then
+    MANIFEST="$PROJECT_DIR/hooks/manifest.json"
+    HOOKS_DIR="$PROJECT_DIR/hooks"
+else
+    MANIFEST="$BESTAI_ROOT/hooks/manifest.json"
+    HOOKS_DIR="$PROJECT_DIR/.claude/hooks"
+fi
 SETTINGS="$PROJECT_DIR/.claude/settings.json"
-HOOKS_DIR="$PROJECT_DIR/hooks"
 
 if ! command -v jq >/dev/null 2>&1; then
     echo "Error: jq is required." >&2
@@ -44,7 +54,7 @@ echo ""
 # ── Manifest Check ──
 echo -e "${BOLD}Manifest${NC}"
 if [ ! -f "$MANIFEST" ]; then
-    error "hooks/manifest.json not found"
+    error "hooks/manifest.json not found (searched: $MANIFEST)"
     echo ""
     echo -e "${BOLD}Result${NC}: $ERRORS errors, $WARNINGS warnings"
     exit 1
@@ -141,9 +151,13 @@ done
 for hook_file in "$HOOKS_DIR"/*.sh; do
     [ -f "$hook_file" ] || continue
     basename=$(basename "$hook_file")
-    [ "$basename" = "hook-event.sh" ] && continue  # library, not a hook
+    case "$basename" in
+        hook-event.sh|lib-logging.sh|reflector.sh)
+            continue
+            ;;
+    esac
     if ! jq -e --arg h "$basename" '.hooks[$h]' "$MANIFEST" >/dev/null 2>&1; then
-        warn "$basename exists in hooks/ but not declared in manifest.json"
+        warn "$basename exists in $(basename "$HOOKS_DIR")/ but not declared in manifest.json"
     fi
 done
 ok "Hook file check complete"

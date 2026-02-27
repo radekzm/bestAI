@@ -74,7 +74,7 @@
     },
     "wal-logger.sh": {
       "event": "PreToolUse",
-      "matcher": "Bash|Write",
+      "matcher": "Bash|Write|Edit",
       "priority": 90,
       "depends_on": [],
       "conflicts_with": [],
@@ -166,7 +166,7 @@
   "latency_budgets": {
     "PreToolUse": 200,
     "PostToolUse": 200,
-    "UserPromptSubmit": 500,
+    "UserPromptSubmit": 700,
     "SessionStart": 300,
     "Stop": 500
   }

@@ -74,7 +74,7 @@ SUMMARY="${SUMMARY:0:220}"
 BLOCKERS_JSON="$(
     printf '%s\n' "$INPUT" \
     | jq -r '.response.output_text // .assistant_message // .output // empty' 2>/dev/null \
-    | grep -Ei '(^|\b)(blocker|blocked|cannot|failed|error:)' \
+    | { grep -Ei '(^|\b)(blocker|blocked|cannot|failed|error:)' || true; } \
     | head -n 5 \
     | sed 's/[[:space:]]\+/ /g; s/^ //; s/ $//' \
     | jq -Rsc 'split("\n") | map(select(length > 0))'

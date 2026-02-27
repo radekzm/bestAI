@@ -271,6 +271,9 @@ run_gc() {
     local archived=0
 
     while IFS=$'\t' read -r fname last_sess use_count tag; do
+        [ -n "$fname" ] || continue
+        [[ "$last_sess" =~ ^[0-9]+$ ]] || last_sess=0
+        [[ "$use_count" =~ ^[0-9]+$ ]] || use_count=0
         local sessions_ago=$((CURRENT_SESSION - last_sess))
         local filepath="$MEMORY_DIR/$fname"
 
