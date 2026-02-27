@@ -503,8 +503,8 @@ else
         echo '{"hooks":{}}' > "$SETTINGS_FILE"
         echo -e "  ${GREEN}Created${NC} .claude/settings.json"
     else
-        cp "$SETTINGS_FILE" "$SETTINGS_FILE.bak.$(date +%Y%m%d_%H%M%S)"
-        echo -e "  ${GREEN}Backup${NC} created for existing settings.json"
+        cp "$SETTINGS_FILE" "$SETTINGS_FILE.bak"
+        echo -e "  ${GREEN}Backup${NC} created: settings.json.bak (idempotent)"
     fi
 
     if ! jq empty "$SETTINGS_FILE" >/dev/null 2>&1; then

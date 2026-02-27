@@ -33,9 +33,10 @@ mkdir -p "$STATE_DIR"
 
 THRESHOLD=${CIRCUIT_BREAKER_THRESHOLD:-3}  # Failures before OPEN
 COOLDOWN=${CIRCUIT_BREAKER_COOLDOWN_SECS:-${CIRCUIT_BREAKER_COOLDOWN:-300}}  # Seconds before HALF-OPEN (5 min)
-PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
-METRICS_FILE="$HOME/.claude/projects/$PROJECT_KEY/hook-metrics.log"
-mkdir -p "$(dirname "$METRICS_FILE")" 2>/dev/null || true
+
+# Unified JSONL event logging
+# shellcheck source=hook-event.sh
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
 INPUT=$(cat)
 
@@ -120,7 +121,7 @@ fi
                 echo "| $COUNT failures | $(echo "$STDERR" | head -c 60) | Try a different approach |"
                 echo ""
                 echo "STOP: Ask user for guidance or try a fundamentally different approach."
-                printf '%s circuit-breaker OPEN sig=%s count=%s\n' "$(date -u +%FT%TZ)" "$SIG" "$COUNT" >> "$METRICS_FILE" 2>/dev/null || true
+                emit_event "circuit-breaker" "OPEN" "{\"sig\":\"$SIG\",\"count\":$COUNT}" 2>/dev/null || true
             else
                 printf "CLOSED\n%s\n%s\n" "$COUNT" "$NOW" > "$STATE_FILE"
             fi
@@ -130,7 +131,7 @@ fi
             if [ "$ELAPSED" -ge "$COOLDOWN" ]; then
                 printf "HALF-OPEN\n%s\n%s\n" "$COUNT" "$NOW" > "$STATE_FILE"
                 echo "[Circuit Breaker] Cooldown elapsed. OPEN -> HALF-OPEN. Allowing 1 retry."
-                printf '%s circuit-breaker HALF_OPEN sig=%s count=%s\n' "$(date -u +%FT%TZ)" "$SIG" "$COUNT" >> "$METRICS_FILE" 2>/dev/null || true
+                emit_event "circuit-breaker" "HALF_OPEN" "{\"sig\":\"$SIG\",\"count\":$COUNT}" 2>/dev/null || true
             else
                 REMAINING=$((COOLDOWN - ELAPSED))
                 echo "[Circuit Breaker] OPEN — advisory stop. ${REMAINING}s until retry allowed."
@@ -141,7 +142,7 @@ fi
             printf "OPEN\n%s\n%s\n" "$((COUNT + 1))" "$NOW" > "$STATE_FILE"
             echo "[Circuit Breaker] Failed in HALF-OPEN. Back to OPEN."
             echo "This approach is not working. STOP and ask the user."
-            printf '%s circuit-breaker REOPEN sig=%s count=%s\n' "$(date -u +%FT%TZ)" "$SIG" "$((COUNT + 1))" >> "$METRICS_FILE" 2>/dev/null || true
+            emit_event "circuit-breaker" "REOPEN" "{\"sig\":\"$SIG\",\"count\":$((COUNT + 1))}" 2>/dev/null || true
             ;;
     esac
 

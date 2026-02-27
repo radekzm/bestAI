@@ -456,6 +456,28 @@ else
     check "WARN" "No frozen-fragments.md" "Create from templates/frozen-fragments-template.md"
 fi
 
+# === v4.0 Architecture (RAG & Orchestration) ===
+echo ""
+echo -e "${BOLD}v4.0 Architecture (RAG & Orchestration)${NC}"
+
+if [ -f "$TARGET_ABS/.bestai/T3-summary.md" ]; then
+    check "OK" "T3-summary.md (Invisible Limit) present"
+else
+    check "WARN" "No T3-summary.md" "Run 'python3 tools/generate-t3-summaries.py' to map codebase."
+fi
+
+if [ -f "$TARGET_ABS/.bestai/vector-store.json" ] || [ -d "$TARGET_ABS/.bestai/chroma" ]; then
+    check "OK" "RAG Vector Store detected"
+else
+    check "WARN" "No Vector Store (RAG) found" "Run 'python3 tools/vectorize-codebase.py' if using semantic memory."
+fi
+
+if [ -d "$TARGET_ABS/.worktrees" ]; then
+    check "OK" "Git Worktrees directory exists for agent orchestration"
+else
+    check "WARN" "No .worktrees directory" "Required if spawning parallel agent teams."
+fi
+
 # === Summary ===
 echo ""
 echo -e "${BOLD}=== SUMMARY ===${NC}"

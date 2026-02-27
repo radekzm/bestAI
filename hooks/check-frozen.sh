@@ -36,13 +36,16 @@ TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null) || {
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
-METRICS_FILE="$HOME/.claude/projects/$PROJECT_KEY/hook-metrics.log"
-mkdir -p "$(dirname "$METRICS_FILE")" 2>/dev/null || true
+
+# Unified JSONL event logging
+_BESTAI_TOOL_NAME="$TOOL_NAME"
+# shellcheck source=hook-event.sh
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
 log_metric() {
     local action="$1"
     local details="$2"
-    printf '%s check-frozen %s %s\n' "$(date -u +%FT%TZ)" "$action" "$details" >> "$METRICS_FILE" 2>/dev/null || true
+    emit_event "check-frozen" "$action" "{\"detail\":\"$details\"}" 2>/dev/null || true
 }
 
 # Normalize path: remove ./ and .. components, convert to absolute.
