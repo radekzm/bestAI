@@ -8,6 +8,18 @@
 
 set -euo pipefail
 
+# Dry-run mode: log what would be blocked but don't actually block
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+block_or_dryrun() {
+    if [ "$BESTAI_DRY_RUN" = "1" ]; then
+        echo "[DRY-RUN] WOULD BLOCK: $*" >&2
+        exit 0
+    else
+        echo "BLOCKED: $*" >&2
+        exit 2
+    fi
+}
+
 if ! command -v jq &>/dev/null; then
     echo "BLOCKED: jq is not installed. Cannot validate backup status." >&2
     exit 2
@@ -77,7 +89,7 @@ if is_destructive "$COMMAND"; then
         echo '  "size_bytes": 12345' >&2
         echo '}' >&2
         echo "Manifest location is configurable with BACKUP_MANIFEST_DIR/BACKUP_MANIFEST_FILE." >&2
-        exit 2
+        block_or_dryrun "Destructive operation requires backup first."
     fi
 
     if ! jq empty "$BACKUP_MANIFEST_FILE" >/dev/null 2>&1; then
@@ -92,19 +104,19 @@ if is_destructive "$COMMAND"; then
 
     if [ -z "$BACKUP_PATH" ]; then
         echo "BLOCKED: Backup manifest missing backup_path." >&2
-        exit 2
+        block_or_dryrun "Backup manifest missing backup_path."
     fi
 
     if [ ! -f "$BACKUP_PATH" ]; then
         echo "BLOCKED: Backup file from manifest does not exist: $BACKUP_PATH" >&2
-        exit 2
+        block_or_dryrun "Backup file does not exist: $BACKUP_PATH"
     fi
 
     if [ -n "$SIZE_BYTES" ] && [[ "$SIZE_BYTES" =~ ^[0-9]+$ ]]; then
         ACTUAL_SIZE=$(wc -c < "$BACKUP_PATH" | tr -d ' ')
         if [ "$ACTUAL_SIZE" -ne "$SIZE_BYTES" ]; then
             echo "BLOCKED: Backup size mismatch (manifest=$SIZE_BYTES, actual=$ACTUAL_SIZE)." >&2
-            exit 2
+            block_or_dryrun "Backup size mismatch (manifest=$SIZE_BYTES, actual=$ACTUAL_SIZE)."
         fi
     fi
 
@@ -121,13 +133,13 @@ if is_destructive "$COMMAND"; then
     if [ "$AGE" -gt "$MAX_AGE" ]; then
         echo "BLOCKED: Backup is ${AGE}s old (>${MAX_AGE}s). Run a fresh backup." >&2
         echo "Update manifest: $BACKUP_MANIFEST_FILE" >&2
-        exit 2
+        block_or_dryrun "Backup is ${AGE}s old (>${MAX_AGE}s). Run a fresh backup."
     fi
 
     if [ "$REQUIRE_CHECKSUM" = "1" ]; then
         if [ -z "$EXPECTED_SHA" ]; then
             echo "BLOCKED: Backup manifest missing sha256 while BACKUP_REQUIRE_CHECKSUM=1." >&2
-            exit 2
+            block_or_dryrun "Backup manifest missing sha256 while checksum required."
         fi
         ACTUAL_SHA=$(file_sha256 "$BACKUP_PATH")
         if [ -z "$ACTUAL_SHA" ]; then
@@ -136,7 +148,7 @@ if is_destructive "$COMMAND"; then
         fi
         if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
             echo "BLOCKED: Backup checksum mismatch (manifest vs actual)." >&2
-            exit 2
+            block_or_dryrun "Backup checksum mismatch (manifest vs actual)."
         fi
     fi
 fi
