@@ -17,6 +17,7 @@ class SyndicateConductor:
     def log(self, role, message):
         entry = {"ts": datetime.now().isoformat(), "role": role, "msg": message}
         self.history.append(entry)
+        os.makedirs(".bestai", exist_ok=True)
         with open(".bestai/live_session.jsonl", "a") as f:
             f.write(json.dumps(entry) + "\n")
 
@@ -36,57 +37,51 @@ class SyndicateConductor:
             json.dump({"result": result, "expiry": expiry}, f)
 
     def spawn_specialist(self, vendor, task):
-        print(f"
-\033[1;34m[CONDUCTOR]\033[0m 🛰️  Spawning {vendor} for sub-task...")
+        print(f"\n\033[1;34m[CONDUCTOR]\033[0m 🛰️ Dispatching {vendor} for task: {task[:50]}...")
         
         def run():
-            cmd = f"bestai swarm --vendor {vendor} --task "{task}""
-            # Run silently in background
-            proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-            
-            # Conductor Filters the importance
-            if "CRITICAL" in proc.stdout or "ERROR" in proc.stderr or "MILESTONE" in proc.stdout:
-                print(f"
-\033[1;33m[CONDUCTOR] 🔔 IMPORTANT UPDATE from {vendor}:\033[0m")
-                print(f"---
-{proc.stdout[-500:]}
----")
-            else:
-                # Log silently to session
-                self.log(f"subagent-{vendor}", "Task completed silently.")
+            cmd = f"bestai swarm --vendor {vendor} --task \"{task}\""
+            try:
+                proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+                if "CRITICAL" in proc.stdout or "ERROR" in proc.stderr or "MILESTONE" in proc.stdout:
+                    print(f"\n\033[1;33m[CONDUCTOR] 🔔 IMPORTANT UPDATE from {vendor}:\033[0m")
+                    print(f"---\n{proc.stdout[-500:]}\n---")
+                else:
+                    self.log(f"subagent-{vendor}", "Task completed silently.")
+            except Exception as e:
+                print(f"Subagent error: {e}")
 
         thread = threading.Thread(target=run)
         thread.daemon = True
         thread.start()
 
     def chat_loop(self):
-        print("
-\033[1;36m🛸 bestAI Living Swarm (v10.0) Online\033[0m")
+        print("\n\033[1;36m🛸 bestAI Living Swarm (v10.1) Online\033[0m")
         print("Ready for real-time syndicate orchestration.")
         
         while True:
             try:
-                user_msg = input("
-\033[1;32mYOU > \033[0m")
+                user_msg = input("\n\033[1;32mYOU > \033[0m")
                 if user_msg.lower() in ["exit", "quit"]: break
+                if not user_msg.strip(): continue
                 
                 self.log("user", user_msg)
                 
-                # Logic: Conductor routing
-                if "research" in user_msg.lower() or "analyze" in user_msg.lower():
+                low_input = user_msg.lower()
+                if any(x in low_input for x in ["research", "analyze", "find"]):
                     memo = self.get_cached_research(user_msg)
                     if memo:
                         print(f"\033[1;34mCONDUCTOR >\033[0m I already have this in my Vault: {memo[:200]}...")
                     else:
                         self.spawn_specialist("gemini", user_msg)
-                        print(f"\033[1;34mCONDUCTOR >\033[0m Gemini is investigating. I'll let you know if they find something worthy of your attention.")
+                        print(f"\033[1;34mCONDUCTOR >\033[0m Gemini is investigating. I'll let you know if they find something worthy.")
                 
-                elif "build" in user_msg.lower() or "fix" in user_msg.lower() or "code" in user_msg.lower():
+                elif any(x in low_input for x in ["build", "fix", "code", "refactor"]):
                     self.spawn_specialist("claude", user_msg)
-                    print(f"\033[1;34mCONDUCTOR >\033[0m Lead Architect (Claude) has been dispatched. I am monitoring the GPS.")
+                    print(f"\033[1;34mCONDUCTOR >\033[0m Lead Architect (Claude) dispatched. I am monitoring the GPS.")
                 
                 else:
-                    print(f"\033[1;34mCONDUCTOR >\033[0m Understood. Tasks logged. Standing by.")
+                    print(f"\033[1;34mCONDUCTOR >\033[0m Understood. Tasks logged in project stream.")
 
             except KeyboardInterrupt:
                 break
