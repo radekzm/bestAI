@@ -30,6 +30,7 @@ const commands = {
     'swarm-lock': path.join(__dirname, '..', 'tools', 'swarm-lock.sh'),
     'sandbox':    path.join(__dirname, '..', 'tools', 'agent-sandbox.sh'),
     'serve-dashboard': path.join(__dirname, '..', 'tools', 'serve-dashboard.sh'),
+    'permit':     path.join(__dirname, '..', 'tools', 'permit.sh'),
 };
 
 const scriptPath = commands[command];

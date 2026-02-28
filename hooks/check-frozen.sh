@@ -14,9 +14,34 @@ source "$HOOKS_DIR/lib-dryrun.sh" 2>/dev/null || {
     block_or_log() { echo "[bestAI] BLOCKED: $1" >&2; exit 2; }
 }
 
+has_valid_permit() {
+    local target_file="$1"
+    local permit_db=".bestai/permits.json"
+    [ -f "$permit_db" ] || return 1
+    
+    local expiry
+    expiry=$(jq -r ".\"$target_file\" // 0" "$permit_db")
+    local now
+    now=$(date +%s)
+    
+    if [ "$expiry" -gt "$now" ]; then
+        return 0 # Valid permit
+    fi
+    return 1 # No permit or expired
+}
+
 block_or_dryrun() {
-    emit_event "check-frozen" "BLOCK" "{\"reason\":\"$*\"}" 2>/dev/null || true
-    block_or_log "$*"
+    local reason="$1"
+    local file_path="${2:-}"
+    
+    if [ -n "$file_path" ] && has_valid_permit "$file_path"; then
+        echo "[bestAI] [PERMIT] Allowing edit to FROZEN file: $file_path" >&2
+        emit_event "check-frozen" "PERMIT_ALLOW" "{\"file\":\"$file_path\"}" 2>/dev/null || true
+        return 0
+    fi
+
+    emit_event "check-frozen" "BLOCK" "{\"reason\":\"$reason\",\"file\":\"$file_path\"}" 2>/dev/null || true
+    block_or_log "$reason"
 }
 
 # Fail closed: if jq is missing, block rather than allow
@@ -179,7 +204,7 @@ check_direct_file_edit() {
 
         if [ "$normalized_file" = "$frozen_norm" ] ||
            { [ -n "$canonical_file" ] && [ -n "$frozen_canonical" ] && [ "$canonical_file" = "$frozen_canonical" ]; }; then
-            block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md). To allow edits, remove the entry from frozen-fragments.md."
+            block_or_dryrun "File is FROZEN: $file_path (listed in frozen-fragments.md). To allow edits, use 'bestai permit $file_path' or remove from frozen-fragments.md." "$file_path"
         fi
     done < "$FROZEN_PATHS_FILE"
 }

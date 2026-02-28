@@ -9,6 +9,7 @@
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
+  [![Protected by bestAI](https://img.shields.io/badge/protected_by-bestAI-61afef?logo=ai&style=flat-square)](https://github.com/radekzm/bestAI)
   
   <p>
     <a href="#-quick-start">Quick Start</a> •
@@ -117,6 +118,11 @@ A central JSON bus that synchronizes all agents. It includes:
 
 ### 4. Swarm Mutex (`swarm-lock`)
 Specifically for multi-vendor setups. Before any agent starts a heavy task, it places a lock on the target file path. If another agent (e.g., Cursor) tries to touch it, bestAI blocks the operation until the first agent finishes.
+
+### 5. Human-in-the-Loop (`bestai permit`)
+The ultimate override mechanism. If an agent is blocked from editing a `FROZEN` file but the change is necessary, the user can grant a temporary pass:
+`bestai permit package.json --duration 10m`
+The force-field will lower specifically for that file and that time-window, maintaining 100% user control.
 
 ---
 
