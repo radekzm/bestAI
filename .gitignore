@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .bestai/
 .claude/
+all_issues_v2.json

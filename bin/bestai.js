@@ -27,6 +27,7 @@ const commands = {
     'bind-context': path.join(__dirname, '..', 'tools', 'task-memory-binding.sh'),
     'validate-context': path.join(__dirname, '..', 'tools', 'validate-shared-context.sh'),
     'swarm':      path.join(__dirname, '..', 'tools', 'swarm-dispatch.sh'),
+    'swarm-lock': path.join(__dirname, '..', 'tools', 'swarm-lock.sh'),
 };
 
 const scriptPath = commands[command];

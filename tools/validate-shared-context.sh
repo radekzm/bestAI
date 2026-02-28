@@ -4,6 +4,12 @@
 
 set -euo pipefail
 
+parse_timestamp_epoch() {
+    local value="$1"
+    [ -n "$value" ] || return 1
+    date -u -d "$value" +%s 2>/dev/null
+}
+
 FILE="${1:-}"
 if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
     echo "Usage: $0 <handoff.json>" >&2
@@ -51,6 +57,27 @@ else
 
     if ! jq -e '.context.binding_refs | arrays' "$FILE" >/dev/null 2>&1; then
         errors+=("context_binding_refs_missing_or_not_array")
+    fi
+
+    if ! jq -e '.artifacts | arrays' "$FILE" >/dev/null 2>&1; then
+        errors+=("artifacts_missing_or_not_array")
+    else
+        artifacts_count=$(jq '.artifacts | length' "$FILE" 2>/dev/null || echo 0)
+        if [ "$artifacts_count" -lt 1 ]; then
+            errors+=("artifacts_must_have_min_1_item")
+        fi
+        if ! jq -e '.artifacts | all(type == "string" and length > 0)' "$FILE" >/dev/null 2>&1; then
+            errors+=("artifacts_items_must_be_non_empty_strings")
+        fi
+        if ! jq -e '(.artifacts | length) == (.artifacts | unique | length)' "$FILE" >/dev/null 2>&1; then
+            errors+=("artifacts_items_must_be_unique")
+        fi
+    fi
+
+    created_epoch="$(parse_timestamp_epoch "$created_at" || true)"
+    updated_epoch="$(parse_timestamp_epoch "$updated_at" || true)"
+    if [ -n "$created_epoch" ] && [ -n "$updated_epoch" ] && [ "$updated_epoch" -lt "$created_epoch" ]; then
+        errors+=("timestamps_updated_at_before_created_at")
     fi
 fi
 

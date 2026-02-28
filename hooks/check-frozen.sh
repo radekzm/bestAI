@@ -6,17 +6,13 @@
 
 set -euo pipefail
 
-# Dry-run mode: log what would be blocked but don't actually block
-BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+# Load shared dry-run utility
+HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$HOOKS_DIR/lib-dryrun.sh"
+
 block_or_dryrun() {
     emit_event "check-frozen" "BLOCK" "{\"reason\":\"$*\"}" 2>/dev/null || true
-    if [ "$BESTAI_DRY_RUN" = "1" ]; then
-        echo "[DRY-RUN] WOULD BLOCK: $*" >&2
-        exit 0
-    else
-        echo "BLOCKED: $*" >&2
-        exit 2
-    fi
+    block_or_log "$*"
 }
 
 # Fail closed: if jq is missing, block rather than allow
