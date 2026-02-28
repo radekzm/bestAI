@@ -73,6 +73,25 @@ Check if the agents followed the rules.
 bestai compliance
 ```
 
+## 🔐 Agent Authorization & Security
+
+bestAI follows a **Zero-Knowledge** credential policy. Agents never handle raw API keys.
+
+### 1. Credential Delegation
+Before starting the swarm, ensure your local CLI tools are authenticated:
+- **Claude:** `claude auth login`
+- **Gemini:** `export GOOGLE_API_KEY=your_key` (in your shell, not in files)
+- **Ollama:** Running locally on `localhost:11434`
+
+### 2. The Secret-Guard Force-Field
+All bestAI projects include `hooks/secret-guard.sh`. This hook physically blocks agents from:
+- **Reading Secrets:** Attempts to `cat .env` or read SSH keys are blocked.
+- **Exfiltration:** Attempts to `curl` local data to external servers are intercepted.
+- **Leaking:** If an agent accidentally generates a secret in code, bestAI prevents the file write.
+
+> [!CAUTION]
+> Never ask an agent to "Manage my API keys". Always handle authentication manually in your host terminal.
+
 ---
 
 ## 🔧 Core Mechanisms (Under the Hood)
