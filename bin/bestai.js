@@ -8,7 +8,7 @@ const args = process.argv.slice(2);
 const command = args[0];
 
 if (!command) {
-    console.log(`bestAI CLI v${pkg.version}`);
+    console.log(`bestAI CLI v9.0`);
     console.log("Usage: bestai <command> [options]");
     console.log("Commands: init, setup, doctor, stats, cockpit, test, compliance, lint, route, bind-context, validate-context, swarm");
     process.exit(0);

@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v8.0+ENTERPRISE&font=Montserrat" alt="bestAI Hero" />
+  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v9.0+OPENCLAW&font=Montserrat" alt="bestAI Hero" />
 
   <h1>bestAI: Omni-Vendor Convergence</h1>
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v8.0.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v9.0.0-blue?logo=npm)](https://www.npmjs.com/)
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
@@ -38,9 +38,13 @@ In standard workflows, context is trimmed to save costs. In OpenClaw, **we remem
 
 ## 🚀 Quick Start (Zero-to-Hero)
 
-Get bestAI v8.0 running in your project in less than 2 minutes.
+### The One-Command OpenClaw Installer (v9.0)
+Deploy a fully configured, high-persistence multi-agent environment instantly:
+```bash
+curl -s https://raw.githubusercontent.com/radekzm/bestAI/master/install-openclaw.sh | bash
+```
 
-### 1. Global Install
+### Manual Global Install
 ```bash
 npm install -g @radekzm/bestai
 ```
