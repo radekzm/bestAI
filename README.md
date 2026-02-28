@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v9.0+OPENCLAW&font=Montserrat" alt="bestAI Hero" />
+  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v10.0+LIVING+SWARM&font=Montserrat" alt="bestAI Hero" />
 
   <h1>bestAI: Omni-Vendor Convergence</h1>
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v9.0.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v10.0.0-blue?logo=npm)](https://www.npmjs.com/)
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
@@ -14,9 +14,9 @@
   <p>
     <a href="#-quick-start">Quick Start</a> •
     <a href="#-tutorial-your-first-swarm">Tutorial</a> •
+    <a href="#-v100-the-living-swarm">v10.0 Living Swarm</a> •
     <a href="#-core-mechanisms">Mechanisms</a> •
-    <a href="#-syndicate-toolbelt">Toolbelt</a> •
-    <a href="#-architecture">Architecture</a>
+    <a href="#-syndicate-toolbelt">Toolbelt</a>
   </p>
 </div>
 
@@ -33,6 +33,22 @@ graph LR
     GPS --> Context[🧠 Update Context Tiers]
     Context --> User
 ```
+
+---
+
+## ⚡ v10.0: The Living Swarm (Conductor Mode)
+
+The latest evolution of bestAI introduces the **Syndicate Conductor**. You no longer wait for agents. You interact with a central "Project Brain" that orchestrates specialists in real-time.
+
+### Key v10.0 Mechanisms:
+- **Asynchronous Execution:** Sub-agents (Claude, Gemini) work in background threads.
+- **Intelligence Filtering:** The Conductor only alerts you for critical milestones or errors.
+- **Research Vault (TTL):** Global cache for codebase analysis. Run once, remember forever.
+- **Continuous Conversation:** A persistent shell that maintains multiple thought-streams.
+
+🎬 **[Watch the v10.0 Living Swarm Demo](docs/V10-DEMO.md)**
+
+👉 Run it now: `bestai conductor`
 
 ---
 
@@ -54,7 +70,7 @@ Build robust IT projects with **Deterministic Compliance**. bestAI forces agents
 
 ## 🚀 Quick Start (Zero-to-Hero)
 
-### The One-Command OpenClaw Installer (v9.0)
+### The One-Command OpenClaw Installer (v9.0+)
 Deploy a fully configured, high-persistence multi-agent environment instantly:
 ```bash
 curl -s https://raw.githubusercontent.com/radekzm/bestAI/master/install-openclaw.sh | bash
@@ -131,38 +147,29 @@ All bestAI projects include `hooks/secret-guard.sh`. This hook physically blocks
 
 ## 🔧 Core Mechanisms (Under the Hood)
 
-bestAI is built on four revolutionary engineering pillars:
+bestAI is built on five revolutionary engineering pillars:
 
 ### 1. Deterministic Force-Field (Fail-Closed Hooks)
-Unlike soft prompt-based rules, bestAI uses **Bash Hooks**. 
-- **PreToolUse:** Every file write or shell command is intercepted.
-- **Enforcement:** If an agent tries to edit a `FROZEN` file (e.g., core config), the script returns `Exit 2`, physically killing the process before the damage is done.
+Unlike soft prompt-based rules, bestAI uses **Bash Hooks**. Every file write or shell command is intercepted. If an agent tries to edit a `FROZEN` file, the script returns `Exit 2`.
 
 ### 2. The 5-Tier Context OS
-We bypass token limits by segmenting memory:
-- **T0 (HOT):** Critical project state (GPS.json). Always loaded.
-- **T1 (WARM):** A dense index of the whole codebase.
-- **T3 (COLD):** The rest of the repo, accessed semantically via RAG.
+We bypass token limits by segmenting memory: T0 (Hot/GPS) to T4 (Frozen/Config).
 
 ### 3. Omni-GPS (Shared Global State)
-A central JSON bus that synchronizes all agents. It includes:
-- **Milestones:** Tracking progress across vendors.
-- **Blocker DB:** If Gemini finds a bug, Claude sees it instantly.
-- **Mutex Locks:** Prevents two agents from editing the same file simultaneously.
+A central JSON bus that synchronizes all agents (milestones, blockers, architectural decisions).
 
 ### 4. Swarm Mutex (`swarm-lock`)
-Specifically for multi-vendor setups. Before any agent starts a heavy task, it places a lock on the target file path. If another agent (e.g., Cursor) tries to touch it, bestAI blocks the operation until the first agent finishes.
+Specifically for multi-vendor setups. Before any agent starts a heavy task, it places a lock on the target file path.
 
 ### 5. Human-in-the-Loop (`bestai permit`)
-The ultimate override mechanism. If an agent is blocked from editing a `FROZEN` file but the change is necessary, the user can grant a temporary pass:
+The ultimate override mechanism. Grant a temporary pass:
 `bestai permit package.json --duration 10m`
-The force-field will lower specifically for that file and that time-window, maintaining 100% user control.
 
 ---
 
 ## 💎 The Strategic Value of bestAI (ROI)
 
-| Metric | Before bestAI | With bestAI v8.0 | Impact |
+| Metric | Before bestAI | With bestAI v10.0 | Impact |
 | :--- | :--- | :--- | :--- |
 | **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic)** | Bulletproof safety. |
 | **Token Efficiency** | High bloat (uncut) | **-70% overhead** | Low API bills. |
@@ -174,6 +181,7 @@ The force-field will lower specifically for that file and that time-window, main
 
 | Tool | Capability |
 | :--- | :--- |
+| **`bestai conductor`** | The central AI orchestrator for real-time swarms. |
 | **`bestai swarm`** | Dispatches tasks to Claude, Gemini, or Ollama. |
 | **`serve-dashboard`** | Visual web interface for compliance and budget. |
 | **`bestai sandbox`** | Runs agent commands in isolated Docker containers. |
