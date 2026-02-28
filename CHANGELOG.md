@@ -1,5 +1,14 @@
 # Changelog
 
+## v14.0.1 (2026-02-28)
+
+### Fixed
+- **CLI command surface alignment**: Added `swarm-lock` and `generate-rules` to `bestai` command map, and switched help output to dynamic command listing to prevent drift.
+- **Permit reliability**: `tools/permit.sh` now validates args correctly, supports `--help`, validates duration format, and fails hard when DB write fails.
+- **Rule generator UX**: `tools/generate-rules.sh` now supports `-h|--help`, `--format=<...>`, unknown-option errors, and safer argument parsing.
+- **npm package hygiene**: Excluded `all_issues*.json` from publish tarball via `.npmignore`.
+- **Hook lint noise**: `tools/hook-lint.sh` now ignores helper libraries matching `hooks/lib-*.sh`.
+
 ## v7.1.0 (2026-02-28)
 
 ### Added

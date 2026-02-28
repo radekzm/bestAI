@@ -5,17 +5,49 @@
 
 set -euo pipefail
 
-TARGET="${1:-.}"
+usage() {
+    cat <<'EOF'
+Usage: bash tools/generate-rules.sh [project-dir] [--format <cursor|windsurf|copilot|codex>]
+
+Examples:
+  bash tools/generate-rules.sh . --format codex
+  bash tools/generate-rules.sh /path/to/project --format cursor
+EOF
+}
+
+TARGET="."
 FORMAT="cursor"
+TARGET_SET=0
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
         --format)
+            [ "$#" -ge 2 ] || { echo "Error: missing value for --format." >&2; exit 1; }
             FORMAT="${2:-}"
             shift 2
             ;;
+        --format=*)
+            FORMAT="${1#*=}"
+            shift
+            ;;
+        --*)
+            echo "Error: unknown option '$1'." >&2
+            usage >&2
+            exit 1
+            ;;
         *)
-            TARGET="$1"
+            if [ "$TARGET_SET" -eq 0 ]; then
+                TARGET="$1"
+                TARGET_SET=1
+            else
+                echo "Error: unexpected argument '$1'." >&2
+                usage >&2
+                exit 1
+            fi
             shift
             ;;
     esac
@@ -28,6 +60,11 @@ case "$FORMAT" in
         exit 1
         ;;
 esac
+
+if [ ! -d "$TARGET" ]; then
+    echo "Error: target directory '$TARGET' does not exist." >&2
+    exit 1
+fi
 
 if [ ! -f "$TARGET/AGENTS.md" ]; then
     echo "Error: AGENTS.md not found in $TARGET. Cannot generate cross-tool rules." >&2
