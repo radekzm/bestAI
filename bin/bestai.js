@@ -7,14 +7,6 @@ const pkg = require('../package.json');
 
 const args = process.argv.slice(2);
 const command = args[0];
-
-if (!command) {
-    console.log(`bestAI CLI v${pkg.version}`);
-    console.log("Usage: bestai <command> [options]");
-    console.log("Commands: init, setup, doctor, stats, cockpit, test, compliance, lint, route, bind-context, validate-context, swarm, permit, conductor, contract, sandbox, serve-dashboard");
-    process.exit(0);
-}
-
 const baseDir = path.join(__dirname, '..');
 
 const commands = {
@@ -30,7 +22,9 @@ const commands = {
     'bind-context': path.join(baseDir, 'tools', 'task-memory-binding.sh'),
     'validate-context': path.join(baseDir, 'tools', 'validate-shared-context.sh'),
     'swarm':      path.join(baseDir, 'tools', 'swarm-dispatch.sh'),
+    'swarm-lock': path.join(baseDir, 'tools', 'swarm-lock.sh'),
     'permit':     path.join(baseDir, 'tools', 'permit.sh'),
+    'generate-rules': path.join(baseDir, 'tools', 'generate-rules.sh'),
     'conductor':  path.join(baseDir, 'tools', 'conductor.py'),
     'contract':   path.join(baseDir, 'templates', 'contract-template.json'),
     'sandbox':    path.join(baseDir, 'tools', 'agent-sandbox.sh'),
@@ -40,9 +34,22 @@ const commands = {
     'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
 };
 
+function printHelp() {
+    const commandList = Object.keys(commands).sort().join(', ');
+    console.log(`bestAI CLI v${pkg.version}`);
+    console.log('Usage: bestai <command> [options]');
+    console.log(`Commands: ${commandList}`);
+}
+
+if (!command || command === '-h' || command === '--help' || command === 'help') {
+    printHelp();
+    process.exit(0);
+}
+
 const scriptPath = commands[command];
 if (!scriptPath) {
     console.error(`Unknown command: ${command}`);
+    console.error(`Available: ${Object.keys(commands).sort().join(', ')}`);
     process.exit(1);
 }
 

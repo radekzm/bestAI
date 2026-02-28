@@ -15,4 +15,5 @@ TROUBLESHOOTING.md
 
 # Debug artifacts
 *.json.bak
+all_issues*.json
 tools/__pycache__/
