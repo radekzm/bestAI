@@ -9,10 +9,9 @@ evals/
 # Legacy archive
 archive/
 
-# Documentation (keep README only)
+# Documentation (keep README and CHANGELOG)
 docs/
 TROUBLESHOOTING.md
-CHANGELOG.md
 
 # Debug artifacts
 *.json.bak

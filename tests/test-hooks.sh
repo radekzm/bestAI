@@ -1493,6 +1493,87 @@ unset BESTAI_EVENT_LOG BESTAI_EVENT_LOG_DISABLED
 
 # ============================================================
 echo ""
+echo "=== ghost-tracker.sh ==="
+# ============================================================
+
+GT_HOME=$(mktemp -d)
+GT_PROJECT="$GT_HOME/project"
+mkdir -p "$GT_PROJECT/.claude"
+GT_KEY=$(echo "$GT_PROJECT" | tr '/' '-')
+GT_MEMORY="$GT_HOME/.claude/projects/$GT_KEY/memory"
+mkdir -p "$GT_MEMORY"
+
+cat > "$GT_MEMORY/decisions.md" <<'DEC'
+# Decisions
+- [USER] JWT for auth.
+DEC
+
+# Test: Read of memory file -> logged to ghost-hits.log
+OUTPUT=$(echo '{"tool_name":"Read","tool_input":{"file_path":"'"$GT_MEMORY/decisions.md"'"}}' | HOME="$GT_HOME" CLAUDE_PROJECT_DIR="$GT_PROJECT" bash "$HOOKS_DIR/ghost-tracker.sh" 2>&1)
+CODE=$?
+assert_exit "Ghost tracker: Read memory file -> exit 0" "0" "$CODE"
+assert_file_contains "Ghost tracker: hit logged" "$GT_MEMORY/ghost-hits.log" "decisions.md"
+
+# Test: Read of non-memory file -> not logged
+rm -f "$GT_MEMORY/ghost-hits.log"
+OUTPUT=$(echo '{"tool_name":"Read","tool_input":{"file_path":"/tmp/random-file.txt"}}' | HOME="$GT_HOME" CLAUDE_PROJECT_DIR="$GT_PROJECT" bash "$HOOKS_DIR/ghost-tracker.sh" 2>&1)
+CODE=$?
+assert_exit "Ghost tracker: non-memory file -> exit 0" "0" "$CODE"
+TOTAL=$((TOTAL + 1))
+if [ -f "$GT_MEMORY/ghost-hits.log" ]; then
+    echo -e "  ${RED}FAIL${NC} Ghost tracker: logged non-memory file"
+    FAIL=$((FAIL + 1))
+else
+    echo -e "  ${GREEN}PASS${NC} Ghost tracker: non-memory file not logged"
+    PASS=$((PASS + 1))
+fi
+
+# Test: Grep tool also tracked
+rm -f "$GT_MEMORY/ghost-hits.log"
+OUTPUT=$(echo '{"tool_name":"Grep","tool_input":{"file_path":"'"$GT_MEMORY/decisions.md"'"}}' | HOME="$GT_HOME" CLAUDE_PROJECT_DIR="$GT_PROJECT" bash "$HOOKS_DIR/ghost-tracker.sh" 2>&1)
+CODE=$?
+assert_exit "Ghost tracker: Grep -> exit 0" "0" "$CODE"
+assert_file_contains "Ghost tracker: Grep logged" "$GT_MEMORY/ghost-hits.log" "decisions.md"
+
+# Test: Non-read tool (Write) -> ignored
+rm -f "$GT_MEMORY/ghost-hits.log"
+OUTPUT=$(echo '{"tool_name":"Write","tool_input":{"file_path":"'"$GT_MEMORY/decisions.md"'"}}' | HOME="$GT_HOME" CLAUDE_PROJECT_DIR="$GT_PROJECT" bash "$HOOKS_DIR/ghost-tracker.sh" 2>&1)
+CODE=$?
+assert_exit "Ghost tracker: Write tool -> exit 0" "0" "$CODE"
+TOTAL=$((TOTAL + 1))
+if [ -f "$GT_MEMORY/ghost-hits.log" ]; then
+    echo -e "  ${RED}FAIL${NC} Ghost tracker: logged Write tool"
+    FAIL=$((FAIL + 1))
+else
+    echo -e "  ${GREEN}PASS${NC} Ghost tracker: Write tool ignored"
+    PASS=$((PASS + 1))
+fi
+
+# Test: Log bounded to 500 lines
+rm -f "$GT_MEMORY/ghost-hits.log"
+for i in $(seq 1 510); do
+    echo "decisions.md" >> "$GT_MEMORY/ghost-hits.log"
+done
+OUTPUT=$(echo '{"tool_name":"Read","tool_input":{"file_path":"'"$GT_MEMORY/decisions.md"'"}}' | HOME="$GT_HOME" CLAUDE_PROJECT_DIR="$GT_PROJECT" bash "$HOOKS_DIR/ghost-tracker.sh" 2>&1)
+LINE_COUNT=$(wc -l < "$GT_MEMORY/ghost-hits.log" | tr -d ' ')
+TOTAL=$((TOTAL + 1))
+if [ "$LINE_COUNT" -le 501 ]; then
+    echo -e "  ${GREEN}PASS${NC} Ghost tracker: log bounded (lines=$LINE_COUNT)"
+    PASS=$((PASS + 1))
+else
+    echo -e "  ${RED}FAIL${NC} Ghost tracker: log unbounded (lines=$LINE_COUNT)"
+    FAIL=$((FAIL + 1))
+fi
+
+# Test: Empty input -> exit 0
+OUTPUT=$(echo '{}' | HOME="$GT_HOME" CLAUDE_PROJECT_DIR="$GT_PROJECT" bash "$HOOKS_DIR/ghost-tracker.sh" 2>&1)
+CODE=$?
+assert_exit "Ghost tracker: empty input -> exit 0" "0" "$CODE"
+
+rm -rf "$GT_HOME"
+
+# ============================================================
+echo ""
 echo -e "${YELLOW}=== RESULTS ===${NC}"
 echo -e "Total: $TOTAL | ${GREEN}Pass: $PASS${NC} | ${RED}Fail: $FAIL${NC}"
 [ "$FAIL" -eq 0 ] && echo -e "${GREEN}ALL TESTS PASSED${NC}" || echo -e "${RED}SOME TESTS FAILED${NC}"
