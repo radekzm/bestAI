@@ -1,5 +1,10 @@
 # Changelog
 
+## v7.0.1 (2026-02-28)
+
+### Fixed
+- Normalize `package.json` bin path from `./bin/bestai.js` to `bin/bestai.js` to remove npm publish auto-correction warning.
+
 ## v7.0.0 (2026-02-27)
 
 ### Added
