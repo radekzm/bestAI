@@ -1,0 +1,54 @@
+name: 🛡️ bestAI PR Gate
+
+on:
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  validate-swarm:
+    name: Swarm Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🛠️ Install Project dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bash realpath python3
+
+      - name: 🩺 Run bestAI Doctor (Architectural Audit)
+        run: |
+          # Use the local script directly
+          bash doctor.sh --strict .
+
+      - name: 🧪 Run bestAI Hook Tests
+        run: |
+          bash tests/test-hooks.sh
+
+      - name: 🛰️ Validate Global Project State (GPS)
+        run: |
+          if [ -f ".bestai/GPS.json" ]; then
+            echo "Checking GPS.json integrity..."
+            jq . .bestai/GPS.json > /dev/null || (echo "❌ GPS.json is invalid JSON!" && exit 1)
+          else
+            echo "⚠️ No GPS.json found, skipping."
+          fi
+
+      - name: 📊 Check Compliance Metrics
+        run: |
+          if [ -f ".claude/events.jsonl" ]; then
+            bash compliance.sh .
+          else
+            echo "✅ Fresh project, no event logs to audit."
+          fi
+
+      - name: 🚀 Final Verdict
+        run: echo "PR is bestAI v8.0 compliant. Ready for swarm merge."
