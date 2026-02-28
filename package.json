@@ -11,8 +11,12 @@
     "test": "bash tests/test-hooks.sh",
     "doctor": "bash doctor.sh",
     "stats": "bash stats.sh",
+    "cockpit": "bash tools/cockpit.sh .",
     "compliance": "bash compliance.sh",
     "lint": "bash tools/hook-lint.sh .",
+    "route": "bash tools/task-router.sh",
+    "bind-context": "bash tools/task-memory-binding.sh",
+    "validate-context": "bash tools/validate-shared-context.sh",
     "swarm": "bash tools/swarm-dispatch.sh"
   },
   "repository": {

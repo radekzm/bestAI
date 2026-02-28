@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/radekzm/bestAI/schemas/shared-context-contract.v1.json",
+  "title": "bestAI Shared Context Contract v1",
+  "type": "object",
+  "required": [
+    "version",
+    "task_id",
+    "task",
+    "status",
+    "owner",
+    "depth",
+    "context",
+    "timestamps"
+  ],
+  "properties": {
+    "version": { "const": "1.0" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": ["TASK_STARTED", "TASK_BLOCKED", "TASK_DONE"]
+    },
+    "owner": {
+      "type": "object",
+      "required": ["vendor", "agent"],
+      "properties": {
+        "vendor": { "type": "string", "enum": ["claude", "gemini", "codex", "openai", "unknown"] },
+        "agent": { "type": "string", "minLength": 1 }
+      }
+    },
+    "depth": {
+      "type": "string",
+      "enum": ["fast", "balanced", "deep"]
+    },
+    "context": {
+      "type": "object",
+      "required": ["binding_refs"],
+      "properties": {
+        "binding_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "source", "summary"],
+            "properties": {
+              "kind": { "type": "string", "enum": ["HARD", "SOFT"] },
+              "source": { "type": "string" },
+              "summary": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "required": ["created_at", "updated_at"],
+      "properties": {
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

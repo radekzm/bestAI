@@ -15,19 +15,24 @@ Ten runbook opisuje **stan faktyczny** orkiestracji multi-vendor w bestAI:
 | Gemini CLI | implemented | `bestai swarm --task "..." --vendor gemini` | Wymaga lokalnego binarnego `gemini`. |
 | Codex/OpenAI | partial (placeholder) | `bestai swarm --task "..." --vendor codex` | Aktualnie brak realnego wykonania polecenia przez CLI. |
 
-## Ważne: brak auto-routingu politykowego
+## Auto-routing (MVP heurystyczny)
 
-`swarm-dispatch.sh` wykonuje manualny dispatch po `--vendor`.
-Nie ma jeszcze:
-- automatycznego doboru vendora na podstawie typu zadania,
+`swarm-dispatch.sh` wspiera teraz tryb auto (gdy nie podasz `--vendor`):
+- klasyfikuje złożoność zadania (`simple|medium|complex`),
+- dobiera głębokość analizy (`fast|balanced|deep`),
+- rekomenduje i wybiera vendora z fallbackiem do dostępnego CLI.
+
+Nadal nie ma:
+- policy routingu uczącej się na historycznych metrykach,
 - schedulerów,
 - globalnego load-balancingu.
 
 ## Minimalny workflow produkcyjny
 
 1. Ustal rolę agenta (`architect`, `investigator`, `tester`).
-2. Wybierz vendora ręcznie przez `--vendor`.
-3. Każdy agent czyta i aktualizuje wspólny stan (`.bestai/GPS.json`).
+2. Uruchom auto-route (`bestai route --task ...`) albo wymuś `--vendor`.
+3. Dispatcher tworzy handoff zgodny z kontraktem (`.bestai/handoff-latest.json`).
+4. Każdy agent czyta i aktualizuje wspólny stan (`.bestai/GPS.json`).
 4. Po każdej rundzie uruchom:
 - `bestai test`
 - `bestai lint`
@@ -52,9 +57,9 @@ Przed użyciem `bestai swarm`:
 ## Known limitations
 
 1. `codex` path w dispatcherze jest placeholderem.
-2. Brak auto-routingu opartego o klasyfikację zadań.
+2. Auto-routing jest heurystyczny (reguły), nie policy-driven.
 3. Brak centralnego SLA/per-vendor retry policy.
-4. Brak metryk per-vendor w jednym zunifikowanym dashboardzie.
+4. Brak metryk per-vendor w jednym zunifikowanym dashboardzie (poza podstawowym `bestai cockpit`).
 
 ## Plan dojścia do "real swarm"
 
@@ -76,6 +81,16 @@ bestai swarm --task "Refactor auth gate" --vendor claude
 
 # Dispatch do Gemini
 bestai swarm --task "Przeskanuj legacy pod API debt" --vendor gemini
+
+# Auto-routing (bez podawania vendor)
+bestai route --task "Audit auth module and propose fixes"
+bestai swarm --task "Audit auth module and propose fixes"
+
+# Walidacja handoff contract
+bestai validate-context .bestai/handoff-latest.json
+
+# Live cockpit
+bestai cockpit .
 
 # Walidacja po rundzie
 bestai test

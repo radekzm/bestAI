@@ -41,6 +41,8 @@ bestAI ships with a production-ready suite of specialized tools to manage your A
 | :--- | :--- | :--- |
 | **`bestai doctor`** | Structural & architectural audit. | Prevents broken project states before agents start. |
 | **`bestai compliance`** | Real-time agent obedience metrics. | Quantifiable audit logs of agent performance. |
+| **`bestai cockpit`** | Unified operational dashboard. | Shows limits, knowledge base health, task flow, routing decisions. |
+| **`bestai route`** | Adaptive routing recommendation. | Selects vendor/depth to reduce cost and latency. |
 | **`bestai swarm`** | Heterogeneous task dispatcher. | Parallelizes development across different AI vendors. |
 | **`bestai test`** | Isolated hook testing framework. | Guarantees your security "Force Field" never breaks. |
 | **`budget-monitor`** | Real-time FinOps token tracking. | Stops agents before they burn through API credits. |
@@ -87,11 +89,17 @@ npx @radekzm/bestai@latest init .
 
 ### 2. Dispatch Tasks to the Syndicate
 ```bash
+# Let bestAI choose vendor/depth first
+bestai route --task "Audit auth module and propose fixes"
+
 # Research task for Gemini (utilizing 2M context)
 bestai swarm --task "Find all deprecated auth calls" --vendor gemini
 
 # Coding task for Claude
 bestai swarm --task "Replace auth calls using results in GPS.json" --vendor claude
+
+# Live cockpit (limits, knowledge, tasks, routing)
+bestai cockpit .
 ```
 
 ---

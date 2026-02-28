@@ -106,8 +106,12 @@ All hooks live in `hooks/` and are declared in `hooks/manifest.json` with priori
 | `setup.sh` | `npx @radekzm/bestai@latest setup` | Install hooks, templates, blueprints into a project |
 | `doctor.sh` | `npx @radekzm/bestai@latest doctor` | Validate installation, check versions, verify hooks |
 | `stats.sh` | `npx @radekzm/bestai@latest stats` | Hook latency dashboard (avg/max/count per hook) |
+| `cockpit.sh` | `npx @radekzm/bestai@latest cockpit` | Unified live view: limits/tokens, knowledge, tasks, routing |
 | `compliance.sh` | `npx @radekzm/bestai@latest compliance` | Compliance report from JSONL event log (`--json`, `--since`) |
 | `hook-lint.sh` | `npx @radekzm/bestai@latest lint` | Validate manifest, check dependencies/conflicts, latency budget |
+| `task-router.sh` | `npx @radekzm/bestai@latest route` | Adaptive vendor/depth routing recommendation for a task |
+| `task-memory-binding.sh` | `npx @radekzm/bestai@latest bind-context` | Pull binding context (HARD/SOFT) from project history |
+| `validate-shared-context.sh` | `npx @radekzm/bestai@latest validate-context` | Validate multi-vendor handoff against shared contract |
 | `swarm-dispatch.sh` | `npx @radekzm/bestai@latest swarm` | Multi-vendor task dispatch via GPS roles |
 | `generate-rules.sh` | — | Export rules to `.cursorrules`, `.windsurfrules`, `codex.md` |
 | `generate-t3-summaries.py` | — | Build T3 hierarchical summaries for large codebases |

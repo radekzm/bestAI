@@ -22,6 +22,8 @@ For quick install via npm:
 npx @radekzm/bestai@latest init /path/to/your/project
 npx @radekzm/bestai@latest doctor /path/to/your/project
 npx @radekzm/bestai@latest stats /path/to/your/project
+npx @radekzm/bestai@latest route --task "quick audit"
+npx @radekzm/bestai@latest cockpit /path/to/your/project
 ```
 
 Command context matrix:
