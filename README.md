@@ -63,6 +63,42 @@ The latest evolution of bestAI introduces the **Syndicate Conductor**. You no lo
 
 ---
 
+## ⏳ v11.0: The Time Machine & Autonomous Guardian
+
+We identified the two biggest wastes of time and tokens in AI engineering: starting late on a messy project, and forcing LLMs to read the entire codebase just to figure out what needs testing. **v11.0 fixes both.**
+
+### 1. The Time Machine (Retroactive Onboarding)
+[![Retro Onboard](https://img.shields.io/badge/tool-retro--onboard-blue?logo=clock)]()
+
+Did you start using AI without bestAI? It's a mess, right? The Time Machine parses your messy, gigabyte-sized `.claude/history.jsonl` (or similar logs) **offline** (saving millions of tokens). It extracts architectural decisions and milestones, instantly generating a perfect `.bestai/GPS.json` and knowledge base.
+
+**The Workflow:**
+```mermaid
+graph LR
+    Chaos[Messy Chat Logs] -->|Offline Python Parser| TM((bestAI Time Machine))
+    TM -->|Extract Constraints| Dec[decisions.md]
+    TM -->|Extract Milestones| GPS[GPS.json]
+    GPS --> Order[Perfect Syndicate Start]
+```
+👉 **Run:** `bestai retro-onboard`
+
+### 2. The Autonomous Guardian (Token-Saving Test Builder)
+[![Guardian](https://img.shields.io/badge/tool-guardian-green?logo=shield)]()
+
+Why pay Claude API to scan 50 files just to write empty test stubs? The **Guardian** is an external script that statically analyzes your codebase, cross-references it with `GPS.json` functionalities, and automatically generates missing test boilerplates. You then simply command the agent: *"Fill in the empty tests."* **Token savings: ~80%.**
+
+**The Workflow:**
+```mermaid
+graph LR
+    Src[Source Code] -->|Static Analysis| Guard{bestAI Guardian}
+    GPS[GPS.json Specs] --> Guard
+    Guard -->|Zero Token Cost| Stubs[Empty Test Boilerplates]
+    Stubs --> LLM[LLM Agent Fills Logic]
+```
+👉 **Run:** `bestai guardian`
+
+---
+
 ## 🌌 bestAI + OpenClaw
 **High-Persistence Autonomous Intelligence.**
 Using bestAI in OpenClaw unlocks **Total Recall Mode**. Preserve every decision, decision log, and codebase change across weeks of autonomous operation. No pruning, no forgetting.

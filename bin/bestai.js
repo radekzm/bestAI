@@ -35,6 +35,8 @@ const commands = {
     'contract':   path.join(baseDir, 'templates', 'contract-template.json'),
     'sandbox':    path.join(baseDir, 'tools', 'agent-sandbox.sh'),
     'serve-dashboard': path.join(baseDir, 'tools', 'serve-dashboard.sh'),
+    'retro-onboard': path.join(baseDir, 'tools', 'retro-onboard.py'),
+    'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
 };
 
 const scriptPath = commands[command];
