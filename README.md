@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v10.0+LIVING+SWARM&font=Montserrat" alt="bestAI Hero" />
+  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v14.0+LIVING+SWARM&font=Montserrat" alt="bestAI Hero" />
 
   <h1>bestAI: Omni-Vendor Convergence</h1>
   
@@ -62,27 +62,27 @@ Incoming agents (Claude, GPT, etc.) read this contract at boot to align with you
 
 ---
 
-## ⚡ v10.0: The Living Swarm (Conductor Mode)
+## ⚡ v14.0: The Living Swarm (Conductor Mode)
 
 The latest evolution of bestAI introduces the **Syndicate Conductor**. You no longer wait for agents. You interact with a central "Project Brain" that orchestrates specialists in real-time.
 
-### Key v10.0 Mechanisms:
+### Key v14.0 Mechanisms:
 - **Asynchronous Execution:** Sub-agents (Claude, Gemini) work in background threads.
 - **Intelligence Filtering:** The Conductor only alerts you for critical milestones or errors.
 - **Research Vault (TTL):** Global cache for codebase analysis. Run once, remember forever.
 - **Continuous Conversation:** A persistent shell that maintains multiple thought-streams.
 
-🎬 **[Watch the v10.0 Living Swarm Demo](docs/V10-DEMO.md)**
+🎬 **[Watch the v14.0 Living Swarm Demo](docs/V10-DEMO.md)**
 
 👉 Run it now: `bestai conductor`
 
 ---
 
-## 👥 v13.0: The Human-AI Nexus (Team Collaboration)
+## 👥 v14.0: The Human-AI Nexus (Team Collaboration)
 
-bestAI v13.0 transforms from an individual tool to a **Team Governance Platform**. It enables Juniors, Seniors, and Managers to collaborate with AI Swarms through a unified project brain.
+bestAI v14.0 transforms from an individual tool to a **Team Governance Platform**. It enables Juniors, Seniors, and Managers to collaborate with AI Swarms through a unified project brain.
 
-### Key v13.0 Mechanisms:
+### Key v14.0 Mechanisms:
 - **Nexus Journal:** Every strategic human decision is logged and injected into the AI's T0 context, preventing models from contradicting human intent.
 - **Role-Based Governance:** Customize hook intensity based on the user's seniority (e.g., Juniors get stricter Fail-Closed safety).
 - **Knowledge Handshake:** Automated onboarding for new team members by parsing the Research Vault and Nexus logs.
@@ -101,11 +101,11 @@ graph LR
 
 ---
 
-## 🧠 v12.0: The Elastic Brain (Infinite Depth)
+## 🧠 v14.0: The Elastic Brain (Infinite Depth)
 
-bestAI v12.0 eliminates the "flat context" problem. It introduces **Dynamic Context Zoom**, where the granularity of loaded data matches the precision of your task.
+bestAI v14.0 eliminates the "flat context" problem. It introduces **Dynamic Context Zoom**, where the granularity of loaded data matches the precision of your task.
 
-### Key v12.0 Mechanisms:
+### Key v14.0 Mechanisms:
 - **Macro/Micro Lens:** The Conductor stays high-level (strategic), while specialists (Sub-agents) are pumped with granular technical details only when a specific "Deep Task" is triggered.
 - **Recursive Delegation:** If a task is too complex, the agent spawns its own sub-swarm, preventing context saturation and maintaining 100% precision.
 - **Context Pressure Monitor:** Automatically triggers delegation when an agent's memory usage exceeds optimal thresholds.
@@ -278,7 +278,7 @@ The ultimate override mechanism. Grant a temporary pass:
 
 ## 💎 The Strategic Value of bestAI (ROI)
 
-| Metric | Before bestAI | With bestAI v10.0 | Impact |
+| Metric | Before bestAI | With bestAI v14.0 (Rust) | Impact |
 | :--- | :--- | :--- | :--- |
 | **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic)** | Bulletproof safety. |
 | **Token Efficiency** | High bloat (uncut) | **-70% overhead** | Low API bills. |
