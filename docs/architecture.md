@@ -138,6 +138,20 @@ LLM-scored context injection. Sends the user's prompt to a fast model (Haiku) to
 
 Both read from a context index built by `memory-compiler.sh` during Stop hooks.
 
+### SMART_CONTEXT_LLM_SCORING
+
+Feature:
+- Explicit per-file scoring metadata for context selection in `smart-preprocess-v2.sh`.
+
+Execution contract:
+- `enable`: `SMART_CONTEXT_LLM_SCORING=1`
+- `decision`: compute `score/confidence` for candidate context, with deterministic fallback when model path is unavailable or times out.
+- `execution`: inject highest-scored context first, keep token budget limits (`SMART_CONTEXT_MAX_TOKENS`) and emit telemetry for score decisions.
+
+Guardrails:
+- scoring failure must never block user prompt flow,
+- prompt injection defenses from context sanitization remain mandatory.
+
 ## Global Project State (GPS)
 
 `.bestai/GPS.json` — shared state bus for multi-agent workflows:
@@ -157,6 +171,34 @@ Both read from a context index built by `memory-compiler.sh` during Stop hooks.
 ```
 
 Updated by `sync-gps.sh` at session end. Protected by `flock` for concurrent access.
+
+## BESTAI_SELF_HEAL (Pending)
+
+`BESTAI_SELF_HEAL` defines an opt-in recovery layer above existing enforcement hooks.
+
+Execution contract:
+- `enable`: `BESTAI_SELF_HEAL=1`
+- `decision`: only apply to known safe/idempotent remediations (no privileged destructive actions).
+- `execution`: attempt auto-fix, rerun the same guard condition, continue only on clean revalidation; otherwise preserve normal block behavior.
+
+Safety model:
+- self-heal never bypasses `backup-enforcement` or `confidence-gate`,
+- every self-heal attempt should emit structured events for auditability.
+
+## shared-context-merge Tool (Pending)
+
+Purpose:
+- Merge multiple shared-context inputs (handoff fragments, vendor partial outputs) into one canonical JSON artifact before contract validation.
+
+Workflow placement:
+1. merge input A + B into a new artifact,
+2. validate merged artifact with `validate-shared-context.sh`,
+3. feed the validated artifact into swarm orchestration.
+
+Non-functional requirements:
+- input files remain immutable,
+- deterministic merge output for the same input pair,
+- no persistent side effects outside explicit output path.
 
 ## Hook Composition
 

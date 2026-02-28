@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased (2026-02-28)
+
+### Added
+- **SMART_CONTEXT_LLM_SCORING** (#45): `hooks/smart-preprocess-v2.sh` supports LLM score-per-file routing (`SMART_CONTEXT_LLM_SCORING=1`) with deterministic top-N selection and threshold (`SMART_CONTEXT_LLM_MIN_SCORE`), plus explainable `scores:` output.
+- **shared-context-merge tool** (#65): New deterministic resolver `tools/shared-context-merge.sh` to merge two handoff/shared-context JSON artifacts before validation.
+- **Tool smoke suite**: Added `tests/test-tools-features.sh` for router/memory/contract/merge feature checks.
+
+### Changed
+- **Self-healing backup gate** (#41): `hooks/backup-enforcement.sh` supports opt-in `BESTAI_SELF_HEAL=1` with `try_fix -> verify -> allow`, preserving fail-closed behavior when repair fails.
+- **CLI command surface**: Added `bestai shared-context-merge` and alias `bestai merge-context`.
+- **npm scripts**: `npm test` now runs both `tests/test-hooks.sh` and `tests/test-tools-features.sh`.
+
 ## v14.0.1 (2026-02-28)
 
 ### Fixed

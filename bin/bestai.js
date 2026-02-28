@@ -23,6 +23,8 @@ const commands = {
     'validate-context': path.join(baseDir, 'tools', 'validate-shared-context.sh'),
     'swarm':      path.join(baseDir, 'tools', 'swarm-dispatch.sh'),
     'swarm-lock': path.join(baseDir, 'tools', 'swarm-lock.sh'),
+    'shared-context-merge': path.join(baseDir, 'tools', 'shared-context-merge.sh'),
+    'merge-context': path.join(baseDir, 'tools', 'shared-context-merge.sh'),
     'permit':     path.join(baseDir, 'tools', 'permit.sh'),
     'generate-rules': path.join(baseDir, 'tools', 'generate-rules.sh'),
     'conductor':  path.join(baseDir, 'tools', 'conductor.py'),

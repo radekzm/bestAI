@@ -8,7 +8,7 @@
   },
   "scripts": {
     "init": "bash setup.sh",
-    "test": "bash tests/test-hooks.sh",
+    "test": "bash tests/test-hooks.sh && bash tests/test-tools-features.sh",
     "doctor": "bash doctor.sh",
     "stats": "bash stats.sh",
     "cockpit": "bash tools/cockpit.sh .",
@@ -19,7 +19,8 @@
     "validate-context": "bash tools/validate-shared-context.sh",
     "swarm": "bash tools/swarm-dispatch.sh",
     "swarm-lock": "bash tools/swarm-lock.sh",
-    "generate-rules": "bash tools/generate-rules.sh"
+    "generate-rules": "bash tools/generate-rules.sh",
+    "shared-context-merge": "bash tools/shared-context-merge.sh"
   },
   "repository": {
     "type": "git",

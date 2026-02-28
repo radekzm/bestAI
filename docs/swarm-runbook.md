@@ -29,6 +29,50 @@ Nadal nie ma:
 - schedulerów,
 - globalnego load-balancingu.
 
+## Nowe funkcje (v14.0.1+)
+
+### SMART_CONTEXT_LLM_SCORING
+
+Cel:
+- dodać ranking kontekstu oparty o scoring LLM (per plik/chunk), a nie tylko selekcję plików.
+
+Kontrakt operacyjny:
+- `enable`: flaga środowiskowa `SMART_CONTEXT_LLM_SCORING=1`,
+- `decision`: wybór kontekstu na podstawie wyniku `score/confidence` z fallbackiem do heurystyk lokalnych,
+- `execution`: do prompta trafiają najwyżej ocenione fragmenty, a wynik jest raportowany w metadanych routingu.
+
+Wymagania runtime:
+- brak modelu/timeout/błąd parsera -> fallback bez blokowania sesji,
+- brak skutków ubocznych poza kontekstem prompta i logami zdarzeń.
+
+### BESTAI_SELF_HEAL
+
+Cel:
+- automatycznie domykać naprawialne błędy operacyjne zamiast kończyć flow tylko blokadą.
+
+Kontrakt operacyjny:
+- `enable`: flaga środowiskowa `BESTAI_SELF_HEAL=1`,
+- `decision`: uruchamiany tylko dla znanych, idempotentnych przypadków (safe class),
+- `execution`: próba auto-fix -> natychmiastowa rewalidacja -> kontynuacja albo kontrolowany `BLOCK`.
+
+Granice bezpieczeństwa:
+- brak auto-heal dla działań destrukcyjnych bez backupu,
+- każda próba self-heal musi zostawić ślad w event logu.
+
+### shared-context-merge
+
+Cel:
+- scalić dwa handoffy/fragmenty shared context do jednego artefaktu przed walidacją kontraktu.
+
+Praktyka operacyjna:
+1. zmerguj źródła przez `bash tools/shared-context-merge.sh`,
+2. zweryfikuj wynik przez `bestai validate-context`,
+3. dopiero wtedy przekazuj do `swarm-dispatch`.
+
+Zasady:
+- merge nie powinien modyfikować plików wejściowych,
+- wszystkie operacje merge wykonuj na plikach roboczych (np. `/tmp`) i zapisuj wynik jako nowy artefakt.
+
 ## Minimalny workflow produkcyjny
 
 1. Ustal rolę agenta (`architect`, `investigator`, `tester`).
@@ -93,6 +137,10 @@ BESTAI_ROUTER_POLICY=prefer_fast bestai route --task "Generate boilerplate tests
 
 # Walidacja handoff contract
 bestai validate-context .bestai/handoff-latest.json
+
+# Merge dwóch handoffów/shared context (jeśli narzędzie jest dostępne)
+bash tools/shared-context-merge.sh /tmp/context-a.json /tmp/context-b.json > /tmp/context-merged.json
+bestai validate-context /tmp/context-merged.json
 
 # Live cockpit (pełny/compact/json)
 bestai cockpit .
