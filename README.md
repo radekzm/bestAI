@@ -1,10 +1,10 @@
-<img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v7.6+ENTERPRISE&font=Montserrat" alt="bestAI Hero" />
+<img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v7.0&font=Montserrat" alt="bestAI Hero" />
 
   <h1>bestAI: Omni-Vendor Convergence</h1>
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v7.6.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v7.0.1-blue?logo=npm)](https://www.npmjs.com/)
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
@@ -23,9 +23,9 @@
 
 Why do enterprises and top-tier developers choose bestAI over generic AI agents?
 
-| Metric | Before bestAI | With bestAI v7.6 | Impact |
+| Metric | Before bestAI | With bestAI | Impact |
 | :--- | :--- | :--- | :--- |
-| **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic)** | Eliminates manual review for trivial rule breaks. |
+| **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic, Edit/Write)** | Eliminates manual review for trivial rule breaks. |
 | **Token Efficiency** | High bloat (uncut) | **-70% overhead** | Drastically reduced API costs through Context OS. |
 | **Project Knowledge** | Limited by 200k context | **Infinite (2M+ RAG)** | Agents can map codebases of any size (monorepo). |
 | **Vendor Lock-in** | Single model provider | **Omni-Vendor** | Switch models (Claude/Gemini/Codex) based on cost/perf. |
