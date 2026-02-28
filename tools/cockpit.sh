@@ -83,16 +83,18 @@ GPS_FILE="$PROJECT_DIR/.bestai/GPS.json"
 USAGE_JSONL="${BESTAI_USAGE_LOG:-$HOME/.claude/projects/$PROJECT_KEY/cache-usage.jsonl}"
 TOKEN_LIMIT="${BESTAI_TOKEN_LIMIT:-1000000}"
 
+# Source canonical _bestai_project_hash from hook-event.sh
+_COCKPIT_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=../hooks/hook-event.sh
+source "$_COCKPIT_SCRIPT_DIR/../hooks/hook-event.sh" 2>/dev/null || {
+    _bestai_project_hash() {
+        local src="${1:-.}"
+        printf '%s' "$src" | md5sum 2>/dev/null | awk '{print substr($1,1,16)}' || printf '%s' "$src" | cksum | awk '{print $1}'
+    }
+}
+
 project_hash() {
-    if command -v md5sum >/dev/null 2>&1; then
-        printf '%s' "$PROJECT_DIR" | md5sum | awk '{print substr($1,1,16)}'
-    elif command -v md5 >/dev/null 2>&1; then
-        printf '%s' "$PROJECT_DIR" | md5 -q | cut -c1-16
-    elif command -v shasum >/dev/null 2>&1; then
-        printf '%s' "$PROJECT_DIR" | shasum -a 256 | awk '{print substr($1,1,16)}'
-    else
-        printf '%s' "$PROJECT_DIR" | cksum | awk '{print $1}'
-    fi
+    _bestai_project_hash "$PROJECT_DIR"
 }
 
 sanitize_number() {

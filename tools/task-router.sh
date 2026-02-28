@@ -47,17 +47,18 @@ normalize_task() {
         | sed -e 's/^ *//' -e 's/ *$//' -e 's/  */ /g'
 }
 
+# Source canonical _bestai_project_hash from hook-event.sh
+_ROUTER_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=../hooks/hook-event.sh
+source "$_ROUTER_SCRIPT_DIR/../hooks/hook-event.sh" 2>/dev/null || {
+    _bestai_project_hash() {
+        local src="${1:-.}"
+        printf '%s' "$src" | md5sum 2>/dev/null | awk '{print substr($1,1,16)}' || printf '%s' "$src" | cksum | awk '{print $1}'
+    }
+}
+
 bestai_hash_path() {
-    local src="$1"
-    if command -v md5sum >/dev/null 2>&1; then
-        printf '%s' "$src" | md5sum | awk '{print substr($1,1,16)}'
-    elif command -v md5 >/dev/null 2>&1; then
-        printf '%s' "$src" | md5 -q | cut -c1-16
-    elif command -v shasum >/dev/null 2>&1; then
-        printf '%s' "$src" | shasum -a 256 | awk '{print substr($1,1,16)}'
-    else
-        printf '%s' "$src" | cksum | awk '{print $1}'
-    fi
+    _bestai_project_hash "$1"
 }
 
 valid_vendor() {
