@@ -8,9 +8,13 @@
 
 set -euo pipefail
 
-# Load shared dry-run utility
+# Load shared libraries (event logging must come before block_or_dryrun)
 HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$HOOKS_DIR/lib-dryrun.sh"
+# shellcheck source=hook-event.sh
+source "$HOOKS_DIR/hook-event.sh" 2>/dev/null || true
+source "$HOOKS_DIR/lib-dryrun.sh" 2>/dev/null || {
+    block_or_log() { echo "[bestAI] BLOCKED: $1" >&2; exit 2; }
+}
 
 block_or_dryrun() {
     emit_event "backup-enforcement" "BLOCK" "{\"reason\":\"$*\"}" 2>/dev/null || true
@@ -27,10 +31,7 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || {
 }
 [ -z "$COMMAND" ] && exit 0
 
-# Unified JSONL event logging
 _BESTAI_TOOL_NAME="Bash"
-# shellcheck source=hook-event.sh
-source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
 is_destructive() {
     # Match command tokens, not substrings (e.g. "deployment-notes.txt" is safe).

@@ -6,9 +6,13 @@
 
 set -euo pipefail
 
-# Load shared dry-run utility
+# Load shared libraries (event logging must come before block_or_dryrun)
 HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$HOOKS_DIR/lib-dryrun.sh"
+# shellcheck source=hook-event.sh
+source "$HOOKS_DIR/hook-event.sh" 2>/dev/null || true
+source "$HOOKS_DIR/lib-dryrun.sh" 2>/dev/null || {
+    block_or_log() { echo "[bestAI] BLOCKED: $1" >&2; exit 2; }
+}
 
 block_or_dryrun() {
     emit_event "check-frozen" "BLOCK" "{\"reason\":\"$*\"}" 2>/dev/null || true
@@ -31,10 +35,7 @@ TOOL_INPUT=$(echo "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null) || {
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 
-# Unified JSONL event logging
 _BESTAI_TOOL_NAME="$TOOL_NAME"
-# shellcheck source=hook-event.sh
-source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
 # Normalize path: remove ./ and .. components, convert to absolute.
 # Pure-bash implementation — no external dependencies (realpath, python3).
