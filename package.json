@@ -4,7 +4,7 @@
   "description": "Evidence-based, modular guidelines and deterministic enforcement hooks for AI coding agents.",
   "main": "setup.sh",
   "bin": {
-    "bestai": "./bin/bestai.js"
+    "bestai": "bin/bestai.js"
   },
   "scripts": {
     "init": "bash setup.sh",
