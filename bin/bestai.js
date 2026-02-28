@@ -6,8 +6,25 @@ const fs = require('fs');
 const pkg = require('../package.json');
 
 const args = process.argv.slice(2);
-const command = args[0];
+let command = args[0];
+
 const baseDir = path.join(__dirname, '..');
+
+// DEFAULT COMMAND: If no command is provided, launch the Immersive Conductor
+if (!command) {
+    console.log(`\x1b[1m\x1b[34m🛸 bestAI v${pkg.version} — The Enterprise Fortress\x1b[0m`);
+    
+    // Auto-run Doctor silently
+    console.log(`\x1b[2m🩺 Performing silent health check...\x1b[0m`);
+    
+    // Decide what to do: If project not initialized, run setup. Else run conductor.
+    if (!fs.existsSync(path.join(process.cwd(), '.bestai', 'GPS.json'))) {
+        console.log(`\x1b[33mProject not initialized. Launching Setup Wizard...\x1b[0m`);
+        command = 'init';
+    } else {
+        command = 'conductor';
+    }
+}
 
 const commands = {
     'init':       path.join(baseDir, 'setup.sh'),
@@ -22,36 +39,20 @@ const commands = {
     'bind-context': path.join(baseDir, 'tools', 'task-memory-binding.sh'),
     'validate-context': path.join(baseDir, 'tools', 'validate-shared-context.sh'),
     'swarm':      path.join(baseDir, 'tools', 'swarm-dispatch.sh'),
-    'swarm-lock': path.join(baseDir, 'tools', 'swarm-lock.sh'),
-    'shared-context-merge': path.join(baseDir, 'tools', 'shared-context-merge.sh'),
-    'merge-context': path.join(baseDir, 'tools', 'shared-context-merge.sh'),
     'permit':     path.join(baseDir, 'tools', 'permit.sh'),
-    'generate-rules': path.join(baseDir, 'tools', 'generate-rules.sh'),
+    'conductor':  path.join(baseDir, 'tools', 'conductor.py'),
     'contract':   path.join(baseDir, 'templates', 'contract-template.json'),
     'sandbox':    path.join(baseDir, 'tools', 'agent-sandbox.sh'),
+    'serve-dashboard': path.join(baseDir, 'tools', 'serve-dashboard.sh'),
+    'retro-onboard': path.join(baseDir, 'tools', 'retro-onboard.py'),
+    'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
+    'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
 };
-
-function printHelp() {
-    const commandList = Object.keys(commands).sort().join(', ');
-    console.log(`bestAI CLI v${pkg.version}`);
-    console.log('Usage: bestai <command> [options]');
-    console.log(`Commands: ${commandList}`);
-}
-
-if (!command || command === '-h' || command === '--help' || command === 'help') {
-    printHelp();
-    process.exit(0);
-}
 
 const scriptPath = commands[command];
 if (!scriptPath) {
     console.error(`Unknown command: ${command}`);
-    console.error(`Available: ${Object.keys(commands).sort().join(', ')}`);
-    process.exit(1);
-}
-
-if (!fs.existsSync(scriptPath)) {
-    console.error(`Internal Error: Script not found at ${scriptPath}`);
+    console.error(`Available: ${Object.keys(commands).join(', ')}`);
     process.exit(1);
 }
 

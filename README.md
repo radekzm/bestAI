@@ -1,6 +1,6 @@
 <div align="center">
   <img src="assets/decision-loop.svg" alt="bestAI Hero" width="1000" />
-  <h1>bestAI v1.0 (Stable)</h1>
+  <h1>bestAI v1.1 (Stable)</h1>
   <p><strong>Stable Enterprise Governance for AI Swarms. Roadmap to v14.0 (Rust) enabled.</strong></p>
 
   [![NPM Version](https://img.shields.io/badge/npm-v14.0.0-blue?logo=npm)](https://www.npmjs.com/package/@radekzm/bestai)
@@ -61,7 +61,11 @@ bestAI is developed through rigorous testing in high-stakes environments. Explor
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Quick Start (Zero-Friction)
+
+
+
+*The command automatically runs diagnostics and launches the Syndicate Conductor.*
 
 ```bash
 # Install globally

@@ -1,6 +1,6 @@
 {
   "name": "@radekzm/bestai",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Evidence-based, modular guidelines and deterministic enforcement hooks for AI coding agents.",
   "main": "setup.sh",
   "bin": {
