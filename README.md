@@ -1,116 +1,127 @@
-<img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v7.0&font=Montserrat" alt="bestAI Hero" />
+<div align="center">
+  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v8.0+ENTERPRISE&font=Montserrat" alt="bestAI Hero" />
 
   <h1>bestAI: Omni-Vendor Convergence</h1>
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v7.0.1-blue?logo=npm)](https://www.npmjs.com/)
-  [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex-purple?logo=ai)]()
+  [![NPM Version](https://img.shields.io/badge/npm-v8.0.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
   
   <p>
-    <a href="#-the-strategic-value">Strategic Value</a> •
-    <a href="#%EF%B8%8F-the-syndicate-toolbelt">The Toolbelt</a> •
-    <a href="#-syndicate-model">Syndicate Model</a> •
-    <a href="#-architecture">Architecture</a> •
-    <a href="#%EF%B8%8F-quick-start">Quick Start</a>
+    <a href="#-quick-start">Quick Start</a> •
+    <a href="#-tutorial-your-first-swarm">Tutorial</a> •
+    <a href="#-core-mechanisms">Mechanisms</a> •
+    <a href="#-syndicate-toolbelt">Toolbelt</a> •
+    <a href="#-architecture">Architecture</a>
   </p>
+</div>
+
+---
+
+## 🚀 Quick Start (Zero-to-Hero)
+
+Get bestAI v8.0 running in your project in less than 2 minutes.
+
+### 1. Global Install
+```bash
+npm install -g @radekzm/bestai
+```
+
+### 2. Initialize bestAI in your Repo
+```bash
+cd your-project
+bestai init .
+```
+*Select the **"Omni-Vendor"** profile for the full multi-agent experience.*
+
+### 3. Verify Health
+```bash
+bestai doctor --strict
+```
+
+---
+
+## 📖 Tutorial: Your First Swarm (Mini-API)
+
+In this example, we will build a simple FastAPI application using **Gemini** for mapping and **Claude** for implementation.
+
+### Step 1: Initialize the Project State
+Define your goal so all agents are aligned.
+```bash
+# Set the main goal in .bestai/GPS.json
+echo '{"project":{"name":"FastAPI-Mini","main_objective":"Build a secure user registration API"}}' > .bestai/GPS.json
+```
+
+### Step 2: Gemini Investigates (Research)
+Gemini scans your environment and suggests the tech stack.
+```bash
+bestai swarm --vendor gemini --task "Search for best FastAPI boilerplates and update T3-summary.md"
+```
+
+### Step 3: Claude Implements (Coding)
+Claude reads the research from GPS and implement the code, protected by hooks.
+```bash
+bestai swarm --vendor claude --task "Create main.py with a signup endpoint using standard FastAPI patterns"
+```
+
+### Step 4: Verify Compliance
+Check if the agents followed the rules.
+```bash
+bestai compliance
+```
+
+---
+
+## 🔧 Core Mechanisms (Under the Hood)
+
+bestAI is built on four revolutionary engineering pillars:
+
+### 1. Deterministic Force-Field (Fail-Closed Hooks)
+Unlike soft prompt-based rules, bestAI uses **Bash Hooks**. 
+- **PreToolUse:** Every file write or shell command is intercepted.
+- **Enforcement:** If an agent tries to edit a `FROZEN` file (e.g., core config), the script returns `Exit 2`, physically killing the process before the damage is done.
+
+### 2. The 5-Tier Context OS
+We bypass token limits by segmenting memory:
+- **T0 (HOT):** Critical project state (GPS.json). Always loaded.
+- **T1 (WARM):** A dense index of the whole codebase.
+- **T3 (COLD):** The rest of the repo, accessed semantically via RAG.
+
+### 3. Omni-GPS (Shared Global State)
+A central JSON bus that synchronizes all agents. It includes:
+- **Milestones:** Tracking progress across vendors.
+- **Blocker DB:** If Gemini finds a bug, Claude sees it instantly.
+- **Mutex Locks:** Prevents two agents from editing the same file simultaneously.
+
+### 4. Swarm Mutex (`swarm-lock`)
+Specifically for multi-vendor setups. Before any agent starts a heavy task, it places a lock on the target file path. If another agent (e.g., Cursor) tries to touch it, bestAI blocks the operation until the first agent finishes.
 
 ---
 
 ## 💎 The Strategic Value of bestAI (ROI)
 
-Why do enterprises and top-tier developers choose bestAI over generic AI agents?
-
-| Metric | Before bestAI | With bestAI | Impact |
+| Metric | Before bestAI | With bestAI v8.0 | Impact |
 | :--- | :--- | :--- | :--- |
-| **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic, Edit/Write)** | Eliminates manual review for trivial rule breaks. |
-| **Token Efficiency** | High bloat (uncut) | **-70% overhead** | Drastically reduced API costs through Context OS. |
-| **Project Knowledge** | Limited by 200k context | **Infinite (2M+ RAG)** | Agents can map codebases of any size (monorepo). |
-| **Vendor Lock-in** | Single model provider | **Omni-Vendor** | Switch models (Claude/Gemini/Codex) based on cost/perf. |
-| **Consistency** | "Goal Amnesia" | **Zero Loss (GPS State)** | Multi-session stability via Global Project State. |
+| **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic)** | Bulletproof safety. |
+| **Token Efficiency** | High bloat (uncut) | **-70% overhead** | Low API bills. |
+| **Vendor Lock-in** | Single model provider | **Omni-Vendor** | Flexibility (Claude+Gemini+Llama). |
 
 ---
 
 ## 🛠️ The Syndicate Toolbelt
 
-bestAI ships with a production-ready suite of specialized tools to manage your AI workforce.
-
-| Tool | Capability | Business Benefit |
-| :--- | :--- | :--- |
-| **`bestai doctor`** | Structural & architectural audit. | Prevents broken project states before agents start. |
-| **`bestai compliance`** | Real-time agent obedience metrics. | Quantifiable audit logs of agent performance. |
-| **`bestai cockpit`** | Unified operational dashboard. | Shows limits, knowledge base health, task flow, routing decisions. |
-| **`bestai route`** | Adaptive routing recommendation. | Selects vendor/depth to reduce cost and latency. |
-| **`bestai swarm`** | Heterogeneous task dispatcher. | Parallelizes development across different AI vendors. |
-| **`bestai test`** | Isolated hook testing framework. | Guarantees your security "Force Field" never breaks. |
-| **`budget-monitor`** | Real-time FinOps token tracking. | Stops agents before they burn through API credits. |
-| **`session-replay`** | Visual step-by-step reasoning logs. | Speeds up debugging of complex agent hallucinations. |
-| **`hook-lint`** | Dependency & Latency profiling. | Ensures high-speed CLI response (Target: <200ms). |
+| Tool | Capability |
+| :--- | :--- |
+| **`bestai swarm`** | Dispatches tasks to Claude, Gemini, or Ollama. |
+| **`serve-dashboard`** | Visual web interface for compliance and budget. |
+| **`bestai sandbox`** | Runs agent commands in isolated Docker containers. |
+| **`swarm-lock`** | Manage mutex locks across different AI vendors. |
 
 ---
 
-## 🤖 Syndicate Decision & Collaboration Loop
-
-![Decision Loop](assets/decision-loop.svg)
-
-> [!IMPORTANT]
-> **Deterministic Force-Field:** Unlike standard prompts, bestAI hooks are **Fail-Closed**. If an agent attempts an illegal operation, the session is physically blocked at the shell level.
-
----
-
-## 🤖 The Syndicate Model (Agent Roles)
-
-![Swarm Architecture](assets/swarm-architecture.svg)
-
-## 🏗️ The 5-Tier Context OS (Infinite Scalability)
-
-We solve the **"Context Overload"** problem by segmenting information into distinct tiers, ensuring the agent always knows the most critical state without drowning in data.
-
-![Context OS Tiers](assets/context-os-tiers.svg)
-
-- **T0 (HOT):** The **Global Project State (GPS.json)**. The project's brain. Shared by all swarm agents.
-- **T1 (WARM):** **T3-Summary.md**. The map of the entire codebase. Hierarchical and dense.
-- **T2 (COOL):** The active module files the agent is editing.
-- **T3 (COLD):** The rest of the codebase, accessed via **RAG-native router**.
-- **T4 (FROZEN):** Configs and secrets protected by **Deterministic Hooks**.
-
----
-
-## ⚡ Quick Start
-
-### 1. Global Installation
-```bash
-npm install -g @radekzm/bestai
-# or use npx instantly:
-npx @radekzm/bestai@latest init .
-```
-
-### 2. Dispatch Tasks to the Syndicate
-```bash
-# Let bestAI choose vendor/depth first
-bestai route --task "Audit auth module and propose fixes"
-
-# Research task for Gemini (utilizing 2M context)
-bestai swarm --task "Find all deprecated auth calls" --vendor gemini
-
-# Coding task for Claude
-bestai swarm --task "Replace auth calls using results in GPS.json" --vendor claude
-
-# Live cockpit (limits, knowledge, tasks, routing)
-bestai cockpit .
-```
-
----
-
-## 🔄 Cross-Tool Compatibility
-
-Already using Cursor or Windsurf? Translate bestAI standards instantly:
-```bash
-bestai generate-rules --format cursor
-```
-
----
-
-<p><br><b>Built for the next generation of autonomous engineering.</b><br>License: MIT | radekzm & the bestAI Swarm</p>
+<div align="center">
+  <p><br><b>Built for the next generation of autonomous engineering.</b><br>License: MIT | radekzm & the bestAI Swarm</p>
+</div>
