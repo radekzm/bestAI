@@ -5,7 +5,7 @@
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v10.1.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v12.0.0-blue?logo=npm)](https://www.npmjs.com/)
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
@@ -58,6 +58,30 @@ The latest evolution of bestAI introduces the **Syndicate Conductor**. You no lo
 - **Continuous Conversation:** A persistent shell that maintains multiple thought-streams.
 
 🎬 **[Watch the v10.0 Living Swarm Demo](docs/V10-DEMO.md)**
+
+👉 Run it now: `bestai conductor`
+
+---
+
+## 🧠 v12.0: The Elastic Brain (Infinite Depth)
+
+bestAI v12.0 eliminates the "flat context" problem. It introduces **Dynamic Context Zoom**, where the granularity of loaded data matches the precision of your task.
+
+### Key v12.0 Mechanisms:
+- **Macro/Micro Lens:** The Conductor stays high-level (strategic), while specialists (Sub-agents) are pumped with granular technical details only when a specific "Deep Task" is triggered.
+- **Recursive Delegation:** If a task is too complex, the agent spawns its own sub-swarm, preventing context saturation and maintaining 100% precision.
+- **Context Pressure Monitor:** Automatically triggers delegation when an agent's memory usage exceeds optimal thresholds.
+
+**The Elastic Workflow:**
+```mermaid
+graph TD
+    User[User Input] --> Conductor{Dyrygent (Macro)}
+    Conductor -- Specific Task --> Specialist[Specialist (Micro Context)]
+    Specialist -- Too Heavy? --> SubSwarm[Recursive Sub-Swarm]
+    SubSwarm -- Results --> Specialist
+    Specialist -- Summary --> Conductor
+    Conductor -- Strategic Feedback --> User
+```
 
 👉 Run it now: `bestai conductor`
 
