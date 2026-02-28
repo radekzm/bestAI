@@ -17,8 +17,7 @@ def nexus_checkin(user, role, decision, project_dir="."):
 
     # Append to Journal
     with open(journal_path, "a") as f:
-        f.write(json.dumps(entry) + "
-")
+        f.write(json.dumps(entry) + "\n")
 
     # Update GPS Contributors
     if os.path.exists(gps_path):

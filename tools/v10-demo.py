@@ -16,8 +16,7 @@ def print_agent(agent, text):
 
 def run_demo():
     os.system('clear')
-    print("\033[1;36m=== bestAI v10.0 'Living Swarm' Official Demo ===\033[0m
-")
+    print("\033[1;36m=== bestAI v10.0 'Living Swarm' Official Demo ===\033[0m\n")
     
     print_agent("USER", "I need to migrate our legacy Auth system to JWT. Can you start researching the existing code and prepare a plan?")
     time.sleep(1)
@@ -35,8 +34,7 @@ def run_demo():
     print_conductor("Perfect. I've updated .bestai/GPS.json with the secret name.")
     
     # Simulate async completion
-    print("
-\033[1;34m[CONDUCTOR] 🔔 IMPORTANT UPDATE from GEMINI:\033[0m")
+    print("\n\033[1;34m[CONDUCTOR] 🔔 IMPORTANT UPDATE from GEMINI:\033[0m")
     print("Legacy Auth uses MD5 hashing (Critical Security Risk). I've stored the full analysis in Research Vault.")
     
     time.sleep(1)
@@ -46,8 +44,7 @@ def run_demo():
     time.sleep(3)
     print_agent("CLAUDE", "(Background) Writing jwt_handler.py... Applying check-frozen.sh... [SILENT]")
     
-    print("
-\033[1;34m[CONDUCTOR] 🏁 MILESTONE REACHED:\033[0m New JWT Auth implemented and verified.")
+    print("\n\033[1;34m[CONDUCTOR] 🏁 MILESTONE REACHED:\033[0m New JWT Auth implemented and verified.")
     print_conductor("The Syndicate has successfully completed the migration. Total tokens saved via Vault: 45,200.")
     print_conductor("Ready for your next command, Boss.")
 

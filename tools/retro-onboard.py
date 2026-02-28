@@ -30,8 +30,7 @@ def retro_onboard(history_path=".claude/history.jsonl", output_dir=".bestai"):
                 
                 # Heuristic 1: Find technologies/stack
                 if "we will use" in content.lower() or "decided to use" in content.lower():
-                    snippet = content[:100].replace('
-', ' ')
+                    snippet = content[:100].replace('\n', ' ')
                     decisions.append(f"- Extracted: {snippet}...")
                     
                 # Heuristic 2: Find milestones
@@ -48,11 +47,8 @@ def retro_onboard(history_path=".claude/history.jsonl", output_dir=".bestai"):
         json.dump(gps, f, indent=2)
         
     with open(decisions_path, 'w') as f:
-        f.write("# 🏛️ Historical Architecture Decisions (Auto-Recovered)
-
-")
-        f.write("
-".join(decisions[:20])) # Cap at 20
+        f.write("# 🏛️ Historical Architecture Decisions (Auto-Recovered)\n\n")
+        f.write("\n".join(decisions[:20])) # Cap at 20
 
     print(f"\033[1;32m✅ Recovery Complete!\033[0m")
     print(f"Recovered {len(milestones)} milestones into GPS.json")
