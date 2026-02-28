@@ -113,8 +113,8 @@ bestAI v14.0 eliminates the "flat context" problem. It introduces **Dynamic Cont
 **The Elastic Workflow:**
 ```mermaid
 graph TD
-    User[User Input] --> Conductor{"Dyrygent (Macro)"}
-    Conductor -- Specific Task --> Specialist[Specialist (Micro Context)]
+    User[User Input] --> Conductor["Dyrygent - Macro Mode"]
+    Conductor -- Specific Task --> Specialist["Specialist - Micro Context"]
     Specialist -- Too Heavy? --> SubSwarm[Recursive Sub-Swarm]
     SubSwarm -- Results --> Specialist
     Specialist -- Summary --> Conductor
