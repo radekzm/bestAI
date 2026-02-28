@@ -2,7 +2,7 @@
 
 ## The Era of Omni-Vendor AI Engineering is here.
 
-Why lock yourself into one provider? With **bestAI v7.5**, I’ve built a professional orchestration layer that lets you deploy a "Syndicate" of AI agents working on the same codebase. 
+Why lock yourself into one provider? With **bestAI v7.0**, I’ve built a professional orchestration layer that lets you deploy a "Syndicate" of AI agents working on the same codebase. 
 
 - ✅ **Claude Code** as your Lead Architect (for deep refactoring).
 - ✅ **Gemini CLI** as your Investigator (leveraging the 2M+ context window).
