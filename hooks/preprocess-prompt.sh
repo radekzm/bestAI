@@ -13,6 +13,9 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 if ! command -v jq >/dev/null 2>&1; then
     exit 0
 fi
@@ -423,4 +426,5 @@ echo "context:"
 echo "$PACKED" | sed 's/^/- /'
 echo "[/SMART_CONTEXT]"
 
+emit_event "preprocess-prompt" "INJECT" "{\"top_score\":$TOP_SCORE,\"scope\":\"$SCOPE\"}" 2>/dev/null || true
 exit 0

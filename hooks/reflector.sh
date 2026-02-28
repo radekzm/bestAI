@@ -16,6 +16,9 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 PROJECT_DIR="${1:-${CLAUDE_PROJECT_DIR:-$PWD}}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 MEMORY_DIR_DEFAULT="$HOME/.claude/projects/$PROJECT_KEY/memory"
@@ -28,7 +31,7 @@ fi
 
 MODEL="${REFLECTOR_MODEL:-haiku}"
 TIMEOUT="${REFLECTOR_TIMEOUT:-10}"
-DRY_RUN="${REFLECTOR_DRY_RUN:-0}"
+DRY_RUN="${REFLECTOR_DRY_RUN:-${BESTAI_DRY_RUN:-0}}"
 
 # --- Check Haiku availability ---
 if ! command -v claude >/dev/null 2>&1; then
@@ -113,4 +116,5 @@ if [ -f "$MEMORY_DIR/.session-counter" ]; then
 fi
 
 echo "reflector: merge complete"
+emit_event "reflector" "DONE" "{\"dry_run\":$DRY_RUN}" 2>/dev/null || true
 exit 0

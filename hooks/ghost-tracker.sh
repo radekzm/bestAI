@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 if ! command -v jq >/dev/null 2>&1; then
     exit 0
 fi
@@ -50,4 +53,5 @@ TMP="$(mktemp)"
 tail -n 500 "$GHOST_LOG" > "$TMP" 2>/dev/null || true
 mv "$TMP" "$GHOST_LOG"
 
+emit_event "ghost-tracker" "TRACK" "{\"file\":\"$BASE\",\"tool\":\"$TOOL_NAME\"}" 2>/dev/null || true
 exit 0

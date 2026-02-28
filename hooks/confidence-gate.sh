@@ -13,6 +13,11 @@
 
 set -euo pipefail
 
+# Shared event logging
+HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=hook-event.sh
+source "$HOOKS_DIR/hook-event.sh" 2>/dev/null || true
+
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
 
 if ! command -v jq &>/dev/null; then
@@ -61,7 +66,9 @@ if [ "$BLOCKED" = "1" ]; then
     echo "BLOCKED: System confidence $CONF < $THRESHOLD threshold." >&2
     echo "Operation: $COMMAND" >&2
     echo "Update state-of-system-now.md with higher CONFIDENCE before proceeding." >&2
+    emit_event "confidence-gate" "BLOCK" "{\"confidence\":$CONF,\"threshold\":$THRESHOLD}" 2>/dev/null || true
     exit 2
 fi
 
+emit_event "confidence-gate" "ALLOW" "{\"confidence\":\"${CONF:-none}\"}" 2>/dev/null || true
 exit 0

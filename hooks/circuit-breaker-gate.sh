@@ -7,6 +7,8 @@ set -euo pipefail
 STRICT="${CIRCUIT_BREAKER_STRICT:-1}"
 [ "$STRICT" = "1" ] || exit 0
 
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 BASE_STATE_DIR="${XDG_RUNTIME_DIR:-${HOME}/.cache}/claude-circuit-breaker"
 COOLDOWN="${CIRCUIT_BREAKER_COOLDOWN_SECS:-${CIRCUIT_BREAKER_COOLDOWN:-300}}"
@@ -50,6 +52,11 @@ check_line_state_files() {
         fi
 
         remaining=$((COOLDOWN - elapsed))
+        if [ "$BESTAI_DRY_RUN" = "1" ]; then
+            echo "[DRY-RUN] WOULD BLOCK: Circuit Breaker OPEN ($count failures, ${remaining}s cooldown)." >&2
+            emit_event "circuit-breaker-gate" "DRY_RUN_BLOCK" "{\"count\":$count,\"remaining\":$remaining}" 2>/dev/null || true
+            break
+        fi
         echo "BLOCKED: Circuit Breaker is OPEN ($count failures, ${remaining}s cooldown left)." >&2
         echo "Root Cause Table must be updated or strategy changed before proceeding." >&2
         emit_event "circuit-breaker-gate" "BLOCK" "{\"count\":$count,\"remaining\":$remaining}" 2>/dev/null || true
@@ -72,6 +79,11 @@ check_legacy_json_state_file() {
     is_numeric "$fail_count" || fail_count=0
 
     if [ "$state" = "OPEN" ]; then
+        if [ "$BESTAI_DRY_RUN" = "1" ]; then
+            echo "[DRY-RUN] WOULD BLOCK: Legacy Circuit Breaker OPEN ($fail_count failures)." >&2
+            emit_event "circuit-breaker-gate" "DRY_RUN_BLOCK" "{\"legacy\":true,\"count\":$fail_count}" 2>/dev/null || true
+            return 0
+        fi
         echo "BLOCKED: Legacy Circuit Breaker state OPEN ($fail_count failures)." >&2
         echo "Update project state or clear breaker before proceeding." >&2
         emit_event "circuit-breaker-gate" "BLOCK" "{\"legacy\":true,\"count\":$fail_count}" 2>/dev/null || true

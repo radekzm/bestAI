@@ -1,5 +1,17 @@
 # Changelog
 
+## v7.1.0 (2026-02-28)
+
+### Added
+- **Unified JSONL event logging** (#48): All 17 hooks now emit events via `hook-event.sh` `emit_event()`. Format: `{"ts","hook","action","tool","project","elapsed_ms","detail"}`. Query with `jq`.
+- **Unified dry-run mode** (#52): All blocking/mutating hooks support `BESTAI_DRY_RUN=1`. Non-blocking hooks (ghost-tracker, wal-logger, preprocess-prompt) skip dry-run as they never block. Hook-specific vars (`MEMORY_COMPILER_DRY_RUN`, `OBSERVER_DRY_RUN`, `REFLECTOR_DRY_RUN`) now fall back to `BESTAI_DRY_RUN`.
+- **TTL-based lock expiration** (#74): `tools/swarm-lock.sh` auto-expires stale locks after `SWARM_LOCK_TTL` seconds (default: 300).
+- **ghost-tracker.sh tests**: 8 new test cases covering Read/Grep/Glob tracking, non-memory ignore, Write ignore, log bounding.
+
+### Fixed
+- **CHANGELOG shipped in npm** (#73): Removed from `.npmignore` exclusion.
+- **swarm-lock.sh emoji** (#74): Replaced emoji output with ASCII (`BLOCKED`, `OK:`).
+
 ## v7.0.1 (2026-02-28)
 
 ### Fixed

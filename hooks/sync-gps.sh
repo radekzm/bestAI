@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 if ! command -v jq >/dev/null 2>&1; then
     echo "[bestAI] BLOCKED: sync-gps requires jq." >&2
     exit 2
@@ -94,6 +99,12 @@ fi
 
 ensure_default_gps "$GPS_FILE"
 
+if [ "$BESTAI_DRY_RUN" = "1" ]; then
+    echo "[DRY-RUN] Would update GPS: $GPS_FILE (session=$SESSION_ID)" >&2
+    emit_event "sync-gps" "DRY_RUN" "{\"session\":\"$SESSION_ID\"}" 2>/dev/null || true
+    exit 0
+fi
+
 # Use a lock file to prevent concurrent writes from multiple agents
 LOCKFILE="${GPS_FILE}.lock"
 exec 200>"$LOCKFILE"
@@ -151,4 +162,5 @@ if ! validate_gps_schema "$GPS_FILE"; then
 fi
 
 echo "[bestAI] GPS synced: $GPS_FILE"
+emit_event "sync-gps" "DONE" "{\"session\":\"$SESSION_ID\"}" 2>/dev/null || true
 exit 0

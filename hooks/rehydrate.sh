@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 MEMORY_DIR="${REHYDRATE_MEMORY_DIR:-$HOME/.claude/projects/$PROJECT_KEY/memory}"
@@ -47,6 +52,12 @@ for path in "${TARGETS[@]}"; do
     fi
 done
 
+if [ "$BESTAI_DRY_RUN" = "1" ]; then
+    echo "[DRY-RUN] Would rehydrate ${#SELECTED[@]} files" >&2
+    emit_event "rehydrate" "DRY_RUN" "{\"files\":${#SELECTED[@]}}" 2>/dev/null || true
+    exit 0
+fi
+
 echo "REHYDRATE: START"
 LOADED=0
 for file in "${SELECTED[@]}"; do
@@ -65,4 +76,5 @@ fi
 echo "REHYDRATE: DONE"
 echo "LOADED_COUNT: $LOADED"
 
+emit_event "rehydrate" "DONE" "{\"loaded\":$LOADED}" 2>/dev/null || true
 exit 0

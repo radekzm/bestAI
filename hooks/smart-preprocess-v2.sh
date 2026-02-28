@@ -16,6 +16,9 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 if ! command -v jq >/dev/null 2>&1; then
     exit 0
 fi
@@ -178,4 +181,5 @@ echo "context:"
 echo "$PACKED" | sed 's/^/- /'
 echo "[/SMART_CONTEXT_V2]"
 
+emit_event "smart-preprocess-v2" "INJECT" "{\"haiku\":$USE_HAIKU}" 2>/dev/null || true
 exit 0

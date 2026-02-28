@@ -1,4 +1,4 @@
-# bestAI — Guidelines for AI Agents v7.0
+# bestAI — Guidelines for AI Agents v7.1
 
 > Modular, evidence-based guidelines. Hooks enforce, CLAUDE.md guides.
 

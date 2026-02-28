@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
+BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
+
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 MEMORY_DIR="${SYNC_STATE_MEMORY_DIR:-$HOME/.claude/projects/$PROJECT_KEY/memory}"
@@ -27,6 +32,12 @@ fi
 
 if [ -z "$CHANGED_FILES" ]; then
     CHANGED_FILES="(no working tree changes detected)"
+fi
+
+if [ "$BESTAI_DRY_RUN" = "1" ]; then
+    echo "[DRY-RUN] Would sync state: session-log + state delta" >&2
+    emit_event "sync-state" "DRY_RUN" "{}" 2>/dev/null || true
+    exit 0
 fi
 
 if [ ! -f "$SESSION_LOG" ]; then
@@ -110,4 +121,5 @@ if [ -f "$STATE_FILE" ]; then
     rm -f "$DELTA_TMP"
 fi
 
+emit_event "sync-state" "DONE" "{}" 2>/dev/null || true
 exit 0

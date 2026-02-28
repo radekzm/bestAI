@@ -1,4 +1,4 @@
-# AGENTS.md — bestAI Guidelines for AI Agents v7.0
+# AGENTS.md — bestAI Guidelines for AI Agents v7.1
 
 <!-- Compatible with: Claude Code, OpenAI Codex, Sourcegraph Amp, Cursor, Windsurf, Gemini CLI -->
 
@@ -77,7 +77,13 @@ All hooks live in `hooks/` and are declared in `hooks/manifest.json` with priori
 
 | File | Purpose |
 |------|---------|
-| `hook-event.sh` | Canonical JSONL event logging + `_bestai_project_hash()`. Sourced by all hooks. |
+| `hook-event.sh` | Canonical JSONL event logging (`emit_event()`) + `_bestai_project_hash()`. Sourced by all 17 hooks. |
+| `lib-dryrun.sh` | Unified `block_or_log()` — respects `BESTAI_DRY_RUN=1` (log instead of block). |
+
+### Cross-Cutting Features
+
+- **JSONL Event Logging**: All 17 hooks emit events to `~/.cache/bestai/events.jsonl`. Query: `jq 'select(.hook=="check-frozen")' events.jsonl`
+- **Dry-Run Mode**: Set `BESTAI_DRY_RUN=1` to log blocks without enforcement. Works on all 12 blocking/mutating hooks. Non-blocking hooks (ghost-tracker, wal-logger, preprocess-prompt, smart-preprocess-v2, circuit-breaker) skip dry-run as they never block.
 
 ### Latency Budgets
 

@@ -16,6 +16,9 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 MEMORY_DIR_DEFAULT="$HOME/.claude/projects/$PROJECT_KEY/memory"
@@ -25,7 +28,7 @@ MEMORY_DIR="${SMART_CONTEXT_MEMORY_DIR:-$MEMORY_DIR_DEFAULT}"
 INTERVAL="${OBSERVER_INTERVAL:-5}"
 MODEL="${OBSERVER_MODEL:-haiku}"
 TIMEOUT="${OBSERVER_TIMEOUT:-5}"
-DRY_RUN="${OBSERVER_DRY_RUN:-0}"
+DRY_RUN="${OBSERVER_DRY_RUN:-${BESTAI_DRY_RUN:-0}}"
 
 SESSION_COUNTER="$MEMORY_DIR/.session-counter"
 OBSERVATION_FILE="$MEMORY_DIR/observations.md"
@@ -91,4 +94,5 @@ fi
     echo "$COMPRESSED"
 } >> "$OBSERVATION_FILE"
 
+emit_event "observer" "DONE" "{\"session\":$CURRENT_SESSION,\"haiku\":$HAIKU_AVAILABLE}" 2>/dev/null || true
 exit 0

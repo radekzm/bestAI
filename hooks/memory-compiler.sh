@@ -17,13 +17,16 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 MEMORY_DIR_DEFAULT="$HOME/.claude/projects/$PROJECT_KEY/memory"
 MEMORY_DIR="${SMART_CONTEXT_MEMORY_DIR:-$MEMORY_DIR_DEFAULT}"
 [ -d "$MEMORY_DIR" ] || exit 0
 
-DRY_RUN="${MEMORY_COMPILER_DRY_RUN:-0}"
+DRY_RUN="${MEMORY_COMPILER_DRY_RUN:-${BESTAI_DRY_RUN:-0}}"
 GC_AGE_THRESHOLD="${MEMORY_COMPILER_GC_AGE:-20}"
 MAX_MEMORY_LINES=200
 
@@ -348,4 +351,5 @@ run_gc
 generate_index
 enforce_memory_cap
 
+emit_event "memory-compiler" "DONE" "{\"dry_run\":$DRY_RUN}" 2>/dev/null || true
 exit 0

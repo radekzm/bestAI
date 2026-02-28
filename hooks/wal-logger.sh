@@ -9,6 +9,9 @@
 
 set -euo pipefail
 
+# Shared event logging
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 # If jq is missing, skip (logging hook, not enforcement)
 if ! command -v jq &>/dev/null; then
     exit 0
@@ -72,19 +75,23 @@ case "$TOOL_NAME" in
         # Only log potentially destructive commands
         if echo "$COMMAND" | grep -qE '(rm |mv |cp |chmod|chown|deploy|restart|migrate|rsync|docker|git push|git reset|git checkout|kill |drop |truncate )'; then
             log_entry "[DESTRUCTIVE] [BASH] $SAFE_CMD"
+            emit_event "wal-logger" "LOG" "{\"category\":\"DESTRUCTIVE\"}" 2>/dev/null || true
         elif echo "$COMMAND" | grep -qE '(git commit|git merge|git rebase|npm publish|pip install)'; then
             log_entry "[MODIFY] [BASH] $SAFE_CMD"
+            emit_event "wal-logger" "LOG" "{\"category\":\"MODIFY\"}" 2>/dev/null || true
         fi
         ;;
     Write)
         FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
         [ -z "$FILE_PATH" ] && exit 0
         log_entry "[WRITE] [FILE] $FILE_PATH"
+        emit_event "wal-logger" "LOG" "{\"category\":\"WRITE\",\"file\":\"$FILE_PATH\"}" 2>/dev/null || true
         ;;
     Edit)
         FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
         [ -z "$FILE_PATH" ] && exit 0
         log_entry "[EDIT] [FILE] $FILE_PATH"
+        emit_event "wal-logger" "LOG" "{\"category\":\"EDIT\",\"file\":\"$FILE_PATH\"}" 2>/dev/null || true
         ;;
 esac
 

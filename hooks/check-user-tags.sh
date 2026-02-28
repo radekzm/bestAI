@@ -11,6 +11,11 @@
 
 set -euo pipefail
 
+# Shared event logging
+HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=hook-event.sh
+source "$HOOKS_DIR/hook-event.sh" 2>/dev/null || true
+
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
 
 if ! command -v jq &>/dev/null; then
@@ -88,6 +93,7 @@ if [ "$TOOL_NAME" = "Write" ]; then
         echo "Missing [USER] entries:" >&2
         echo "$MISSING" >&2
         echo "To override: user must explicitly approve removal." >&2
+        emit_event "check-user-tags" "BLOCK" "{\"tool\":\"Write\",\"file\":\"$(basename "$TARGET")\"}" 2>/dev/null || true
         exit 2
     fi
 fi
@@ -124,8 +130,10 @@ if [ "$TOOL_NAME" = "Edit" ]; then
         echo "Missing [USER] entries in replacement:" >&2
         echo "$MISSING" >&2
         echo "To override: user must explicitly approve removal." >&2
+        emit_event "check-user-tags" "BLOCK" "{\"tool\":\"Edit\",\"file\":\"$(basename "$TARGET")\"}" 2>/dev/null || true
         exit 2
     fi
 fi
 
+emit_event "check-user-tags" "ALLOW" "{\"tool\":\"${TOOL_NAME:-unknown}\"}" 2>/dev/null || true
 exit 0
