@@ -1,0 +1,29 @@
+[package]
+name = "bestai"
+version = "0.1.0"
+edition = "2021"
+description = "The Enterprise Fortress for Autonomous Agent Governance"
+authors = ["radekzm <radekzm@users.noreply.github.com>"]
+license = "MIT"
+
+[dependencies]
+# CLI Argument Parsing
+clap = { version = "4.4", features = ["derive"] }
+
+# Async Runtime (for the Conductor & Swarm Dispatcher)
+tokio = { version = "1.35", features = ["full"] }
+
+# JSON Serialization (for GPS.json, CONTRACT.json, events.jsonl)
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error Handling
+anyhow = "1.0"
+
+# Terminal UI & Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+colored = "2.0"
+
+# File system / path manipulation
+directories = "5.0"
