@@ -5,7 +5,7 @@
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v14.0.1-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v14.1.0-blue?logo=npm)](https://www.npmjs.com/)
   [![Rust Rewrite](https://img.shields.io/badge/status-Rewriting_in_Rust-orange?logo=rust)]()
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()

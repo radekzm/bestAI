@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (2026-02-28)
+## v14.1.0 (2026-02-28)
 
 ### Added
 - **SMART_CONTEXT_LLM_SCORING** (#45): `hooks/smart-preprocess-v2.sh` supports LLM score-per-file routing (`SMART_CONTEXT_LLM_SCORING=1`) with deterministic top-N selection and threshold (`SMART_CONTEXT_LLM_MIN_SCORE`), plus explainable `scores:` output.
