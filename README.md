@@ -22,17 +22,33 @@
 
 ---
 
-## 🌌 OpenClaw Integration (Total Recall)
+## 🔄 How bestAI Works (The Workflow)
 
-bestAI v8.0 introduces a dedicated mode for **OpenClaw** and high-persistence environments. 
+```mermaid
+graph LR
+    User[User Prompt] --> Hook{🛡️ bestAI Hooks}
+    Hook -- Block --> Fix[💡 Auto-Fix Suggestion]
+    Hook -- Allow --> Exec[🤖 Agent Execution]
+    Exec --> GPS[🛰️ Sync GPS State]
+    GPS --> Context[🧠 Update Context Tiers]
+    Context --> User
+```
 
-### Why OpenClaw + bestAI?
-In standard workflows, context is trimmed to save costs. In OpenClaw, **we remember everything.** By setting `BESTAI_OPENCLAW=1`, you activate:
-- **Zero-Pruning Policy:** The Memory Compiler will never delete or archive your history.
-- **Master Project Chronology:** All session logs are preserved for deep historical reasoning.
-- **Omni-Vendor Handshake:** Use Claude for reasoning while maintaining Geminis 2M context as a live research archive.
+---
 
-👉 **Learn more:** [Module 04: OpenClaw Integration](modules/04-openclaw-integration.md)
+## 🌌 bestAI + OpenClaw
+**High-Persistence Autonomous Intelligence.**
+Using bestAI in OpenClaw unlocks **Total Recall Mode**. Preserve every decision, decision log, and codebase change across weeks of autonomous operation. No pruning, no forgetting.
+
+👉 **[Learn how bestAI powers OpenClaw](docs/OPENCLAW.md)**
+
+---
+
+## 🏗️ bestAI for IT Projects
+**Enterprise-Grade Standards for AI Engineering.**
+Build robust IT projects with **Deterministic Compliance**. bestAI forces agents to follow security, testing, and architectural rules, reducing technical debt by 90%.
+
+👉 **[Learn how bestAI builds IT Projects](docs/IT-PROJECTS.md)**
 
 ---
 
