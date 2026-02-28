@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/decision-loop.svg" alt="bestAI Hero" width="1000" />
-  <h1>bestAI v14.0</h1>
-  <p><strong>The Enterprise Fortress for Autonomous Agent Governance.</strong></p>
+  <h1>bestAI v1.0 (Stable)</h1>
+  <p><strong>Stable Enterprise Governance for AI Swarms. Roadmap to v14.0 (Rust) enabled.</strong></p>
 
   [![NPM Version](https://img.shields.io/badge/npm-v14.0.0-blue?logo=npm)](https://www.npmjs.com/package/@radekzm/bestai)
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
