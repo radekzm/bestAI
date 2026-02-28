@@ -275,9 +275,9 @@ customize_claude() {
 
 customize_claude "$TARGET/CLAUDE.md"
 
-# Step 1b: Project Blueprints (v5.0)
+# Step 1b: Project Blueprints (v7.0)
 echo ""
-echo -e "${BOLD}Step 1b: Project Blueprints (v5.0)${NC}"
+echo -e "${BOLD}Step 1b: Project Blueprints (v7.0)${NC}"
 BP_SELECTION=""
 case "$BLUEPRINT_MODE" in
     fullstack) BP_SELECTION="1" ;;

@@ -488,9 +488,9 @@ else
     check "WARN" "No frozen-fragments.md" "Create from templates/frozen-fragments-template.md"
 fi
 
-# === v5.0 Architecture (RAG & Orchestration) ===
+# === v7.0 Architecture (RAG & Orchestration) ===
 echo ""
-echo -e "${BOLD}v5.0 Architecture (RAG & Orchestration)${NC}"
+echo -e "${BOLD}v7.0 Architecture (RAG & Orchestration)${NC}"
 
 if [ -f "$TARGET_ABS/.bestai/T3-summary.md" ]; then
     check "OK" "T3-summary.md (Invisible Limit) present"
