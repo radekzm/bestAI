@@ -4,13 +4,19 @@
 
 set -euo pipefail
 
+# Shared event logging (must be sourced before block_or_dryrun uses emit_event)
+# shellcheck source=hook-event.sh
+source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+
 # Dry-run mode: report potential blocks but do not block execution.
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
 STAGING_TTL_SECONDS="${BESTAI_SECRET_STAGING_TTL:-600}"
 
 project_key() {
-    local project_dir="${CLAUDE_PROJECT_DIR:-.}"
-    echo "$project_dir" | tr '/' '-'
+    _bestai_project_hash "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || {
+        local project_dir="${CLAUDE_PROJECT_DIR:-.}"
+        printf '%s' "$project_dir" | md5sum 2>/dev/null | awk '{print substr($1,1,16)}' || printf '%s' "$project_dir" | cksum | awk '{print $1}'
+    }
 }
 
 staging_log_path() {
@@ -73,8 +79,6 @@ TOOL_INPUT="$(printf '%s\n' "$INPUT" | jq -c '.tool_input // {}' 2>/dev/null)" |
 }
 
 _BESTAI_TOOL_NAME="$TOOL_NAME"
-# shellcheck source=hook-event.sh
-source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
 
 contains_secret_pattern() {
     local data="$1"
