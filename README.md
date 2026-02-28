@@ -5,7 +5,7 @@
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v10.0.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v10.1.0-blue?logo=npm)](https://www.npmjs.com/)
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
@@ -33,6 +33,17 @@ graph LR
     GPS --> Context[🧠 Update Context Tiers]
     Context --> User
 ```
+
+---
+
+## 📜 The AI Agent Contract (v10.1)
+
+bestAI projects are now self-documenting for incoming agents. The `.bestai/CONTRACT.json` file provides a machine-readable definition of:
+- **Capabilities:** What enforcement and orchestration modes are active.
+- **Toolbelt:** List of available `bestai` commands and their purpose.
+- **Security:** Which files are protected and how bypasses are handled.
+
+Incoming agents (Claude, GPT, etc.) read this contract at boot to align with your project's deterministic standards.
 
 ---
 

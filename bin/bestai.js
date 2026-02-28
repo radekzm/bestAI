@@ -32,6 +32,7 @@ const commands = {
     'serve-dashboard': path.join(__dirname, '..', 'tools', 'serve-dashboard.sh'),
     'permit':     path.join(__dirname, '..', 'tools', 'permit.sh'),
     'conductor':  path.join(__dirname, '..', 'tools', 'conductor.py'),
+    'contract':   path.join(__dirname, '..', 'templates', 'contract-template.json'),
 };
 
 const scriptPath = commands[command];

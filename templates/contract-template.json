@@ -1,0 +1,31 @@
+{
+  "version": "10.1",
+  "project_standards": "bestAI v10",
+  "capabilities": {
+    "deterministic_enforcement": {
+      "status": "enabled",
+      "mechanism": "Bash Hooks (Fail-Closed)",
+      "exit_code_block": 2
+    },
+    "orchestration": {
+      "mode": "Omni-Vendor Syndicate",
+      "shared_state": ".bestai/GPS.json",
+      "concurrency_control": "swarm-lock (Mutex)"
+    },
+    "memory_architecture": {
+      "tiers": 5,
+      "persistence_mode": "context-os",
+      "research_vault": ".bestai/vault/"
+    }
+  },
+  "available_tools": [
+    { "name": "bestai doctor", "purpose": "Architectural health check" },
+    { "name": "bestai swarm", "purpose": "Dispatch task to specialist (Claude/Gemini/Ollama)" },
+    { "name": "bestai permit", "purpose": "Grant temporary bypass for frozen files" },
+    { "name": "bestai cockpit", "purpose": "View real-time compliance and swarm status" }
+  ],
+  "security_policy": {
+    "frozen_files": "memory/frozen-fragments.md",
+    "secret_scrubbing": "enabled (hooks/secret-guard.sh)"
+  }
+}
