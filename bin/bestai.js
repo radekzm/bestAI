@@ -28,6 +28,7 @@ const commands = {
     'validate-context': path.join(__dirname, '..', 'tools', 'validate-shared-context.sh'),
     'swarm':      path.join(__dirname, '..', 'tools', 'swarm-dispatch.sh'),
     'swarm-lock': path.join(__dirname, '..', 'tools', 'swarm-lock.sh'),
+    'sandbox':    path.join(__dirname, '..', 'tools', 'agent-sandbox.sh'),
 };
 
 const scriptPath = commands[command];
