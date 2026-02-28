@@ -47,6 +47,7 @@ const commands = {
     'retro-onboard': path.join(baseDir, 'tools', 'retro-onboard.py'),
     'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
     'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
+    'self-heal':  path.join(baseDir, 'tools', 'self-heal.py'),
 };
 
 const scriptPath = commands[command];
