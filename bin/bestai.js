@@ -31,6 +31,7 @@ const commands = {
     'sandbox':    path.join(__dirname, '..', 'tools', 'agent-sandbox.sh'),
     'serve-dashboard': path.join(__dirname, '..', 'tools', 'serve-dashboard.sh'),
     'permit':     path.join(__dirname, '..', 'tools', 'permit.sh'),
+    'conductor':  path.join(__dirname, '..', 'tools', 'conductor.py'),
 };
 
 const scriptPath = commands[command];
