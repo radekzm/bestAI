@@ -76,6 +76,12 @@ else
 
     created_epoch="$(parse_timestamp_epoch "$created_at" || true)"
     updated_epoch="$(parse_timestamp_epoch "$updated_at" || true)"
+    if [ -n "$created_at" ] && [ -z "$created_epoch" ]; then
+        errors+=("timestamps_created_at_invalid")
+    fi
+    if [ -n "$updated_at" ] && [ -z "$updated_epoch" ]; then
+        errors+=("timestamps_updated_at_invalid")
+    fi
     if [ -n "$created_epoch" ] && [ -n "$updated_epoch" ] && [ "$updated_epoch" -lt "$created_epoch" ]; then
         errors+=("timestamps_updated_at_before_created_at")
     fi

@@ -15,15 +15,17 @@ Ten runbook opisuje **stan faktyczny** orkiestracji multi-vendor w bestAI:
 | Gemini CLI | implemented | `bestai swarm --task "..." --vendor gemini` | Wymaga lokalnego binarnego `gemini`. |
 | Codex/OpenAI | partial (placeholder) | `bestai swarm --task "..." --vendor codex` | Aktualnie brak realnego wykonania polecenia przez CLI. |
 
-## Auto-routing (MVP heurystyczny)
+## Auto-routing (heurystyki + historia)
 
 `swarm-dispatch.sh` wspiera teraz tryb auto (gdy nie podasz `--vendor`):
 - klasyfikuje złożoność zadania (`simple|medium|complex`),
 - dobiera głębokość analizy (`fast|balanced|deep`),
-- rekomenduje i wybiera vendora z fallbackiem do dostępnego CLI.
+- rekomenduje i wybiera vendora z fallbackiem do dostępnego CLI,
+- wykorzystuje historię decyzji z `.bestai/router-decisions.jsonl`,
+- bierze pod uwagę sygnał z event logu (ratio `BLOCK/ALLOW`),
+- wspiera policy fallback przez `BESTAI_ROUTER_POLICY` (`balanced`, `prefer_fast`, `prefer_reliability`).
 
 Nadal nie ma:
-- policy routingu uczącej się na historycznych metrykach,
 - schedulerów,
 - globalnego load-balancingu.
 
@@ -57,9 +59,9 @@ Przed użyciem `bestai swarm`:
 ## Known limitations
 
 1. `codex` path w dispatcherze jest placeholderem.
-2. Auto-routing jest heurystyczny (reguły), nie policy-driven.
+2. Auto-routing jest nadal regułowy (to nie jest model uczony), mimo wsparcia historii/policy fallback.
 3. Brak centralnego SLA/per-vendor retry policy.
-4. Brak metryk per-vendor w jednym zunifikowanym dashboardzie (poza podstawowym `bestai cockpit`).
+4. Brak schedulerów kolejki z globalną koordynacją locków między hostami.
 
 ## Plan dojścia do "real swarm"
 
@@ -86,11 +88,16 @@ bestai swarm --task "Przeskanuj legacy pod API debt" --vendor gemini
 bestai route --task "Audit auth module and propose fixes"
 bestai swarm --task "Audit auth module and propose fixes"
 
+# Wymuszenie policy oszczędzania tokenów/czasu
+BESTAI_ROUTER_POLICY=prefer_fast bestai route --task "Generate boilerplate tests"
+
 # Walidacja handoff contract
 bestai validate-context .bestai/handoff-latest.json
 
-# Live cockpit
+# Live cockpit (pełny/compact/json)
 bestai cockpit .
+bestai cockpit . --compact
+bestai cockpit . --json | jq .
 
 # Walidacja po rundzie
 bestai test
