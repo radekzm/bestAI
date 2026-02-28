@@ -18,8 +18,7 @@ class SyndicateConductor:
         entry = {"ts": datetime.now().isoformat(), "role": role, "msg": message}
         self.history.append(entry)
         with open(".bestai/live_session.jsonl", "a") as f:
-            f.write(json.dumps(entry) + "
-")
+            f.write(json.dumps(entry) + "\n")
 
     def get_cached_research(self, topic):
         memo_path = os.path.join(self.vault_dir, f"{topic.replace(' ', '_')}.memo")

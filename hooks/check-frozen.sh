@@ -6,8 +6,9 @@
 
 set -euo pipefail
 
-# Load shared libraries (event logging must come before block_or_dryrun)
+# Load shared libraries
 HOOKS_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$HOOKS_DIR/lib-event-bus.sh" 2>/dev/null || true
 # shellcheck source=hook-event.sh
 source "$HOOKS_DIR/hook-event.sh" 2>/dev/null || true
 source "$HOOKS_DIR/lib-dryrun.sh" 2>/dev/null || {

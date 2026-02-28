@@ -6,6 +6,7 @@ set -euo pipefail
 
 # Shared event logging
 source "$(dirname "$0")/hook-event.sh" 2>/dev/null || true
+source "$(dirname "$0")/lib-event-bus.sh" 2>/dev/null || true
 
 BESTAI_DRY_RUN="${BESTAI_DRY_RUN:-0}"
 
