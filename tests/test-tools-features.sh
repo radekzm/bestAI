@@ -8,6 +8,7 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ROUTER="$ROOT_DIR/tools/task-router.sh"
 BINDING="$ROOT_DIR/tools/task-memory-binding.sh"
 VALIDATE="$ROOT_DIR/tools/validate-shared-context.sh"
+SMART_V2="$ROOT_DIR/hooks/smart-preprocess-v2.sh"
 
 PASS=0
 FAIL=0
@@ -92,6 +93,7 @@ require_cmd jq
 require_file "$ROUTER"
 require_file "$BINDING"
 require_file "$VALIDATE"
+require_file "$SMART_V2"
 
 echo "=== task-router --json ==="
 ROUTE_OUTPUT=$(BESTAI_EVENT_LOG="$EVENT_LOG" bash "$ROUTER" --task "Audit auth module and propose fixes" --project-dir "$PROJECT_TMP" --json 2>&1)
@@ -144,6 +146,67 @@ assert_exit "validate-shared-context returns invalid status" "2" "$VALIDATE_CODE
 if [ "$VALIDATE_CODE" = "2" ]; then
     assert_contains "validator flags created_at invalid" "$VALIDATE_OUTPUT" "timestamps_created_at_invalid"
     assert_contains "validator flags updated_at invalid" "$VALIDATE_OUTPUT" "timestamps_updated_at_invalid"
+fi
+
+echo ""
+echo "=== smart-preprocess-v2 scoring mode ==="
+SP_HOME="$TMP_ROOT/sp-home"
+SP_PROJECT="$TMP_ROOT/sp-project"
+SP_MEMORY="$SP_HOME/.claude/projects/$(echo "$SP_PROJECT" | tr '/' '-')/memory"
+SP_BIN="$TMP_ROOT/sp-bin"
+mkdir -p "$SP_MEMORY" "$SP_BIN" "$SP_PROJECT/.claude"
+
+cat > "$SP_MEMORY/context-index.md" <<'IDX'
+# Context Index
+- auth-decisions.md
+- api-pitfalls.md
+- random.md
+IDX
+
+cat > "$SP_MEMORY/auth-decisions.md" <<'MD'
+Use JWT for auth.
+MD
+cat > "$SP_MEMORY/api-pitfalls.md" <<'MD'
+Common auth middleware pitfalls.
+MD
+cat > "$SP_MEMORY/random.md" <<'MD'
+Unrelated notes.
+MD
+
+cat > "$SP_BIN/claude" <<'EOF'
+#!/bin/bash
+cat <<'JSON'
+[
+  {"file":"api-pitfalls.md","score":9},
+  {"file":"auth-decisions.md","score":8},
+  {"file":"../../etc/passwd","score":10},
+  {"file":"random.md","score":2}
+]
+JSON
+EOF
+chmod +x "$SP_BIN/claude"
+
+SMART_OUTPUT=$(printf '{"prompt":"Fix auth middleware and token validation"}\n' \
+    | HOME="$SP_HOME" \
+      CLAUDE_PROJECT_DIR="$SP_PROJECT" \
+      SMART_CONTEXT_MEMORY_DIR="$SP_MEMORY" \
+      SMART_CONTEXT_USE_HAIKU=1 \
+      SMART_CONTEXT_LLM_SCORING=1 \
+      SMART_CONTEXT_LLM_MIN_SCORE=5 \
+      PATH="$SP_BIN:$PATH" \
+      bash "$SMART_V2" 2>&1)
+SMART_CODE=$?
+assert_exit "smart-preprocess-v2 scoring exits 0" "0" "$SMART_CODE"
+if [ "$SMART_CODE" = "0" ]; then
+    assert_contains "smart-preprocess-v2 router is scoring" "$SMART_OUTPUT" "router: haiku-scoring"
+    assert_contains "smart-preprocess-v2 includes scores section" "$SMART_OUTPUT" "scores:"
+    if printf '%s' "$SMART_OUTPUT" | grep -q "/etc/passwd"; then
+        echo -e "  ${RED}FAIL${NC} smart-preprocess-v2 blocks path traversal candidate"
+        FAIL=$((FAIL + 1))
+    else
+        echo -e "  ${GREEN}PASS${NC} smart-preprocess-v2 blocks path traversal candidate"
+        PASS=$((PASS + 1))
+    fi
 fi
 
 echo ""
