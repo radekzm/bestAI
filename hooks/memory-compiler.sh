@@ -334,6 +334,14 @@ run_gc() {
     fi
 }
 
+# --- OpenClaw Integration (v8.0 Total Recall) ---
+OPENCLAW="${BESTAI_OPENCLAW:-0}"
+if [ "$OPENCLAW" = "1" ]; then
+    echo "[bestAI] [OPENCLAW] Total Recall active. Bypassing GC and Memory Trimming." >&2
+    generate_index
+    exit 0
+fi
+
 # --- Execute pipeline ---
 # GC runs first (before index generation bootstraps missing usage entries)
 run_gc

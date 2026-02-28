@@ -22,6 +22,20 @@
 
 ---
 
+## 🌌 OpenClaw Integration (Total Recall)
+
+bestAI v8.0 introduces a dedicated mode for **OpenClaw** and high-persistence environments. 
+
+### Why OpenClaw + bestAI?
+In standard workflows, context is trimmed to save costs. In OpenClaw, **we remember everything.** By setting `BESTAI_OPENCLAW=1`, you activate:
+- **Zero-Pruning Policy:** The Memory Compiler will never delete or archive your history.
+- **Master Project Chronology:** All session logs are preserved for deep historical reasoning.
+- **Omni-Vendor Handshake:** Use Claude for reasoning while maintaining Geminis 2M context as a live research archive.
+
+👉 **Learn more:** [Module 04: OpenClaw Integration](modules/04-openclaw-integration.md)
+
+---
+
 ## 🚀 Quick Start (Zero-to-Hero)
 
 Get bestAI v8.0 running in your project in less than 2 minutes.
