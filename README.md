@@ -5,7 +5,7 @@
   
   <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v12.0.0-blue?logo=npm)](https://www.npmjs.com/)
+  [![NPM Version](https://img.shields.io/badge/npm-v13.0.0-blue?logo=npm)](https://www.npmjs.com/)
   [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
@@ -60,6 +60,29 @@ The latest evolution of bestAI introduces the **Syndicate Conductor**. You no lo
 🎬 **[Watch the v10.0 Living Swarm Demo](docs/V10-DEMO.md)**
 
 👉 Run it now: `bestai conductor`
+
+---
+
+## 👥 v13.0: The Human-AI Nexus (Team Collaboration)
+
+bestAI v13.0 transforms from an individual tool to a **Team Governance Platform**. It enables Juniors, Seniors, and Managers to collaborate with AI Swarms through a unified project brain.
+
+### Key v13.0 Mechanisms:
+- **Nexus Journal:** Every strategic human decision is logged and injected into the AI's T0 context, preventing models from contradicting human intent.
+- **Role-Based Governance:** Customize hook intensity based on the user's seniority (e.g., Juniors get stricter Fail-Closed safety).
+- **Knowledge Handshake:** Automated onboarding for new team members by parsing the Research Vault and Nexus logs.
+
+**The Nexus Workflow:**
+```mermaid
+graph LR
+    Lead[Senior Lead] -->|Strategy| Nexus((Nexus Bus))
+    Nexus -->|Constraint| AI[AI Swarm]
+    AI -->|Implementation| Nexus
+    Nexus -->|Audit| Stakeholder[Manager]
+    Junior[New Dev] -->|Learning| Nexus
+```
+
+👉 **Run a check-in:** `bestai nexus --user "Name" --role "Lead" --decision "..."`
 
 ---
 
