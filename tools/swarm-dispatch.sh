@@ -122,6 +122,13 @@ resolve_vendor() {
             # Keep explicit codex selection (partial support currently).
             echo "codex"
             ;;
+        ollama)
+            if command -v ollama >/dev/null 2>&1; then
+                echo "ollama"
+            else
+                echo "none"
+            fi
+            ;;
         *)
             echo "none"
             ;;
@@ -140,6 +147,12 @@ case "$EXEC_VENDOR" in
         ;;
     gemini)
         gemini --prompt "$prompt"
+        ;;
+    ollama)
+        # Default to llama3 if not specified via an env var
+        MODEL="${BESTAI_OLLAMA_MODEL:-llama3}"
+        echo "Using local model: $MODEL"
+        ollama run "$MODEL" "$prompt"
         ;;
     codex)
         echo "Codex/OpenAI dispatch selected. Local execution path is still partial."
