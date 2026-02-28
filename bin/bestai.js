@@ -27,13 +27,8 @@ const commands = {
     'merge-context': path.join(baseDir, 'tools', 'shared-context-merge.sh'),
     'permit':     path.join(baseDir, 'tools', 'permit.sh'),
     'generate-rules': path.join(baseDir, 'tools', 'generate-rules.sh'),
-    'conductor':  path.join(baseDir, 'tools', 'conductor.py'),
     'contract':   path.join(baseDir, 'templates', 'contract-template.json'),
     'sandbox':    path.join(baseDir, 'tools', 'agent-sandbox.sh'),
-    'serve-dashboard': path.join(baseDir, 'tools', 'serve-dashboard.sh'),
-    'retro-onboard': path.join(baseDir, 'tools', 'retro-onboard.py'),
-    'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
-    'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
 };
 
 function printHelp() {

@@ -1,10 +1,10 @@
-# AGENTS.md — bestAI Guidelines for AI Agents v7.1
+# AGENTS.md — bestAI Guidelines for AI Agents v1.0
 
 <!-- Compatible with: Claude Code, OpenAI Codex, Sourcegraph Amp, Cursor, Windsurf, Gemini CLI -->
 
 ## Overview
 
-bestAI v7.0 provides modular, evidence-based guidelines for AI coding agents. Built on data from 234 sessions and 16,761 tool calls, it uses **hooks for enforcement** (deterministic, cannot be bypassed) and **CLAUDE.md for guidance** (advisory, 6% compliance in production). Supports multi-vendor orchestration across Claude Code, Gemini CLI, and OpenAI Codex.
+bestAI v1.0 provides modular, evidence-based guidelines for AI coding agents. Built on data from 234 sessions and 16,761 tool calls, it uses **hooks for enforcement** (deterministic, cannot be bypassed) and **CLAUDE.md for guidance** (advisory, 6% compliance in production). Supports multi-vendor orchestration across Claude Code, Gemini CLI, and OpenAI Codex.
 
 ## Modules
 

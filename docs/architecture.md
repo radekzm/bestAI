@@ -251,4 +251,4 @@ ghost-tracker.sh ──writes──→ ghost-hits.log ──read by──→ pre
 | GPS shared state | **Preview** | Implemented, limited multi-agent testing |
 | Multi-vendor dispatch | **Preview** | Dispatcher exists, no production data |
 | RAG/vector search | **Preview** | Script exists, no production validation |
-| Budget monitoring | **Conceptual** | Script exists, no integration testing |
+| Budget monitoring | **Preview** | Script exists, no integration testing |

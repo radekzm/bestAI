@@ -1,303 +1,209 @@
 <div align="center">
-  <img src="https://placehold.co/1200x300/1e1e2e/61afef?text=bestAI+v14.0+LIVING+SWARM&font=Montserrat" alt="bestAI Hero" />
 
-  <h1>bestAI: Omni-Vendor Convergence</h1>
-  
-  <p><strong>The industry-leading orchestration layer for autonomous AI engineering swarms.</strong></p>
+  <h1>bestAI</h1>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v14.1.0-blue?logo=npm)](https://www.npmjs.com/)
-  [![Rust Rewrite](https://img.shields.io/badge/status-Rewriting_in_Rust-orange?logo=rust)]()
-  [![Omni-Agent](https://img.shields.io/badge/syndicate-Claude_%7C_Gemini_%7C_Codex_%7C_Ollama-purple?logo=ai)]()
+  <p><strong>Evidence-based enforcement hooks and context management for AI coding agents.</strong></p>
+
+  [![NPM Version](https://img.shields.io/badge/npm-v1.0.0-blue?logo=npm)](https://www.npmjs.com/package/@radekzm/bestai)
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
-  [![Coverage](https://img.shields.io/badge/hook_tests-100%25-brightgreen?logo=test)]()
   [![Protected by bestAI](https://img.shields.io/badge/protected_by-bestAI-61afef?logo=ai&style=flat-square)](https://github.com/radekzm/bestAI)
-  
+
   <p>
-    <a href="#-quick-start">Quick Start</a> •
-    <a href="#-tutorial-your-first-swarm">Tutorial</a> •
-    <a href="#-v140-the-rust-horizon">v14.0 (Rust)</a> •
-    <a href="#-core-mechanisms">Mechanisms</a> •
-    <a href="#-syndicate-toolbelt">Toolbelt</a>
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#core-mechanisms">Mechanisms</a> •
+    <a href="#hook-reference">Hooks</a> •
+    <a href="#toolbelt">Toolbelt</a> •
+    <a href="#maturity-matrix">Maturity</a>
   </p>
 </div>
 
 ---
 
-## 🦀 v14.0: The Rust Horizon (Professional Rewrite)
+## What is bestAI?
 
-bestAI has evolved from a simple set of guidelines into the world's most advanced **Autonomous Agent Governance OS**. To support Enterprise-scale swarms, we are actively rewriting the entire core from Bash/Python into **Rust**.
+AI agents ignore CLAUDE.md rules **94% of the time** in production. bestAI fixes this with **deterministic enforcement hooks** — Bash scripts that intercept tool calls and block violations with `exit 2`. No amount of prompt engineering can bypass a hook.
 
-### Why Rust? The Professional Standard
-1. **Zero Dependencies (Single Binary):** No more `jq`, Node.js, or Python environment issues. You download one incredibly fast executable (`bestai`) that works instantly on Linux, Mac, and Windows.
-2. **Sub-millisecond Latency:** AI agents trigger security hooks thousands of times per session. Rust eliminates the overhead of Bash subprocess forking, bringing hook latency from ~150ms down to **< 5ms**.
-3. **AST-Level Security:** Instead of relying on Regex to block malicious agent commands, the Rust core will use a true Abstract Syntax Tree (AST) parser to analyze shell commands, making the Force-Field mathematically unbreakable.
-4. **Memory-Safe Concurrency:** The `bestai conductor` (managing async Swarm threads) will run on the blazing-fast Tokio runtime, preventing any thread-locking or memory leaks during week-long autonomous sessions.
-
-👉 *The current npm/bash versions (v7-v13) serve as our stable V1 architecture while the Rust core is built.*
+Built on evidence from the Nuconic case study: 234 sessions, 16,761 tool calls, 29 days of production data.
 
 ---
 
-## 🔄 How bestAI Works (The Workflow)
+## Quick Start
+
+```bash
+# Install globally
+npm install -g @radekzm/bestai
+
+# Initialize in your project
+cd your-project
+bestai init .
+
+# Verify installation
+bestai doctor
+```
+
+Or without global install:
+```bash
+npx @radekzm/bestai@latest init /path/to/your/project
+npx @radekzm/bestai@latest doctor /path/to/your/project
+```
+
+---
+
+## How It Works
 
 ```mermaid
 graph LR
-    User[User Prompt] --> Hook{🛡️ bestAI Hooks}
-    Hook -- Block --> Fix[💡 Auto-Fix Suggestion]
-    Hook -- Allow --> Exec[🤖 Agent Execution]
-    Exec --> GPS[🛰️ Sync GPS State]
-    GPS --> Context[🧠 Update Context Tiers]
+    User[User Prompt] --> Hook{bestAI Hooks}
+    Hook -- Block --> Fix[Auto-Fix Suggestion]
+    Hook -- Allow --> Exec[Agent Execution]
+    Exec --> GPS[Sync GPS State]
+    GPS --> Context[Update Context Tiers]
     Context --> User
 ```
 
----
+```
+CLAUDE.md = guidance   (advisory — 6% compliance in production)
+Hooks     = enforcement (deterministic — exit 2 blocks the action)
+```
 
-## 📜 The AI Agent Contract (v10.1)
-
-bestAI projects are now self-documenting for incoming agents. The `.bestai/CONTRACT.json` file provides a machine-readable definition of:
-- **Capabilities:** What enforcement and orchestration modes are active.
-- **Toolbelt:** List of available `bestai` commands and their purpose.
-- **Security:** Which files are protected and how bypasses are handled.
-
-Incoming agents (Claude, GPT, etc.) read this contract at boot to align with your project's deterministic standards.
+Critical rules go in hooks. Style preferences stay in CLAUDE.md.
 
 ---
 
-## ⚡ v14.0: The Living Swarm (Conductor Mode)
-
-The latest evolution of bestAI introduces the **Syndicate Conductor**. You no longer wait for agents. You interact with a central "Project Brain" that orchestrates specialists in real-time.
-
-### Key v14.0 Mechanisms:
-- **Asynchronous Execution:** Sub-agents (Claude, Gemini) work in background threads.
-- **Intelligence Filtering:** The Conductor only alerts you for critical milestones or errors.
-- **Research Vault (TTL):** Global cache for codebase analysis. Run once, remember forever.
-- **Continuous Conversation:** A persistent shell that maintains multiple thought-streams.
-
-🎬 **[Watch the v14.0 Living Swarm Demo](docs/V10-DEMO.md)**
-
-👉 Run it now: `bestai conductor`
-
----
-
-## 👥 v14.0: The Human-AI Nexus (Team Collaboration)
-
-bestAI v14.0 transforms from an individual tool to a **Team Governance Platform**. It enables Juniors, Seniors, and Managers to collaborate with AI Swarms through a unified project brain.
-
-### Key v14.0 Mechanisms:
-- **Nexus Journal:** Every strategic human decision is logged and injected into the AI's T0 context, preventing models from contradicting human intent.
-- **Role-Based Governance:** Customize hook intensity based on the user's seniority (e.g., Juniors get stricter Fail-Closed safety).
-- **Knowledge Handshake:** Automated onboarding for new team members by parsing the Research Vault and Nexus logs.
-
-**The Nexus Workflow:**
-```mermaid
-graph LR
-    Lead[Senior Lead] -->|Strategy| Nexus((Nexus Bus))
-    Nexus -->|Constraint| AI[AI Swarm]
-    AI -->|Implementation| Nexus
-    Nexus -->|Audit| Stakeholder[Manager]
-    Junior[New Dev] -->|Learning| Nexus
-```
-
-👉 **Run a check-in:** `bestai nexus --user "Name" --role "Lead" --decision "..."`
-
----
-
-## 🧠 v14.0: The Elastic Brain (Infinite Depth)
-
-bestAI v14.0 eliminates the "flat context" problem. It introduces **Dynamic Context Zoom**, where the granularity of loaded data matches the precision of your task.
-
-### Key v14.0 Mechanisms:
-- **Macro/Micro Lens:** The Conductor stays high-level (strategic), while specialists (Sub-agents) are pumped with granular technical details only when a specific "Deep Task" is triggered.
-- **Recursive Delegation:** If a task is too complex, the agent spawns its own sub-swarm, preventing context saturation and maintaining 100% precision.
-- **Context Pressure Monitor:** Automatically triggers delegation when an agent's memory usage exceeds optimal thresholds.
-
-**The Elastic Workflow:**
-```mermaid
-graph TD
-    User[User Input] --> Conductor["Dyrygent - Macro Mode"]
-    Conductor -- Specific Task --> Specialist["Specialist - Micro Context"]
-    Specialist -- Too Heavy? --> SubSwarm[Recursive Sub-Swarm]
-    SubSwarm -- Results --> Specialist
-    Specialist -- Summary --> Conductor
-    Conductor -- Strategic Feedback --> User
-```
-
-👉 Run it now: `bestai conductor`
-
----
-
-## ⏳ v11.0: The Time Machine & Autonomous Guardian
-
-We identified the two biggest wastes of time and tokens in AI engineering: starting late on a messy project, and forcing LLMs to read the entire codebase just to figure out what needs testing. **v11.0 fixes both.**
-
-### 1. The Time Machine (Retroactive Onboarding)
-[![Retro Onboard](https://img.shields.io/badge/tool-retro--onboard-blue?logo=clock)]()
-
-Did you start using AI without bestAI? It's a mess, right? The Time Machine parses your messy, gigabyte-sized `.claude/history.jsonl` (or similar logs) **offline** (saving millions of tokens). It extracts architectural decisions and milestones, instantly generating a perfect `.bestai/GPS.json` and knowledge base.
-
-**The Workflow:**
-```mermaid
-graph LR
-    Chaos[Messy Chat Logs] -->|Offline Python Parser| TM((bestAI Time Machine))
-    TM -->|Extract Constraints| Dec[decisions.md]
-    TM -->|Extract Milestones| GPS[GPS.json]
-    GPS --> Order[Perfect Syndicate Start]
-```
-👉 **Run:** `bestai retro-onboard`
-
-### 2. The Autonomous Guardian (Token-Saving Test Builder)
-[![Guardian](https://img.shields.io/badge/tool-guardian-green?logo=shield)]()
-
-Why pay Claude API to scan 50 files just to write empty test stubs? The **Guardian** is an external script that statically analyzes your codebase, cross-references it with `GPS.json` functionalities, and automatically generates missing test boilerplates. You then simply command the agent: *"Fill in the empty tests."* **Token savings: ~80%.**
-
-**The Workflow:**
-```mermaid
-graph LR
-    Src[Source Code] -->|Static Analysis| Guard{bestAI Guardian}
-    GPS[GPS.json Specs] --> Guard
-    Guard -->|Zero Token Cost| Stubs[Empty Test Boilerplates]
-    Stubs --> LLM[LLM Agent Fills Logic]
-```
-👉 **Run:** `bestai guardian`
-
----
-
-## 🌌 bestAI + OpenClaw
-**High-Persistence Autonomous Intelligence.**
-Using bestAI in OpenClaw unlocks **Total Recall Mode**. Preserve every decision, decision log, and codebase change across weeks of autonomous operation. No pruning, no forgetting.
-
-👉 **[Learn how bestAI powers OpenClaw](docs/OPENCLAW.md)**
-
----
-
-## 🏗️ bestAI for IT Projects
-**Enterprise-Grade Standards for AI Engineering.**
-Build robust IT projects with **Deterministic Compliance**. bestAI forces agents to follow security, testing, and architectural rules, reducing technical debt by 90%.
-
-👉 **[Learn how bestAI builds IT Projects](docs/IT-PROJECTS.md)**
-
----
-
-## 🚀 Quick Start (Zero-to-Hero)
-
-### The One-Command OpenClaw Installer (v9.0+)
-Deploy a fully configured, high-persistence multi-agent environment instantly:
-```bash
-curl -s https://raw.githubusercontent.com/radekzm/bestAI/master/install-openclaw.sh | bash
-```
-
-### Manual Global Install
-```bash
-npm install -g @radekzm/bestai
-```
-
-### 2. Initialize bestAI in your Repo
-```bash
-cd your-project
-bestai init .
-```
-*Select the **"Omni-Vendor"** profile for the full multi-agent experience.*
-
-### 3. Verify Health
-```bash
-bestai doctor --strict
-```
-
----
-
-## 📖 Tutorial: Your First Swarm (Mini-API)
-
-In this example, we will build a simple FastAPI application using **Gemini** for mapping and **Claude** for implementation.
-
-### Step 1: Initialize the Project State
-Define your goal so all agents are aligned.
-```bash
-# Set the main goal in .bestai/GPS.json
-echo '{"project":{"name":"FastAPI-Mini","main_objective":"Build a secure user registration API"}}' > .bestai/GPS.json
-```
-
-### Step 2: Gemini Investigates (Research)
-Gemini scans your environment and suggests the tech stack.
-```bash
-bestai swarm --vendor gemini --task "Search for best FastAPI boilerplates and update T3-summary.md"
-```
-
-### Step 3: Claude Implements (Coding)
-Claude reads the research from GPS and implement the code, protected by hooks.
-```bash
-bestai swarm --vendor claude --task "Create main.py with a signup endpoint using standard FastAPI patterns"
-```
-
-### Step 4: Verify Compliance
-Check if the agents followed the rules.
-```bash
-bestai compliance
-```
-
-## 🔐 Agent Authorization & Security
-
-bestAI follows a **Zero-Knowledge** credential policy. Agents never handle raw API keys.
-
-### 1. Credential Delegation
-Before starting the swarm, ensure your local CLI tools are authenticated:
-- **Claude:** `claude auth login`
-- **Gemini:** `export GOOGLE_API_KEY=your_key` (in your shell, not in files)
-- **Ollama:** Running locally on `localhost:11434`
-
-### 2. The Secret-Guard Force-Field
-All bestAI projects include `hooks/secret-guard.sh`. This hook physically blocks agents from:
-- **Reading Secrets:** Attempts to `cat .env` or read SSH keys are blocked.
-- **Exfiltration:** Attempts to `curl` local data to external servers are intercepted.
-- **Leaking:** If an agent accidentally generates a secret in code, bestAI prevents the file write.
-
-> [!CAUTION]
-> Never ask an agent to "Manage my API keys". Always handle authentication manually in your host terminal.
-
----
-
-## 🔧 Core Mechanisms (Under the Hood)
-
-bestAI is built on five revolutionary engineering pillars:
+## Core Mechanisms
 
 ### 1. Deterministic Force-Field (Fail-Closed Hooks)
-Unlike soft prompt-based rules, bestAI uses **Bash Hooks**. Every file write or shell command is intercepted. If an agent tries to edit a `FROZEN` file, the script returns `Exit 2`.
 
-### 2. The 5-Tier Context OS
-We bypass token limits by segmenting memory: T0 (Hot/GPS) to T4 (Frozen/Config).
+Every file write or shell command is intercepted. If an agent tries to edit a frozen file, the hook returns `exit 2` — action blocked. Edit/Write hooks are **deterministic** (exact path match, cannot be bypassed). Bash hooks are **best-effort** (~95% enforcement via pattern matching).
 
-### 3. Omni-GPS (Shared Global State)
-A central JSON bus that synchronizes all agents (milestones, blockers, architectural decisions).
+### 2. 5-Tier Context OS
 
-### 4. Swarm Mutex (`swarm-lock`)
-Specifically for multi-vendor setups. Before any agent starts a heavy task, it places a lock on the target file path.
+Bypasses token limits by segmenting memory into tiers:
+- **T0** — Hot context (GPS, active task)
+- **T1** — Session state (facts, proofs, blockers)
+- **T2** — Memory (weighted entries with generational GC)
+- **T3** — Summaries (hierarchical, built offline)
+- **T4** — Frozen config (templates, rules)
 
-### 5. Human-in-the-Loop (`bestai permit`)
-The ultimate override mechanism. Grant a temporary pass:
-`bestai permit package.json --duration 10m`
+### 3. Circuit Breaker
+
+Two-phase pattern from distributed systems. `circuit-breaker.sh` (PostToolUse) tracks consecutive failures. After N failures → OPEN. `circuit-breaker-gate.sh` (PreToolUse) blocks commands while circuit is open. Supports HALF-OPEN auto-transition after cooldown.
+
+### 4. Smart Context
+
+Two implementations (mutually exclusive):
+- **v1** (`preprocess-prompt.sh`) — keyword/trigram matching. Fast (~200ms). No API calls.
+- **v2** (`smart-preprocess-v2.sh`) — LLM-scored injection via Haiku. Slower (~500ms), more accurate for ambiguous queries.
+
+### 5. Session Persistence
+
+At session end: `sync-state.sh` persists TOP-10 FACTS, TOP-5 PROOFS, TOP-3 BLOCKERS, LAST SESSION DELTA. At session start: `rehydrate.sh` restores state — zero file globs, paths from memory.
+
+### 6. Memory GC
+
+`memory-compiler.sh` implements generational garbage collection. Entries scored by `relevance × recency × usage_count`. Three generations: hot → warm → cold → purged.
 
 ---
 
-## 💎 The Strategic Value of bestAI (ROI)
+## Hook Reference
 
-| Metric | Before bestAI | With bestAI v14.0 (Rust) | Impact |
-| :--- | :--- | :--- | :--- |
-| **Agent Compliance** | ~6% (Advisory only) | **100% (Deterministic)** | Bulletproof safety. |
-| **Token Efficiency** | High bloat (uncut) | **-70% overhead** | Low API bills. |
-| **Vendor Lock-in** | Single model provider | **Omni-Vendor** | Flexibility (Claude+Gemini+Llama). |
+All hooks live in `hooks/` and are declared in `hooks/manifest.json` with priority, latency budget, and dependency graph.
+
+### PreToolUse
+
+| Hook | Matcher | Description |
+|------|---------|-------------|
+| `check-frozen.sh` | Edit, Write, Bash | Blocks edits to frozen files. Resolves symlinks. |
+| `secret-guard.sh` | Bash, Write, Edit | Blocks secrets, `.env` access, credential operations. |
+| `check-user-tags.sh` | Edit, Write | Prevents removal of `[USER]` tags. |
+| `confidence-gate.sh` | Bash | Blocks low-confidence destructive commands. |
+| `backup-enforcement.sh` | Bash | Requires backup manifest before deploy/migrate. |
+| `circuit-breaker-gate.sh` | Bash | Blocks commands when circuit breaker is OPEN. |
+| `wal-logger.sh` | Bash, Write, Edit | Write-ahead log for destructive operations. |
+
+### PostToolUse
+
+| Hook | Matcher | Description |
+|------|---------|-------------|
+| `circuit-breaker.sh` | Bash | Tracks error patterns, opens breaker after N failures. |
+| `ghost-tracker.sh` | Read, Grep, Glob | Tracks file reads for Smart Context scoring. |
+
+### UserPromptSubmit
+
+| Hook | Matcher | Description |
+|------|---------|-------------|
+| `preprocess-prompt.sh` | — | Smart Context v1 — keyword/trigram injection. |
+| `smart-preprocess-v2.sh` | — | Smart Context v2 — LLM-scored injection. |
+
+### SessionStart / Stop
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| `rehydrate.sh` | SessionStart | Restores session state from delta. |
+| `memory-compiler.sh` | Stop | Generational GC for memory entries. |
+| `sync-state.sh` | Stop | Persists session state delta. |
+| `sync-gps.sh` | Stop | Updates Global Project State. |
+| `observer.sh` | Stop | Meta-observations about memory drift. |
 
 ---
 
-## 🛠️ The Syndicate Toolbelt
+## Toolbelt
 
-| Tool | Capability |
-| :--- | :--- |
-| **`bestai conductor`** | The central AI orchestrator for real-time swarms. |
-| **`bestai swarm`** | Dispatches tasks to Claude, Gemini, or Ollama. |
-| **`serve-dashboard`** | Visual web interface for compliance and budget. |
-| **`bestai sandbox`** | Runs agent commands in isolated Docker containers. |
-| **`swarm-lock`** | Manage mutex locks across different AI vendors. |
+| Tool | Command | Description |
+|------|---------|-------------|
+| `setup.sh` | `bestai init` | Install hooks, templates, blueprints into a project |
+| `doctor.sh` | `bestai doctor` | Validate installation, check versions, verify hooks |
+| `stats.sh` | `bestai stats` | Hook latency dashboard (avg/max/count per hook) |
+| `cockpit.sh` | `bestai cockpit` | Unified live view: limits, knowledge, tasks, routing |
+| `compliance.sh` | `bestai compliance` | Compliance report from JSONL event log |
+| `hook-lint.sh` | `bestai lint` | Validate manifest, check dependencies/conflicts |
+| `task-router.sh` | `bestai route` | Adaptive vendor/depth routing recommendation |
+| `task-memory-binding.sh` | `bestai bind-context` | Pull binding context from project history |
+| `validate-shared-context.sh` | `bestai validate-context` | Validate multi-vendor handoff contracts |
+| `swarm-dispatch.sh` | `bestai swarm` | Multi-vendor task dispatch via GPS roles |
+| `swarm-lock.sh` | `bestai swarm-lock` | Mutex locks across AI vendors |
+| `agent-sandbox.sh` | `bestai sandbox` | Run agent commands in Docker containers |
+| `generate-rules.sh` | `bestai generate-rules` | Export rules to .cursorrules, .windsurfrules, codex.md |
+| `permit.sh` | `bestai permit` | Temporary bypass for frozen files |
+
+---
+
+## Evidence
+
+Based on the **Nuconic case study**: 234 sessions, 16,761 tool calls, 29 days of production data.
+
+Key finding: CLAUDE.md-only compliance was **6%**. With deterministic hooks: **100%** for Edit/Write, **~95%** for Bash (pattern matching limitation).
+
+---
+
+## Maturity Matrix
+
+| Component | Maturity | Evidence |
+|-----------|----------|---------|
+| Frozen file protection | **Stable** | 234 sessions, deterministic for Edit/Write |
+| Circuit breaker | **Stable** | Tested, has gate integration |
+| Memory GC | **Stable** | Generational scoring validated |
+| Session persistence | **Stable** | Rehydrate/sync-state cycle tested |
+| Event logging | **Stable** | JSONL format, compliance reporting |
+| Smart Context v1 | **Stable** | Keyword matching, production-tested |
+| Smart Context v2 | **Stable** | LLM scoring, latency-acceptable |
+| Hook composition | **Stable** | Manifest + lint + dependency graph |
+| GPS shared state | **Preview** | Implemented, limited multi-agent testing |
+| Multi-vendor dispatch | **Preview** | Dispatcher exists, no production data |
+| RAG/vector search | **Preview** | Script exists, no production validation |
+
+---
+
+## Learn More
+
+- [QUICKSTART.md](QUICKSTART.md) — 2-minute setup guide
+- [AGENTS.md](AGENTS.md) — Full hook reference for AI agents
+- [Architecture](docs/architecture.md) — Technical internals
+- [Troubleshooting](TROUBLESHOOTING.md) — Problem → solution guide
+- [Modules](modules/) — Detailed guidelines (01-core, 02-operations, 03-advanced)
 
 ---
 
 <div align="center">
-  <p><br><b>Built for the next generation of autonomous engineering.</b><br>License: MIT | radekzm & the bestAI Swarm</p>
+  <p>License: MIT | radekzm</p>
 </div>
