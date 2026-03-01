@@ -116,7 +116,7 @@ const App: React.FC<Props> = ({ dbPath }) => {
       scroll(1);
       return;
     }
-  }, { isActive: !inputMode && isRawModeSupported });
+  }, { isActive: !inputMode && !!isRawModeSupported });
 
   return (
     <Box flexDirection="column" width="100%">

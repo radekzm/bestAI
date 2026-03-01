@@ -107,7 +107,7 @@ const ConversationPanel: React.FC<Props> = ({
       setBuffer((b) => b.slice(0, cursor) + input + b.slice(cursor));
       setCursor((c) => c + input.length);
     }
-  }, { isActive: inputMode && focused && isRawModeSupported !== false });
+  }, { isActive: inputMode && focused && !!isRawModeSupported });
 
   // Compute visible messages
   const startIdx = Math.max(0, notifications.length - VISIBLE_ROWS - scrollOffset);
