@@ -78,6 +78,12 @@ bestai init .
 bestai --help
 ```
 
+## ✅ Quality 10/10
+
+Szczegółowy plan jakości, metryki i bramki release:
+
+- [QUALITY-10-10 Playbook](docs/QUALITY-10-10.md)
+
 ### Orchestrator Commands (Experimental)
 
 `orchestrate`, `task`, `agent`, `events`, `console` require compiled artifacts under `orchestrator/dist`.
