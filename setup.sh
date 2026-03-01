@@ -278,6 +278,14 @@ customize_claude "$TARGET/CLAUDE.md"
 # Step 1b: Project Blueprints (v7.0)
 echo ""
 echo -e "${BOLD}Step 1b: Project Blueprints (v7.0)${NC}"
+
+# Baseline GPS scaffold for deterministic doctor/setup behavior.
+mkdir -p "$TARGET/.bestai"
+if [ ! -f "$TARGET/.bestai/GPS.json" ] && [ -f "$BESTAI_DIR/templates/gps-template.json" ]; then
+    cp "$BESTAI_DIR/templates/gps-template.json" "$TARGET/.bestai/GPS.json"
+    echo -e "  ${GREEN}Created${NC} baseline Global Project State (.bestai/GPS.json)"
+fi
+
 BP_SELECTION=""
 case "$BLUEPRINT_MODE" in
     fullstack) BP_SELECTION="1" ;;
@@ -299,17 +307,17 @@ case "$BLUEPRINT_MODE" in
 esac
 
 if [ -n "$BP_SELECTION" ]; then
-    mkdir -p "$TARGET/.bestai"
-    if [ -f "$BESTAI_DIR/templates/gps-template.json" ]; then
+    if [ -f "$BESTAI_DIR/templates/gps-template.json" ] && [ ! -f "$TARGET/.bestai/GPS.json" ]; then
         cp "$BESTAI_DIR/templates/gps-template.json" "$TARGET/.bestai/GPS.json"
         echo -e "  ${GREEN}Created${NC} Global Project State (.bestai/GPS.json)"
+    fi
 
-        # Minimal deterministic scaffold for blueprint-specific artifacts.
-        if [ "$BP_SELECTION" == "1" ]; then
-            if [ -f "$BESTAI_DIR/templates/blueprint-fullstack.md" ]; then
-                cp "$BESTAI_DIR/templates/blueprint-fullstack.md" "$TARGET/.bestai/blueprint.md"
-            else
-                cat > "$TARGET/.bestai/blueprint.md" <<'EOF'
+    # Minimal deterministic scaffold for blueprint-specific artifacts.
+    if [ "$BP_SELECTION" == "1" ]; then
+        if [ -f "$BESTAI_DIR/templates/blueprint-fullstack.md" ]; then
+            cp "$BESTAI_DIR/templates/blueprint-fullstack.md" "$TARGET/.bestai/blueprint.md"
+        else
+            cat > "$TARGET/.bestai/blueprint.md" <<'EOF'
 # Full-Stack Blueprint
 
 - Frontend: Next.js
@@ -317,18 +325,17 @@ if [ -n "$BP_SELECTION" ]; then
 - Database: PostgreSQL
 - Add stack-specific frozen files and commands before first run.
 EOF
-            fi
-            echo -e "  ${GREEN}Initialized${NC} Full-Stack Blueprint scaffold (.bestai/blueprint.md)."
-        elif [ "$BP_SELECTION" == "2" ]; then
-            cat > "$TARGET/.bestai/blueprint.md" <<'EOF'
+        fi
+        echo -e "  ${GREEN}Initialized${NC} Full-Stack Blueprint scaffold (.bestai/blueprint.md)."
+    elif [ "$BP_SELECTION" == "2" ]; then
+        cat > "$TARGET/.bestai/blueprint.md" <<'EOF'
 # Agent Swarm Blueprint
 
 - Define roles: Developer / Reviewer / Tester
 - Create per-role instruction files
 - Use GPS active_tasks to coordinate ownership
 EOF
-            echo -e "  ${GREEN}Initialized${NC} Agent Swarm Blueprint scaffold (.bestai/blueprint.md)."
-        fi
+        echo -e "  ${GREEN}Initialized${NC} Agent Swarm Blueprint scaffold (.bestai/blueprint.md)."
     fi
 else
     echo "  Skipped Blueprints"

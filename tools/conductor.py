@@ -1,3 +1,4 @@
+import argparse
 import os
 import json
 import subprocess
@@ -86,7 +87,19 @@ class OmniConsole:
         else:
             self.print_c(f"Unknown internal command: {base_cmd}. Type /help.")
 
-    def run(self):
+    def run(self, once_task=None):
+        if once_task:
+            self.print_c("Dispatching one-shot task to Claude (Lead Architect).", "\033[1;34m")
+            subprocess.run(f"bestai swarm --vendor claude --task \"{once_task}\"", shell=True)
+            return 0
+
+        if not sys.stdin.isatty():
+            self.print_c(
+                "Interactive mode requires a TTY. Use '--once \"task\"' or 'bestai orchestrate'.",
+                "\033[0;31m",
+            )
+            return 2
+
         print("\n\033[1;36m===================================================\033[0m")
         print("\033[1;36m 🛸 bestAI OMNI-CONSOLE (v14.1) - The Living Swarm \033[0m")
         print("\033[1;36m===================================================\033[0m\n")
@@ -101,7 +114,7 @@ class OmniConsole:
                 if not user_msg: continue
                 if user_msg.lower() in ["exit", "quit"]: 
                     self.print_c("Closing communications. Swarm is standing by.")
-                    break
+                    return 0
                 
                 if user_msg.startswith("/"):
                     self.execute_command(user_msg)
@@ -118,8 +131,30 @@ class OmniConsole:
             except KeyboardInterrupt:
                 print()
                 self.print_c("Force exit. Goodbye.")
-                break
+                return 130
+            except EOFError:
+                print()
+                self.print_c("Input stream closed. Exiting console.")
+                return 0
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        prog="bestai conductor",
+        description=(
+            "Legacy experimental Omni-Console. Prefer orchestrator commands "
+            "(bestai orchestrate/task/agent/events/console) for production flows."
+        ),
+    )
+    parser.add_argument(
+        "--once",
+        metavar="TASK",
+        help="dispatch a single task in non-interactive mode and exit",
+    )
+    return parser
+
 
 if __name__ == "__main__":
+    args = build_parser().parse_args()
     console = OmniConsole()
-    console.run()
+    raise SystemExit(console.run(once_task=args.once))

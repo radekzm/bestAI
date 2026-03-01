@@ -6,6 +6,7 @@ set -euo pipefail
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m'
@@ -59,6 +60,9 @@ check() {
         echo -e "  ${YELLOW}WARN${NC} $message"
         echo -e "       Tip: $fix"
         WARNINGS=$((WARNINGS + 1))
+    elif [ "$severity" = "INFO" ]; then
+        echo -e "  ${BLUE}INFO${NC} $message"
+        [ -n "$fix" ] && echo -e "       Note: $fix"
     else
         echo -e "  ${GREEN}OK${NC} $message"
     fi
@@ -239,12 +243,27 @@ fi
 echo ""
 echo -e "${BOLD}Memory System${NC}"
 MEMORY_DIR="$HOME/.claude/projects/$(echo "$TARGET_ABS" | tr '/' '-')/memory"
-if [ -d "$MEMORY_DIR" ]; then
-    MEMORY_FILES=$(find "$MEMORY_DIR" -maxdepth 1 -type f -name '*.md' | wc -l)
-    check "OK" "$MEMORY_FILES memory files in $MEMORY_DIR"
+PROJECT_MEMORY_DIR="$TARGET_ABS/memory"
+ACTIVE_MEMORY_DIR=""
+MEMORY_MD_PATH=""
 
-    if [ -f "$MEMORY_DIR/MEMORY.md" ]; then
-        MEM_LINES=$(wc -l < "$MEMORY_DIR/MEMORY.md")
+if [ -d "$MEMORY_DIR" ]; then
+    ACTIVE_MEMORY_DIR="$MEMORY_DIR"
+    check "OK" "Runtime memory dir detected ($MEMORY_DIR)"
+elif [ -d "$PROJECT_MEMORY_DIR" ]; then
+    ACTIVE_MEMORY_DIR="$PROJECT_MEMORY_DIR"
+    check "OK" "Project-local memory dir detected ($PROJECT_MEMORY_DIR)"
+else
+    check "INFO" "No memory directory yet" "Will be created on first session with auto-memory or by setup --memory yes"
+fi
+
+if [ -n "$ACTIVE_MEMORY_DIR" ]; then
+    MEMORY_FILES=$(find "$ACTIVE_MEMORY_DIR" -maxdepth 1 -type f -name '*.md' | wc -l)
+    check "OK" "$MEMORY_FILES memory files in $ACTIVE_MEMORY_DIR"
+
+    if [ -f "$ACTIVE_MEMORY_DIR/MEMORY.md" ]; then
+        MEMORY_MD_PATH="$ACTIVE_MEMORY_DIR/MEMORY.md"
+        MEM_LINES=$(wc -l < "$MEMORY_MD_PATH")
         if [ "$MEM_LINES" -gt 200 ]; then
             check "FAIL" "MEMORY.md is $MEM_LINES lines (>200)" "Compact MEMORY.md and move details to topic files"
         elif [ "$MEM_LINES" -gt 120 ]; then
@@ -253,14 +272,12 @@ if [ -d "$MEMORY_DIR" ]; then
             check "OK" "MEMORY.md is $MEM_LINES lines"
         fi
 
-        if ! grep -qE '\[(USER|AUTO)\]' "$MEMORY_DIR/MEMORY.md" 2>/dev/null; then
+        if ! grep -qE '\[(USER|AUTO)\]' "$MEMORY_MD_PATH" 2>/dev/null; then
             check "WARN" "MEMORY.md has no [USER]/[AUTO] tags" "Tag entries to protect user decisions"
         fi
     else
         check "WARN" "No MEMORY.md in memory dir" "Create MEMORY.md from templates/memory-md-template.md"
     fi
-else
-    check "WARN" "No memory directory yet" "Will be created on first session with auto-memory"
 fi
 
 # === Token Budget Heuristic ===
@@ -271,8 +288,8 @@ DOC_WORDS=0
 if [ -f "$TARGET_ABS/CLAUDE.md" ]; then
     DOC_WORDS=$((DOC_WORDS + $(wc -w < "$TARGET_ABS/CLAUDE.md")))
 fi
-if [ -f "$MEMORY_DIR/MEMORY.md" ]; then
-    DOC_WORDS=$((DOC_WORDS + $(wc -w < "$MEMORY_DIR/MEMORY.md")))
+if [ -n "$MEMORY_MD_PATH" ] && [ -f "$MEMORY_MD_PATH" ]; then
+    DOC_WORDS=$((DOC_WORDS + $(wc -w < "$MEMORY_MD_PATH")))
 fi
 EST_TOKENS=$(((DOC_WORDS * 13 + 9) / 10))
 EST_RATIO=$((EST_TOKENS * 100 / CONTEXT_WINDOW))
@@ -398,7 +415,7 @@ if [ -f "$CACHE_USAGE_FILE" ]; then
         check "WARN" "jq not installed — cannot analyze prompt cache usage log" "Install jq for cache diagnostics"
     fi
 else
-    check "WARN" "No cache usage log found" "Optional: store JSONL usage in $CACHE_USAGE_FILE and run evals/cache-usage-report.sh"
+    check "INFO" "No cache usage log found" "Optional: store JSONL usage in $CACHE_USAGE_FILE and run evals/cache-usage-report.sh"
 fi
 
 # === Hook Activity ===
@@ -412,7 +429,7 @@ if [ -f "$METRICS_FILE" ]; then
         echo "  $hook: $COUNT events"
     done
 else
-    check "WARN" "No hook-metrics.log yet" "Will appear after hooks run in real sessions"
+    check "INFO" "No hook-metrics.log yet" "Will appear after hooks run in real sessions"
 fi
 
 # === Runtime profile files ===
@@ -482,10 +499,10 @@ if [ -d "$TARGET_ABS/.git" ]; then
     fi
 fi
 
-if [ -f "$MEMORY_DIR/frozen-fragments.md" ] || [ -f "$TARGET_ABS/.claude/frozen-fragments.md" ]; then
+if [ -f "$MEMORY_DIR/frozen-fragments.md" ] || [ -f "$PROJECT_MEMORY_DIR/frozen-fragments.md" ] || [ -f "$TARGET_ABS/.claude/frozen-fragments.md" ]; then
     check "OK" "Frozen fragments registry exists"
 else
-    check "WARN" "No frozen-fragments.md" "Create from templates/frozen-fragments-template.md"
+    check "INFO" "No frozen-fragments.md" "Create from templates/frozen-fragments-template.md"
 fi
 
 # === v7.0 Architecture (RAG & Orchestration) ===
@@ -495,19 +512,19 @@ echo -e "${BOLD}v7.0 Architecture (RAG & Orchestration)${NC}"
 if [ -f "$TARGET_ABS/.bestai/T3-summary.md" ]; then
     check "OK" "T3-summary.md (Invisible Limit) present"
 else
-    check "WARN" "No T3-summary.md" "Run 'python3 tools/generate-t3-summaries.py' to map codebase."
+    check "INFO" "No T3-summary.md" "Run 'python3 tools/generate-t3-summaries.py' to map codebase."
 fi
 
 if [ -f "$TARGET_ABS/.bestai/vector-store.json" ] || [ -d "$TARGET_ABS/.bestai/chroma" ]; then
     check "OK" "RAG Vector Store detected"
 else
-    check "WARN" "No Vector Store (RAG) found" "Run 'python3 tools/vectorize-codebase.py' if using semantic memory."
+    check "INFO" "No Vector Store (RAG) found" "Run 'python3 tools/vectorize-codebase.py' if using semantic memory."
 fi
 
 if [ -d "$TARGET_ABS/.worktrees" ]; then
     check "OK" "Git Worktrees directory exists for agent orchestration"
 else
-    check "WARN" "No .worktrees directory" "Required if spawning parallel agent teams."
+    check "INFO" "No .worktrees directory" "Create when using parallel agent teams."
 fi
 
 # === Summary ===
