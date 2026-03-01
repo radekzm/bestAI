@@ -51,6 +51,18 @@ jobs:
             --run-tests no
           bash doctor.sh "$TMP_PROJECT"
 
+      - name: Tools smoke test
+        run: |
+          bash tests/test-tools-features.sh
+
+      - name: Orchestrator build check
+        run: |
+          if [ -f orchestrator/package.json ]; then
+            cd orchestrator
+            npm ci --ignore-scripts
+            npm run build
+          fi
+
       - name: Benchmark gates
         run: |
           bash evals/run.sh --enforce-gates --output "$RUNNER_TEMP/evals.md"

@@ -1,17 +1,17 @@
 <div align="center">
   <img src="assets/decision-loop.svg" alt="bestAI Hero" width="1000" />
-  <h1>bestAI v1.1 (Stable)</h1>
-  <p><strong>Stable Enterprise Governance for AI Swarms. Roadmap to v14.0 (Rust) enabled.</strong></p>
+  <h1>bestAI v1.5 (Stable)</h1>
+  <p><strong>Deterministic Governance &amp; Multi-Agent Orchestration for AI Swarms.</strong></p>
 
   [![NPM Version](https://img.shields.io/npm/v/%40radekzm%2Fbestai?logo=npm)](https://www.npmjs.com/package/@radekzm/bestai)
-  [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
-  [![Protected by bestAI](https://img.shields.io/badge/protected_by-bestAI-61afef?logo=ai&style=flat-square)](https://github.com/radekzm/bestAI)
+  [![CI](https://github.com/radekzm/bestAI/actions/workflows/ci.yml/badge.svg)](https://github.com/radekzm/bestAI/actions)
+  [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
   <p>
     <a href="#quick-start">Quick Start</a> •
     <a href="#core-mechanisms">Mechanisms</a> •
-    <a href="#hook-reference">Hooks</a> •
     <a href="#toolbelt">Toolbelt</a> •
+    <a href="#orchestrator">Orchestrator</a> •
     <a href="#research">Research</a>
   </p>
 </div>
@@ -41,31 +41,22 @@ graph LR
 ## Core Mechanisms
 
 ### 1. Deterministic Force-Field (Fail-Closed Hooks)
-Every file write or shell command is intercepted. If an agent tries to edit a frozen file, the hook returns `exit 2` — action blocked.
+Every file write or shell command is intercepted. If an agent tries to edit a frozen file, the hook returns `exit 2` — action blocked. Surgical Patching Policy prevents whole-file rewrites on files >100 lines.
 
 ### 2. 5-Tier Context OS
-Bypasses token limits by segmenting memory into tiers: T0 (HOT/GPS) to T4 (FROZEN/Config).
+Bypasses token limits by segmenting memory into tiers: T0 (HOT/GPS) to T4 (FROZEN/Config). Smart context preprocessing scores memory files for relevance.
 
-### 3. Omni-Vendor Swarm (v14.0)
+### 3. Omni-Vendor Swarm
 Deploy a **Syndicate** of agents. Claude for architecture, Gemini for 2M context research, and Codex for tests. Shared project brain via `.bestai/GPS.json`.
 
----
-
-<a name="research"></a>
-## 🔬 Evidence-Based Research
-
-bestAI is developed through rigorous testing in high-stakes environments. Explore our research papers:
-
-- **[Autonomous Persistence (OpenClaw)](docs/RESEARCH-OPENCLAW.md)**: How bestAI enables infinite memory in autonomous loops.
-- **[Human-AI Syndicate (Teams)](docs/RESEARCH-TEAM-NEXUS.md)**: A study on coordinating Seniors, Juniors, and AI Swarms in complex IT projects.
+### 4. Self-Healing Knowledge Base
+Automatically analyzes event logs for recurring violations and updates `memory/pitfalls.md` — the system learns from its own mistakes.
 
 ---
 
-## ⚡ Quick Start (Zero-Friction)
+<a name="quick-start"></a>
 
-
-
-*The command automatically runs diagnostics and launches the Syndicate Conductor.*
+## Quick Start
 
 ```bash
 # Install globally
@@ -74,40 +65,91 @@ npm install -g @radekzm/bestai
 # Initialize in your project
 bestai init .
 
-# Show available commands
+# Show all commands
 bestai --help
-```
 
-## ✅ Quality 10/10
-
-Szczegółowy plan jakości, metryki i bramki release:
-
-- [QUALITY-10-10 Playbook](docs/QUALITY-10-10.md)
-
-### Orchestrator Commands (Experimental)
-
-`orchestrate`, `task`, `agent`, `events`, `console` require compiled artifacts under `orchestrator/dist`.
-
-```bash
-npm --prefix orchestrator ci
-npm --prefix orchestrator run build
+# Run diagnostics
+bestai doctor
 ```
 
 ---
 
-## 🛠️ Toolbelt
+<a name="toolbelt"></a>
 
-| Tool | Command | Description |
-|------|---------|-------------|
-| `setup.sh` | `bestai init` | Install hooks, templates, blueprints into a project |
-| `cockpit.sh` | `bestai cockpit` | Unified live view: limits, knowledge, tasks, routing |
-| `swarm-dispatch.sh` | `bestai swarm` | Multi-vendor task dispatch via GPS roles |
-| `agent-sandbox.sh` | `bestai sandbox` | Run agent commands in Docker containers |
-| `permit.sh` | `bestai permit` | Temporary bypass for frozen files |
-| `compliance.sh` | `bestai compliance` | Compliance report from JSONL event log |
+## Toolbelt
+
+### Core Commands
+
+| Command | Tool | Description |
+|---------|------|-------------|
+| `bestai init` | `setup.sh` | Install hooks, templates, blueprints into a project |
+| `bestai doctor` | `doctor.sh` | Health check and diagnostics |
+| `bestai cockpit` | `cockpit.sh` | Live dashboard: limits, knowledge, tasks, routing |
+| `bestai compliance` | `compliance.sh` | Compliance report from JSONL event log |
+| `bestai stats` | `stats.sh` | Project statistics |
+
+### Agent & Swarm Commands
+
+| Command | Tool | Description |
+|---------|------|-------------|
+| `bestai swarm` | `swarm-dispatch.sh` | Multi-vendor task dispatch via GPS roles |
+| `bestai swarm-lock` | `swarm-lock.sh` | Mutex lock/unlock for multi-agent coordination |
+| `bestai plan` | `plan.sh` | Architect Mode — high-level planning, zero code |
+| `bestai sandbox` | `agent-sandbox.sh` | Run agent commands in Docker containers |
+| `bestai permit` | `permit.sh` | Temporary bypass for frozen files |
+
+### Advanced Tools
+
+| Command | Tool | Description |
+|---------|------|-------------|
+| `bestai generate-rules` | `generate-rules.sh` | Generate CLAUDE.md rules from templates |
+| `bestai shared-context-merge` | `shared-context-merge.sh` | Merge shared context files from multiple agents |
+| `bestai route` | `task-router.sh` | Smart task routing with policy + history |
+| `bestai bind-context` | `task-memory-binding.sh` | Bind memory tiers to task context |
+| `bestai self-heal` | `self-heal.py` | Auto-update pitfalls from violation patterns |
+| `bestai mcp` | `mcp-server.py` | Model Context Protocol server bridge |
+| `bestai lint` | `hook-lint.sh` | Lint hooks for correctness |
+
+---
+
+<a name="orchestrator"></a>
+
+## Orchestrator (Experimental)
+
+The orchestrator provides a daemon + TUI console for real-time multi-agent management:
+
+- **Daemon**: Background process managing task queue and agent lifecycle
+- **TUI Console**: Interactive terminal UI with task list, budget panel, agent status, and bidirectional conversation view
+- **SQLite WAL**: Concurrent read/write for TUI-daemon communication
+
+```bash
+# Build orchestrator
+cd orchestrator && npm ci && npm run build && cd ..
+
+# Start daemon + console
+bestai orchestrate    # daemon
+bestai console        # TUI
+```
+
+Orchestrator commands: `orchestrate`, `task`, `agent`, `events`, `console`.
+
+---
+
+<a name="research"></a>
+
+## Research
+
+bestAI is developed through rigorous testing in high-stakes environments:
+
+- **[Autonomous Persistence (OpenClaw)](docs/RESEARCH-OPENCLAW.md)**: How bestAI enables infinite memory in autonomous loops.
+- **[Human-AI Syndicate (Teams)](docs/RESEARCH-TEAM-NEXUS.md)**: Coordinating Seniors, Juniors, and AI Swarms in complex IT projects.
+
+## Quality
+
+- [QUALITY-10-10 Playbook](docs/QUALITY-10-10.md)
 
 ---
 
 <div align="center">
-  <p>License: MIT | radekzm & the Syndicate Swarm</p>
+  <p>License: MIT | radekzm &amp; the Syndicate Swarm</p>
 </div>
