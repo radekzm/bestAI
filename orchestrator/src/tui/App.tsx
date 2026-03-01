@@ -1,7 +1,7 @@
 // tui/App.tsx — Root layout with keyboard navigation, panel focus, and input mode
 
 import React, { useState, useCallback } from 'react';
-import { Box, useInput, useApp } from 'ink';
+import { Box, useInput, useApp, useStdin } from 'ink';
 import StatusBar from './components/StatusBar';
 import ConversationPanel from './components/ConversationPanel';
 import TaskList from './components/TaskList';
@@ -25,6 +25,7 @@ interface Props {
 
 const App: React.FC<Props> = ({ dbPath }) => {
   const { exit } = useApp();
+  const { isRawModeSupported } = useStdin();
 
   // Data hooks
   const store = useStore(dbPath);
@@ -68,10 +69,10 @@ const App: React.FC<Props> = ({ dbPath }) => {
   }, [activePanel, store.tasks.length]);
 
   const enterInputMode = useCallback(() => {
-    if (activePanel === 'conversation') {
+    if (activePanel === 'conversation' && isRawModeSupported) {
       setInputMode(true);
     }
-  }, [activePanel]);
+  }, [activePanel, isRawModeSupported]);
 
   const exitInputMode = useCallback(() => {
     setInputMode(false);
@@ -115,7 +116,7 @@ const App: React.FC<Props> = ({ dbPath }) => {
       scroll(1);
       return;
     }
-  }, { isActive: !inputMode });
+  }, { isActive: !inputMode && isRawModeSupported });
 
   return (
     <Box flexDirection="column" width="100%">
@@ -138,6 +139,7 @@ const App: React.FC<Props> = ({ dbPath }) => {
             inputMode={inputMode}
             onSend={sendMessage}
             onExitInput={exitInputMode}
+            isRawModeSupported={isRawModeSupported}
           />
           <TaskList
             tasks={store.tasks}
@@ -177,7 +179,7 @@ const App: React.FC<Props> = ({ dbPath }) => {
       </Box>
 
       {/* Bottom: Help bar */}
-      <HelpBar activePanel={activePanel} inputMode={inputMode} />
+      <HelpBar activePanel={activePanel} inputMode={inputMode} isRawModeSupported={isRawModeSupported} />
     </Box>
   );
 };
