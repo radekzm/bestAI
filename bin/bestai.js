@@ -85,6 +85,7 @@ const commands = {
     'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
     'self-heal':  path.join(baseDir, 'tools', 'self-heal.py'),
     'mcp':        path.join(baseDir, 'tools', 'mcp-server.py'),
+    'plan':       path.join(baseDir, 'tools', 'plan.sh'),
     // Orchestrator commands (Phase 1)
     'orchestrate': path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
     'task':        path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
