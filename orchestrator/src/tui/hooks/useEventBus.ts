@@ -24,6 +24,8 @@ const MAX_NOTIFICATIONS = 50;
 
 function isNotification(e: EventRow): boolean {
   if (e.type === 'user:notify') return true;
+  if (e.type === 'user:message') return true;
+  if (e.type === 'task:created') return true;
   if (e.severity === 'warning' || e.severity === 'critical' || e.severity === 'blocker') return true;
   return false;
 }
@@ -36,6 +38,17 @@ function eventToNotification(e: EventRow): Notification {
     else if (payload.message) message = payload.message;
     else if (payload.description) message = payload.description;
   } catch { /* use type as message */ }
+
+  // Attribute user:message events to 'user' sender
+  if (e.type === 'user:message') {
+    return {
+      id: e.id,
+      timestamp: e.created_at,
+      severity: e.severity,
+      agent: 'user',
+      message,
+    };
+  }
 
   return {
     id: e.id,

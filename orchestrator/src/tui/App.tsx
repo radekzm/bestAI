@@ -1,4 +1,4 @@
-// tui/App.tsx — Root layout with keyboard navigation and panel focus
+// tui/App.tsx — Root layout with keyboard navigation, panel focus, and input mode
 
 import React, { useState, useCallback } from 'react';
 import { Box, useInput, useApp } from 'ink';
@@ -14,8 +14,9 @@ import { useStore } from './hooks/useStore';
 import { useEventBus } from './hooks/useEventBus';
 import { useBridge } from './hooks/useBridge';
 import { useDaemon } from './hooks/useDaemon';
+import { useConversation } from './hooks/useConversation';
 
-const PANELS = ['notifications', 'tasks', 'events', 'agents'] as const;
+const PANELS = ['conversation', 'tasks', 'events', 'agents'] as const;
 type PanelName = typeof PANELS[number];
 
 interface Props {
@@ -30,14 +31,18 @@ const App: React.FC<Props> = ({ dbPath }) => {
   const eventBus = useEventBus(dbPath);
   const bridge = useBridge();
   const daemon = useDaemon();
+  const { sendMessage } = useConversation(dbPath);
 
   // Focus state
   const [focusIdx, setFocusIdx] = useState(0);
   const activePanel = PANELS[focusIdx];
 
+  // Input mode — when true, all keys go to conversation text buffer
+  const [inputMode, setInputMode] = useState(false);
+
   // Scroll offsets per panel
   const [scrolls, setScrolls] = useState<Record<PanelName, number>>({
-    notifications: 0,
+    conversation: 0,
     tasks: 0,
     events: 0,
     agents: 0,
@@ -62,10 +67,26 @@ const App: React.FC<Props> = ({ dbPath }) => {
     }
   }, [activePanel, store.tasks.length]);
 
-  // Keyboard handler
+  const enterInputMode = useCallback(() => {
+    if (activePanel === 'conversation') {
+      setInputMode(true);
+    }
+  }, [activePanel]);
+
+  const exitInputMode = useCallback(() => {
+    setInputMode(false);
+  }, []);
+
+  // Navigation keyboard handler — disabled during input mode
   useInput((input, key) => {
     if (input === 'q') {
       exit();
+      return;
+    }
+
+    // Enter on conversation panel → enter input mode
+    if (key.return && activePanel === 'conversation') {
+      enterInputMode();
       return;
     }
 
@@ -94,7 +115,7 @@ const App: React.FC<Props> = ({ dbPath }) => {
       scroll(1);
       return;
     }
-  });
+  }, { isActive: !inputMode });
 
   return (
     <Box flexDirection="column" width="100%">
@@ -112,8 +133,11 @@ const App: React.FC<Props> = ({ dbPath }) => {
         <Box flexDirection="column" flexBasis="50%" flexShrink={0}>
           <ConversationPanel
             notifications={eventBus.notifications}
-            focused={activePanel === 'notifications'}
-            scrollOffset={scrolls.notifications}
+            focused={activePanel === 'conversation'}
+            scrollOffset={scrolls.conversation}
+            inputMode={inputMode}
+            onSend={sendMessage}
+            onExitInput={exitInputMode}
           />
           <TaskList
             tasks={store.tasks}
@@ -153,7 +177,7 @@ const App: React.FC<Props> = ({ dbPath }) => {
       </Box>
 
       {/* Bottom: Help bar */}
-      <HelpBar activePanel={activePanel} />
+      <HelpBar activePanel={activePanel} inputMode={inputMode} />
     </Box>
   );
 };
