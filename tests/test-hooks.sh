@@ -1609,6 +1609,11 @@ CODE=$?
 assert_exit "bestai shared-context-merge --help -> exit 0" "0" "$CODE"
 assert_contains "bestai shared-context-merge --help contains Usage" "$OUTPUT" "Usage:"
 
+OUTPUT=$(node "$REPO_ROOT/bin/bestai.js" plan --help 2>&1)
+CODE=$?
+assert_exit "bestai plan --help -> exit 0" "0" "$CODE"
+assert_contains "bestai plan --help contains Usage" "$OUTPUT" "Usage:"
+
 OUTPUT=$(node - "$REPO_ROOT" <<'NODE'
 const fs = require('fs');
 const path = require('path');
