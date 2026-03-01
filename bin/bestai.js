@@ -83,6 +83,7 @@ const commands = {
     'retro-onboard': path.join(baseDir, 'tools', 'retro-onboard.py'),
     'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
     'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
+    'handoff':    path.join(baseDir, 'tools', 'handoff.py'),
     'self-heal':  path.join(baseDir, 'tools', 'self-heal.py'),
     'mcp':        path.join(baseDir, 'tools', 'mcp-server.py'),
     'plan':       path.join(baseDir, 'tools', 'plan.sh'),
