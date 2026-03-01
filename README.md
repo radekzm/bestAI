@@ -3,7 +3,7 @@
   <h1>bestAI v1.1 (Stable)</h1>
   <p><strong>Stable Enterprise Governance for AI Swarms. Roadmap to v14.0 (Rust) enabled.</strong></p>
 
-  [![NPM Version](https://img.shields.io/badge/npm-v14.0.0-blue?logo=npm)](https://www.npmjs.com/package/@radekzm/bestai)
+  [![NPM Version](https://img.shields.io/npm/v/%40radekzm%2Fbestai?logo=npm)](https://www.npmjs.com/package/@radekzm/bestai)
   [![Security](https://img.shields.io/badge/security-Deterministic_Force--Field-red?logo=security)]()
   [![Protected by bestAI](https://img.shields.io/badge/protected_by-bestAI-61afef?logo=ai&style=flat-square)](https://github.com/radekzm/bestAI)
 
@@ -73,6 +73,18 @@ npm install -g @radekzm/bestai
 
 # Initialize in your project
 bestai init .
+
+# Show available commands
+bestai --help
+```
+
+### Orchestrator Commands (Experimental)
+
+`orchestrate`, `task`, `agent`, `events`, `console` require compiled artifacts under `orchestrator/dist`.
+
+```bash
+npm --prefix orchestrator ci
+npm --prefix orchestrator run build
 ```
 
 ---

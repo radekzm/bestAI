@@ -9,6 +9,39 @@ const args = process.argv.slice(2);
 let command = args[0];
 
 const baseDir = path.join(__dirname, '..');
+const orchestratorCommands = ['orchestrate', 'task', 'agent', 'events', 'console'];
+
+function printHelp() {
+    const lines = [
+        `bestAI v${pkg.version}`,
+        '',
+        'Usage:',
+        '  bestai <command> [options]',
+        '',
+        'Core commands:',
+        '  init, setup, doctor, stats, test, lint, compliance, cockpit',
+        '  route, bind-context, validate-context, swarm, permit',
+        '  swarm-lock, generate-rules, shared-context-merge',
+        '',
+        'Orchestrator commands:',
+        '  orchestrate, task, agent, events, console',
+        '',
+        'Flags:',
+        '  --help, -h      Show help',
+        '  --version, -v   Show version',
+    ];
+    console.log(lines.join('\n'));
+}
+
+if (command === '--help' || command === '-h' || command === 'help') {
+    printHelp();
+    process.exit(0);
+}
+
+if (command === '--version' || command === '-v' || command === 'version') {
+    console.log(pkg.version);
+    process.exit(0);
+}
 
 // DEFAULT COMMAND: If no command is provided, launch the Immersive Conductor
 if (!command) {
@@ -39,7 +72,10 @@ const commands = {
     'bind-context': path.join(baseDir, 'tools', 'task-memory-binding.sh'),
     'validate-context': path.join(baseDir, 'tools', 'validate-shared-context.sh'),
     'swarm':      path.join(baseDir, 'tools', 'swarm-dispatch.sh'),
+    'swarm-lock': path.join(baseDir, 'tools', 'swarm-lock.sh'),
     'permit':     path.join(baseDir, 'tools', 'permit.sh'),
+    'generate-rules': path.join(baseDir, 'tools', 'generate-rules.sh'),
+    'shared-context-merge': path.join(baseDir, 'tools', 'shared-context-merge.sh'),
     'conductor':  path.join(baseDir, 'tools', 'conductor.py'),
     'contract':   path.join(baseDir, 'templates', 'contract-template.json'),
     'sandbox':    path.join(baseDir, 'tools', 'agent-sandbox.sh'),
@@ -48,6 +84,7 @@ const commands = {
     'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
     'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
     'self-heal':  path.join(baseDir, 'tools', 'self-heal.py'),
+    'mcp':        path.join(baseDir, 'tools', 'mcp-server.py'),
     // Orchestrator commands (Phase 1)
     'orchestrate': path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
     'task':        path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
@@ -64,6 +101,17 @@ if (!scriptPath) {
     process.exit(1);
 }
 
+if (!fs.existsSync(scriptPath)) {
+    if (orchestratorCommands.includes(command)) {
+        console.error(`Command '${command}' requires built orchestrator artifacts.`);
+        console.error('Run: npm --prefix orchestrator ci && npm --prefix orchestrator run build');
+        process.exit(1);
+    }
+
+    console.error(`Mapped script not found for command '${command}': ${scriptPath}`);
+    process.exit(1);
+}
+
 // Determine executor based on file type
 let execCmd = 'bash';
 if (scriptPath.endsWith('.py')) {
@@ -75,7 +123,6 @@ if (scriptPath.endsWith('.py')) {
 }
 
 // Orchestrator commands need the command name passed through for commander routing
-const orchestratorCommands = ['orchestrate', 'task', 'agent', 'events'];
 const childArgs = orchestratorCommands.includes(command)
     ? [scriptPath, command, ...args.slice(1)]
     : [scriptPath, ...args.slice(1)];
