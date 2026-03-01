@@ -33,7 +33,7 @@ const BudgetPanel: React.FC<Props> = ({ tokensUsed, tokensLimit, tokensIn, token
       <Text>
         {colors.label('in:')}{formatTokens(tokensIn)} {colors.label('out:')}{formatTokens(tokensOut)}
       </Text>
-      {routingParts && (
+      {routingParts.length > 0 && (
         <Text>{colors.label('routing:')} {colors.muted(routingParts)}</Text>
       )}
     </Box>
