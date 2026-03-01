@@ -354,6 +354,43 @@ JSON
 fi
 
 echo ""
+echo "=== CLI entry point (bin/bestai.js) ==="
+CLI="$ROOT_DIR/bin/bestai.js"
+if command -v node >/dev/null 2>&1 && [ -f "$CLI" ]; then
+    # --help returns exit 0 and shows usage
+    HELP_OUTPUT=$(node "$CLI" --help 2>&1)
+    HELP_CODE=$?
+    assert_exit "bestai --help exits 0" "0" "$HELP_CODE"
+    assert_contains "bestai --help shows Usage" "$HELP_OUTPUT" "Usage:"
+    assert_contains "bestai --help lists core commands" "$HELP_OUTPUT" "Core commands:"
+    assert_contains "bestai --help lists orchestrator commands" "$HELP_OUTPUT" "Orchestrator commands:"
+
+    # -h is alias for --help
+    H_OUTPUT=$(node "$CLI" -h 2>&1)
+    H_CODE=$?
+    assert_exit "bestai -h exits 0" "0" "$H_CODE"
+
+    # 'help' subcommand works too
+    HELP2_OUTPUT=$(node "$CLI" help 2>&1)
+    HELP2_CODE=$?
+    assert_exit "bestai help exits 0" "0" "$HELP2_CODE"
+
+    # --version returns exit 0 and shows version
+    VER_OUTPUT=$(node "$CLI" --version 2>&1)
+    VER_CODE=$?
+    assert_exit "bestai --version exits 0" "0" "$VER_CODE"
+    assert_contains "bestai --version shows semver" "$VER_OUTPUT" "."
+
+    # Unknown command returns exit 1
+    UNK_OUTPUT=$(node "$CLI" nonexistent-command 2>&1)
+    UNK_CODE=$?
+    assert_exit "bestai <unknown> exits 1" "1" "$UNK_CODE"
+    assert_contains "bestai <unknown> says Unknown command" "$UNK_OUTPUT" "Unknown command"
+else
+    skip_test "CLI entry point tests" "node or bin/bestai.js not found"
+fi
+
+echo ""
 echo "=== Summary ==="
 echo -e "  ${GREEN}PASS${NC}: $PASS"
 echo -e "  ${RED}FAIL${NC}: $FAIL"
