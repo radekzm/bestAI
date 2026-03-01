@@ -1,5 +1,5 @@
-__pycache__/
-*.pyc
+node_modules/
+dist/
 .bestai/
-.claude/
-all_issues_v2.json
+*.db
+__pycache__/
