@@ -1602,6 +1602,12 @@ assert_contains "bestai --help contains Usage" "$OUTPUT" "Usage:"
 OUTPUT=$(node "$REPO_ROOT/bin/bestai.js" swarm-lock --help 2>&1)
 CODE=$?
 assert_exit "bestai swarm-lock --help -> exit 0" "0" "$CODE"
+assert_contains "bestai swarm-lock --help contains Usage" "$OUTPUT" "Usage:"
+
+OUTPUT=$(node "$REPO_ROOT/bin/bestai.js" shared-context-merge --help 2>&1)
+CODE=$?
+assert_exit "bestai shared-context-merge --help -> exit 0" "0" "$CODE"
+assert_contains "bestai shared-context-merge --help contains Usage" "$OUTPUT" "Usage:"
 
 OUTPUT=$(node - "$REPO_ROOT" <<'NODE'
 const fs = require('fs');

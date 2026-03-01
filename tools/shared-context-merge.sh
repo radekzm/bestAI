@@ -6,8 +6,13 @@
 set -euo pipefail
 
 usage() {
-    echo "Usage: $0 <left.json> <right.json> [--output merged.json]" >&2
+    echo "Usage: $0 <left.json> <right.json> [--output merged.json]"
 }
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    usage
+    exit 0
+fi
 
 if ! command -v jq >/dev/null 2>&1; then
     echo "jq is required" >&2
@@ -18,7 +23,7 @@ LEFT_FILE="${1:-}"
 RIGHT_FILE="${2:-}"
 
 if [ -z "$LEFT_FILE" ] || [ -z "$RIGHT_FILE" ]; then
-    usage
+    usage >&2
     exit 1
 fi
 
@@ -31,9 +36,13 @@ while [ "$#" -gt 0 ]; do
             OUTPUT_FILE="${2:-}"
             shift 2
             ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
         *)
             echo "Unknown argument: $1" >&2
-            usage
+            usage >&2
             exit 1
             ;;
     esac

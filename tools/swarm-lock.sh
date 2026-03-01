@@ -11,6 +11,23 @@ LOCK_DB=".bestai/swarm_locks.json"
 LOCK_TTL="${SWARM_LOCK_TTL:-300}"
 mkdir -p .bestai
 
+usage() {
+    cat <<'EOF'
+Usage: bash tools/swarm-lock.sh [command] [file] [--agent AGENT]
+
+Commands:
+  --lock <file>      Acquire lock for file
+  --unlock <file>    Release lock for file
+  --status           Show active locks
+  --help, -h         Show this help
+
+Examples:
+  bash tools/swarm-lock.sh --lock src/app.ts --agent codex
+  bash tools/swarm-lock.sh --unlock src/app.ts
+  bash tools/swarm-lock.sh --status
+EOF
+}
+
 if [ ! -f "$LOCK_DB" ]; then
     echo "{}" > "$LOCK_DB"
 fi
@@ -23,7 +40,21 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         --lock|--unlock|--status) COMMAND="$1"; shift ;;
         --agent) AGENT="${2:-}"; shift 2 ;;
-        *) FILE="$1"; shift ;;
+        --help|-h) COMMAND="--help"; shift ;;
+        --*)
+            echo "Unknown option: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+        *)
+            if [ -n "$FILE" ]; then
+                echo "Unexpected argument: $1" >&2
+                usage >&2
+                exit 1
+            fi
+            FILE="$1"
+            shift
+            ;;
     esac
 done
 
@@ -44,6 +75,9 @@ purge_expired() {
 purge_expired
 
 case "$COMMAND" in
+    --help)
+        usage
+        ;;
     --lock)
         if [ -z "$FILE" ]; then echo "Missing file"; exit 1; fi
         CURRENT_OWNER=$(jq -r ".\"$FILE\".agent // empty" "$LOCK_DB")
@@ -68,5 +102,9 @@ case "$COMMAND" in
     --status)
         echo "[SWARM] Active locks (TTL: ${LOCK_TTL}s):"
         jq . "$LOCK_DB"
+        ;;
+    *)
+        usage >&2
+        exit 1
         ;;
 esac
