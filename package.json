@@ -44,5 +44,20 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "bin/",
+    "hooks/",
+    "tools/",
+    "modules/",
+    "templates/",
+    "blueprints/",
+    "setup.sh",
+    "doctor.sh",
+    "compliance.sh",
+    "stats.sh",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "dependencies": {}
 }
