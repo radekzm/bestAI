@@ -56,6 +56,18 @@ export interface AgentConfig {
   status?: AgentStatus;
 }
 
+/** Who sent a conversation message */
+export type MessageSender = 'user' | 'agent' | 'system';
+
+/** A single message in the conversation view */
+export interface ConversationMessage {
+  id: number;
+  timestamp: number;
+  sender: MessageSender;
+  agent?: string;  // agent name/id when sender === 'agent'
+  text: string;
+}
+
 /** Typed event signatures for the orchestrator event bus */
 export interface OrchestratorEvents {
   'daemon:started': () => void;
@@ -69,6 +81,7 @@ export interface OrchestratorEvents {
   'task:completed': (taskId: string, result: unknown) => void;
   'task:failed': (taskId: string, error: string) => void;
   'user:notify': (severity: string, message: string) => void;
+  'user:message': (message: string) => void;
 }
 
 /** Daemon persistent state keys */

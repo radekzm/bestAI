@@ -96,6 +96,16 @@ export const PROVIDER_LIMITS: Record<string, { short: number; long: number }> = 
   ollama: { short: 8_000, long: 131_000 },
 };
 
+// --- Sender colors for conversation panel ---
+
+export function getSenderColor(sender: string): (text: string) => string {
+  switch (sender) {
+    case 'user': return chalk.green;
+    case 'system': return chalk.gray;
+    default: return chalk.cyan;  // agents
+  }
+}
+
 // --- Formatting helpers ---
 
 export function formatTokens(n: number): string {
