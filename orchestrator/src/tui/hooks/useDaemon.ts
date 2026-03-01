@@ -14,36 +14,31 @@ export interface DaemonData {
 
 const POLL_MS = 3000;
 
+function readDaemonStatus(): DaemonData {
+  try {
+    const daemon = new Daemon();
+    const status = daemon.status();
+    return {
+      running: status.running,
+      pid: status.pid,
+      startedAt: status.startedAt,
+      version: status.version,
+      pendingTasks: status.pendingTasks,
+      lastCheckpoint: status.lastCheckpoint,
+    };
+  } catch {
+    return { running: false, pid: null, startedAt: null, version: null, pendingTasks: 0, lastCheckpoint: null };
+  }
+}
+
 export function useDaemon(): DaemonData {
-  const [data, setData] = useState<DaemonData>({
-    running: false,
-    pid: null,
-    startedAt: null,
-    version: null,
-    pendingTasks: 0,
-    lastCheckpoint: null,
-  });
+  // Synchronous initial read — data ready before first paint
+  const [data, setData] = useState<DaemonData>(readDaemonStatus);
 
   useEffect(() => {
-    function poll() {
-      try {
-        const daemon = new Daemon();
-        const status = daemon.status();
-        setData({
-          running: status.running,
-          pid: status.pid,
-          startedAt: status.startedAt,
-          version: status.version,
-          pendingTasks: status.pendingTasks,
-          lastCheckpoint: status.lastCheckpoint,
-        });
-      } catch {
-        setData((prev) => ({ ...prev, running: false }));
-      }
-    }
-
-    poll();
-    const interval = setInterval(poll, POLL_MS);
+    const interval = setInterval(() => {
+      setData(readDaemonStatus());
+    }, POLL_MS);
     return () => { clearInterval(interval); };
   }, []);
 

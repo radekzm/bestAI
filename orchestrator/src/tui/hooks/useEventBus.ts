@@ -22,43 +22,80 @@ const POLL_MS = 1000;
 const MAX_EVENTS = 200;
 const MAX_NOTIFICATIONS = 50;
 
+function isNotification(e: EventRow): boolean {
+  if (e.type === 'user:notify') return true;
+  if (e.severity === 'warning' || e.severity === 'critical' || e.severity === 'blocker') return true;
+  return false;
+}
+
+function eventToNotification(e: EventRow): Notification {
+  let message = e.type;
+  try {
+    const payload = JSON.parse(e.payload);
+    if (typeof payload === 'string') message = payload;
+    else if (payload.message) message = payload.message;
+    else if (payload.description) message = payload.description;
+  } catch { /* use type as message */ }
+
+  return {
+    id: e.id,
+    timestamp: e.created_at,
+    severity: e.severity,
+    agent: e.agent_id || '-',
+    message,
+  };
+}
+
+interface InitialLoad {
+  events: EventRow[];
+  notifications: Notification[];
+  lastId: number;
+  store: StateStore | null;
+}
+
+function readInitial(dbPath: string): InitialLoad {
+  try {
+    const store = new StateStore(dbPath);
+    const recent = store.getRecentEvents(MAX_EVENTS);
+    if (recent.length === 0) {
+      return { events: [], notifications: [], lastId: 0, store };
+    }
+
+    const events = recent.reverse(); // chronological
+    const lastId = events[events.length - 1]?.id ?? 0;
+
+    let notifications: Notification[] = [];
+    for (const e of events) {
+      if (isNotification(e)) {
+        notifications.push(eventToNotification(e));
+      }
+    }
+    if (notifications.length > MAX_NOTIFICATIONS) {
+      notifications = notifications.slice(-MAX_NOTIFICATIONS);
+    }
+
+    return { events, notifications, lastId, store };
+  } catch {
+    return { events: [], notifications: [], lastId: 0, store: null };
+  }
+}
+
 export function useEventBus(dbPath: string): EventBusData {
+  // Synchronous initial read — data ready before first paint
+  const initialRef = useRef(readInitial(dbPath));
+  const storeRef = useRef<StateStore | null>(initialRef.current.store);
+  const lastIdRef = useRef<number>(initialRef.current.lastId);
+  const eventsRef = useRef<EventRow[]>(initialRef.current.events);
+  const notificationsRef = useRef<Notification[]>(initialRef.current.notifications);
+
   const [data, setData] = useState<EventBusData>({
-    events: [],
-    notifications: [],
-    totalEvents: 0,
+    events: initialRef.current.events,
+    notifications: initialRef.current.notifications,
+    totalEvents: initialRef.current.lastId,
   });
-  const storeRef = useRef<StateStore | null>(null);
-  const lastIdRef = useRef<number>(0);
-  const eventsRef = useRef<EventRow[]>([]);
-  const notificationsRef = useRef<Notification[]>([]);
 
   useEffect(() => {
-    try {
-      storeRef.current = new StateStore(dbPath);
-    } catch {
-      return;
-    }
-
-    // Initial load
-    const store = storeRef.current;
-    const recent = store.getRecentEvents(MAX_EVENTS);
-    if (recent.length > 0) {
-      eventsRef.current = recent.reverse(); // chronological
-      lastIdRef.current = recent[recent.length - 1]?.id ?? 0;
-
-      // Extract notifications from initial events
-      for (const e of eventsRef.current) {
-        if (isNotification(e)) {
-          notificationsRef.current.push(eventToNotification(e));
-        }
-      }
-      if (notificationsRef.current.length > MAX_NOTIFICATIONS) {
-        notificationsRef.current = notificationsRef.current.slice(-MAX_NOTIFICATIONS);
-      }
-    }
-
-    function poll() {
+    const interval = setInterval(() => {
       if (!storeRef.current) return;
       try {
         const newEvents = storeRef.current.getEventsSince(lastIdRef.current);
@@ -84,16 +121,8 @@ export function useEventBus(dbPath: string): EventBusData {
       } catch {
         // DB briefly locked
       }
-    }
+    }, POLL_MS);
 
-    // Set initial state
-    setData({
-      events: [...eventsRef.current],
-      notifications: [...notificationsRef.current],
-      totalEvents: lastIdRef.current,
-    });
-
-    const interval = setInterval(poll, POLL_MS);
     return () => {
       clearInterval(interval);
       try { storeRef.current?.close(); } catch { /* ignore */ }
@@ -102,29 +131,4 @@ export function useEventBus(dbPath: string): EventBusData {
   }, [dbPath]);
 
   return data;
-}
-
-function isNotification(e: EventRow): boolean {
-  // Notifications: user:notify, severity >= warning, agent:message
-  if (e.type === 'user:notify') return true;
-  if (e.severity === 'warning' || e.severity === 'critical' || e.severity === 'blocker') return true;
-  return false;
-}
-
-function eventToNotification(e: EventRow): Notification {
-  let message = e.type;
-  try {
-    const payload = JSON.parse(e.payload);
-    if (typeof payload === 'string') message = payload;
-    else if (payload.message) message = payload.message;
-    else if (payload.description) message = payload.description;
-  } catch { /* use type as message */ }
-
-  return {
-    id: e.id,
-    timestamp: e.created_at,
-    severity: e.severity,
-    agent: e.agent_id || '-',
-    message,
-  };
 }
