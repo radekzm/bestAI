@@ -48,6 +48,13 @@ const commands = {
     'guardian':   path.join(baseDir, 'tools', 'guardian.py'),
     'nexus':      path.join(baseDir, 'tools', 'nexus.py'),
     'self-heal':  path.join(baseDir, 'tools', 'self-heal.py'),
+    // Orchestrator commands (Phase 1)
+    'orchestrate': path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
+    'task':        path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
+    'agent':       path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
+    'events':      path.join(baseDir, 'orchestrator', 'dist', 'index.js'),
+    // TUI Console (Phase 2)
+    'console':     path.join(baseDir, 'orchestrator', 'dist', 'tui', 'cli.js'),
 };
 
 const scriptPath = commands[command];
@@ -57,15 +64,23 @@ if (!scriptPath) {
     process.exit(1);
 }
 
-// Special case for python scripts
+// Determine executor based on file type
 let execCmd = 'bash';
 if (scriptPath.endsWith('.py')) {
     execCmd = 'python3';
 } else if (scriptPath.endsWith('.json')) {
     execCmd = 'cat';
+} else if (scriptPath.endsWith('.js')) {
+    execCmd = 'node';
 }
 
-const child = spawn(execCmd, [scriptPath, ...args.slice(1)], { stdio: 'inherit' });
+// Orchestrator commands need the command name passed through for commander routing
+const orchestratorCommands = ['orchestrate', 'task', 'agent', 'events'];
+const childArgs = orchestratorCommands.includes(command)
+    ? [scriptPath, command, ...args.slice(1)]
+    : [scriptPath, ...args.slice(1)];
+
+const child = spawn(execCmd, childArgs, { stdio: 'inherit' });
 child.on('exit', (code) => {
     process.exit(code);
 });

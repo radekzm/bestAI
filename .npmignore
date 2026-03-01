@@ -17,3 +17,8 @@ TROUBLESHOOTING.md
 *.json.bak
 all_issues*.json
 tools/__pycache__/
+
+# Orchestrator source (ship dist only)
+orchestrator/src/
+orchestrator/node_modules/
+orchestrator/tsconfig.json
