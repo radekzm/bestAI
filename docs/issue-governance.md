@@ -66,3 +66,9 @@ Reopen gdy:
 1. `issue-close-proof`: przy `close` wymagany link do testu/artefaktu.
 2. `close-cooldown` dla `P0/P1`: zamknięcie dopiero po pełnym przebiegu test+lint+eval.
 3. `reopen-rate` monitorowany tygodniowo jako KPI jakości decyzji.
+
+## Powiązanie z Quality 10/10
+
+Szczegółowe metryki i bramki jakości:
+
+- [QUALITY-10-10.md](QUALITY-10-10.md)
