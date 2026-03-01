@@ -7,9 +7,20 @@ import { colors } from '../theme';
 interface Props {
   activePanel: string;
   inputMode?: boolean;
+  isRawModeSupported?: boolean;
 }
 
-const HelpBar: React.FC<Props> = ({ activePanel, inputMode = false }) => {
+const HelpBar: React.FC<Props> = ({ activePanel, inputMode = false, isRawModeSupported }) => {
+  if (!isRawModeSupported) {
+    return (
+      <Box borderStyle="single" borderColor="gray" paddingX={1}>
+        <Text>
+          {colors.muted('read-only mode (no TTY)')} {colors.muted('│')} active: {colors.bold(activePanel)}
+        </Text>
+      </Box>
+    );
+  }
+
   if (inputMode) {
     // Input mode: show send/cancel hints
     return (

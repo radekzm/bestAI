@@ -12,6 +12,7 @@ interface Props {
   inputMode: boolean;
   onSend: (text: string) => void;
   onExitInput: () => void;
+  isRawModeSupported?: boolean;
 }
 
 const VISIBLE_ROWS = 7;
@@ -47,6 +48,7 @@ const ConversationPanel: React.FC<Props> = ({
   inputMode,
   onSend,
   onExitInput,
+  isRawModeSupported,
 }) => {
   const [buffer, setBuffer] = useState('');
   const [cursor, setCursor] = useState(0);
@@ -105,7 +107,7 @@ const ConversationPanel: React.FC<Props> = ({
       setBuffer((b) => b.slice(0, cursor) + input + b.slice(cursor));
       setCursor((c) => c + input.length);
     }
-  }, { isActive: inputMode && focused });
+  }, { isActive: inputMode && focused && isRawModeSupported !== false });
 
   // Compute visible messages
   const startIdx = Math.max(0, notifications.length - VISIBLE_ROWS - scrollOffset);
@@ -119,7 +121,7 @@ const ConversationPanel: React.FC<Props> = ({
       {buffer.slice(cursor + 1)}
     </Text>
   ) : (
-    <Text>{colors.muted(focused ? 'Press Enter to chat...' : '')}</Text>
+    <Text>{colors.muted(focused ? (isRawModeSupported !== false ? 'Press Enter to chat...' : 'read-only (no TTY)') : '')}</Text>
   );
 
   return (
