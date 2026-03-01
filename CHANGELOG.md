@@ -9,6 +9,9 @@
   - `swarm-lock`
   - `shared-context-merge`
 - Added explicit runtime error for orchestrator commands when `orchestrator/dist` is missing.
+- `setup --non-interactive` now creates baseline `.bestai/GPS.json` to reduce first-run doctor drift.
+- `doctor --strict` now treats optional runtime/RAG signals as `INFO` instead of strict warnings.
+- Legacy helpers (`conductor`, `guardian`, `nexus`) now support deterministic `--help` and non-TTY-safe exits.
 
 ### Tests
 - Added CLI regression checks for:
@@ -19,6 +22,7 @@
 ### Docs
 - README npm badge now tracks real npm version dynamically.
 - README now documents orchestrator build prerequisite for experimental commands.
+- README clarifies `conductor`/`guardian`/`nexus` as legacy experimental scaffolds.
 
 ## v1.0.0 (2026-02-28) — "The Honest Reset"
 

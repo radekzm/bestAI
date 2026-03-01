@@ -16,6 +16,8 @@ TROUBLESHOOTING.md
 # Debug artifacts
 *.json.bak
 all_issues*.json
+audit_issues.json
+issue_test_failure.json
 tools/__pycache__/
 
 # Orchestrator source (ship dist only)

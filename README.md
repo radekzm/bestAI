@@ -72,6 +72,9 @@ bestai --help
 bestai doctor
 ```
 
+Legacy helper commands `conductor`, `guardian`, `nexus` are also available as experimental scaffolds.
+They now expose deterministic `--help`, but production workflows should prefer orchestrator commands above.
+
 ---
 
 <a name="toolbelt"></a>

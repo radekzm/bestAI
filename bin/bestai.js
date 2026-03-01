@@ -10,6 +10,7 @@ let command = args[0];
 
 const baseDir = path.join(__dirname, '..');
 const orchestratorCommands = ['orchestrate', 'task', 'agent', 'events', 'console'];
+const legacyExperimentalCommands = ['conductor', 'guardian', 'nexus'];
 
 function printHelp() {
     const lines = [
@@ -25,6 +26,9 @@ function printHelp() {
         '',
         'Orchestrator commands:',
         '  orchestrate, task, agent, events, console',
+        '',
+        'Legacy experimental helpers:',
+        '  conductor, guardian, nexus',
         '',
         'Flags:',
         '  --help, -h      Show help',
@@ -55,6 +59,7 @@ if (!command) {
         console.log(`\x1b[33mProject not initialized. Launching Setup Wizard...\x1b[0m`);
         command = 'init';
     } else {
+        console.log(`\x1b[2mTip: 'conductor' is legacy experimental. For production flows use 'orchestrate/task/agent/events/console'.\x1b[0m`);
         command = 'conductor';
     }
 }
@@ -112,6 +117,10 @@ if (!fs.existsSync(scriptPath)) {
 
     console.error(`Mapped script not found for command '${command}': ${scriptPath}`);
     process.exit(1);
+}
+
+if (legacyExperimentalCommands.includes(command)) {
+    console.error(`Warning: '${command}' is a legacy experimental helper. Interface may change.`);
 }
 
 // Determine executor based on file type

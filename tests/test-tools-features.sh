@@ -53,6 +53,19 @@ assert_contains() {
     fi
 }
 
+assert_not_contains() {
+    local name="$1"
+    local haystack="$2"
+    local needle="$3"
+    if printf '%s' "$haystack" | grep -q "$needle"; then
+        echo -e "  ${RED}FAIL${NC} $name (unexpected '$needle')"
+        FAIL=$((FAIL + 1))
+    else
+        echo -e "  ${GREEN}PASS${NC} $name"
+        PASS=$((PASS + 1))
+    fi
+}
+
 assert_jq() {
     local name="$1"
     local json_payload="$2"
@@ -386,8 +399,65 @@ if command -v node >/dev/null 2>&1 && [ -f "$CLI" ]; then
     UNK_CODE=$?
     assert_exit "bestai <unknown> exits 1" "1" "$UNK_CODE"
     assert_contains "bestai <unknown> says Unknown command" "$UNK_OUTPUT" "Unknown command"
+
+    # Legacy helper commands expose deterministic --help.
+    COND_HELP=$(node "$CLI" conductor --help 2>&1)
+    COND_HELP_CODE=$?
+    assert_exit "bestai conductor --help exits 0" "0" "$COND_HELP_CODE"
+    assert_contains "bestai conductor --help shows usage" "$COND_HELP" "usage:"
+
+    GUARD_HELP=$(node "$CLI" guardian --help 2>&1)
+    GUARD_HELP_CODE=$?
+    assert_exit "bestai guardian --help exits 0" "0" "$GUARD_HELP_CODE"
+    assert_contains "bestai guardian --help shows usage" "$GUARD_HELP" "usage:"
+
+    NEXUS_HELP=$(node "$CLI" nexus --help 2>&1)
+    NEXUS_HELP_CODE=$?
+    assert_exit "bestai nexus --help exits 0" "0" "$NEXUS_HELP_CODE"
+    assert_contains "bestai nexus --help shows usage" "$NEXUS_HELP" "usage:"
 else
     skip_test "CLI entry point tests" "node or bin/bestai.js not found"
+fi
+
+echo ""
+echo "=== setup + doctor strict baseline ==="
+SETUP_SCRIPT="$ROOT_DIR/setup.sh"
+DOCTOR_SCRIPT="$ROOT_DIR/doctor.sh"
+if [ -f "$SETUP_SCRIPT" ] && [ -f "$DOCTOR_SCRIPT" ]; then
+    BASELINE_PROJECT="$TMP_ROOT/baseline-project"
+    mkdir -p "$BASELINE_PROJECT"
+
+    SETUP_OUTPUT=$(bash "$SETUP_SCRIPT" "$BASELINE_PROJECT" \
+        --profile smart-v2 \
+        --non-interactive \
+        --template standard \
+        --blueprint none \
+        --memory yes \
+        --agents yes \
+        --run-tests no 2>&1)
+    SETUP_CODE=$?
+    assert_exit "setup non-interactive exits 0" "0" "$SETUP_CODE"
+
+    DOCTOR_OUTPUT=$(bash "$DOCTOR_SCRIPT" --strict "$BASELINE_PROJECT" 2>&1)
+    DOCTOR_CODE=$?
+    assert_exit "doctor --strict after setup exits 0" "0" "$DOCTOR_CODE"
+    assert_contains "doctor --strict summary present" "$DOCTOR_OUTPUT" "=== SUMMARY ==="
+else
+    skip_test "setup + doctor strict baseline" "setup.sh or doctor.sh not found"
+fi
+
+echo ""
+echo "=== npm package hygiene ==="
+if command -v npm >/dev/null 2>&1; then
+    PACK_OUTPUT=$(cd "$ROOT_DIR" && npm pack --dry-run 2>&1)
+    PACK_CODE=$?
+    assert_exit "npm pack --dry-run exits 0" "0" "$PACK_CODE"
+    if [ "$PACK_CODE" = "0" ]; then
+        assert_not_contains "npm pack excludes audit_issues.json" "$PACK_OUTPUT" "audit_issues.json"
+        assert_not_contains "npm pack excludes issue_test_failure.json" "$PACK_OUTPUT" "issue_test_failure.json"
+    fi
+else
+    skip_test "npm package hygiene" "npm not found"
 fi
 
 echo ""
