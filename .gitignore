@@ -1,5 +1,23 @@
+# Node.js
 node_modules/
-dist/
+npm-debug.log*
+.claude/
+.codex/
 .bestai/
-*.db
+!.bestai/GPS.json
+!.bestai/CONTRACT.json
+
+# Rust
+target/
+Cargo.lock
+
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# bestAI Temporary
+*.tmp
+*.bak
