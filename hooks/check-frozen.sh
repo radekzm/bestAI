@@ -63,6 +63,22 @@ PROJECT_KEY=$(echo "$PROJECT_DIR" | tr '/' '-')
 
 _BESTAI_TOOL_NAME="$TOOL_NAME"
 
+check_surgical_patching() {
+    # Surgical Patching Policy (Issue #122)
+    # Goal: Prevent agents from rewriting large files from scratch.
+    if [ "$TOOL_NAME" = "Write" ]; then
+        local file_path
+        file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // empty' 2>/dev/null)
+        if [ -f "$file_path" ]; then
+            local lines
+            lines=$(wc -l < "$file_path")
+            if [ "$lines" -gt 100 ]; then
+                block_or_dryrun "Surgical Patching Violation: File '$file_path' has $lines lines. Use 'Edit' (diff) instead of 'Write' to avoid regressions." "$file_path"
+            fi
+        fi
+    fi
+}
+
 # Normalize path: remove ./ and .. components, convert to absolute.
 # Pure-bash implementation — no external dependencies (realpath, python3).
 # Handles: relative paths, //, /./, /../, trailing /. sequences.
@@ -244,6 +260,7 @@ check_bash_bypass() {
 
 case "$TOOL_NAME" in
     Write|Edit)
+        check_surgical_patching
         check_direct_file_edit
         ;;
     Bash)
